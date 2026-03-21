@@ -1,0 +1,43 @@
+/* ---- Backdrop animations ---- */
+@keyframes backdropEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes backdropExit {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+.mobile-backdrop-enter {
+  animation: backdropEnter 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.mobile-backdrop-exit {
+  animation: backdropExit 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ---- Drawer slide animations ---- */
+@keyframes drawerEnter {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes drawerExit {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+
+.mobile-drawer-enter {
+  animation: drawerEnter 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.mobile-drawer-exit {
+  animation: drawerExit 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* ---- Menu icon swap animation ---- */
+@keyframes iconEnter {
+  from { transform: rotate(-45deg) scale(0.6); opacity: 0; }
+  to   { transform: rotate(0deg) scale(1);     opacity: 1; }
+}
+
+.menu-icon-enter {
+  animation: iconEnter 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}

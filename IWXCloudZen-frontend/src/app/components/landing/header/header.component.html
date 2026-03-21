@@ -37,20 +37,22 @@
     </div>
 
     <!-- Mobile menu button -->
-    <button class="md:hidden p-2 -mr-2 transition-transform duration-300 ease-in-out" (click)="toggleMobileMenu()">
-      <svg *ngIf="!mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    <button class="md:hidden p-2 -mr-2" (click)="toggleMobileMenu()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-      </svg>
-      <svg *ngIf="mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
       </svg>
     </button>
   </div>
 
   <!-- Mobile menu drawer -->
-  <div *ngIf="mobileMenuOpen" class="fixed inset-0 z-40 md:hidden">
-    <div class="fixed inset-0 bg-black/20 backdrop-blur-md" (click)="closeMobileMenu()"></div>
-    <div class="fixed top-0 right-0 h-screen w-[75vw] max-w-[420px] bg-white z-50 shadow-2xl overflow-y-auto transform transition-transform duration-500 ease-in-out">
+  <div *ngIf="mobileMenuOpen || menuClosing" class="fixed inset-0 z-40 md:hidden" [class.pointer-events-none]="menuClosing">
+    <div class="fixed inset-0 bg-black/20 backdrop-blur-md"
+         [class.mobile-backdrop-enter]="!menuClosing"
+         [class.mobile-backdrop-exit]="menuClosing"
+         (click)="closeMobileMenu()"></div>
+    <div class="fixed top-0 right-0 h-screen w-[75vw] max-w-[420px] bg-white z-50 shadow-2xl overflow-y-auto"
+         [class.mobile-drawer-enter]="!menuClosing"
+         [class.mobile-drawer-exit]="menuClosing">
       <div class="pt-6 pb-8 px-6">
         <div class="flex justify-between items-center mb-8">
           <span class="text-2xl font-serif font-bold">IWX CloudZen</span>

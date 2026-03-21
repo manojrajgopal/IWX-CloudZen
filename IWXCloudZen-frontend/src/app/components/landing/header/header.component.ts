@@ -13,9 +13,11 @@ import { AuthService } from '../../../services/auth.service';
 export class HeaderComponent implements OnInit {
   scrolled = false;
   mobileMenuOpen = false;
+  menuClosing = false;
   toggleProfileDropdown = false;
   dropdownClosing = false;
   currentUser: any = null;
+  private menuCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private authService: AuthService) {}
 
@@ -52,17 +54,30 @@ export class HeaderComponent implements OnInit {
   }
 
   toggleMobileMenu() {
-    this.mobileMenuOpen = !this.mobileMenuOpen;
-    if (this.mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
+    if (this.mobileMenuOpen && !this.menuClosing) {
+      // Menu is open — start close animation
+      this.closeMobileMenu();
     } else {
-      document.body.style.overflow = '';
+      // Menu is closed or mid-close — cancel any pending close and open immediately
+      if (this.menuCloseTimer) {
+        clearTimeout(this.menuCloseTimer);
+        this.menuCloseTimer = null;
+      }
+      this.mobileMenuOpen = true;
+      this.menuClosing = false;
+      document.body.style.overflow = 'hidden';
     }
   }
 
   closeMobileMenu() {
-    this.mobileMenuOpen = false;
+    if (!this.mobileMenuOpen || this.menuClosing) return;
+    this.menuClosing = true;
     document.body.style.overflow = '';
+    this.menuCloseTimer = setTimeout(() => {
+      this.mobileMenuOpen = false;
+      this.menuClosing = false;
+      this.menuCloseTimer = null;
+    }, 350);
   }
 
   logout() {
