@@ -37,8 +37,8 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div *ngFor="let service of services" class="border border-gray-200 p-6 hover:shadow-lg transition card-hover">
           <div class="flex items-start justify-between mb-4">
-            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
-              <img [src]="service.icon" [alt]="service.title" class="w-6 h-6">
+            <div class="w-12 h-12 rounded-full overflow-hidden">
+              <img [src]="service.icon" [alt]="service.title" class="w-full h-full object-cover">
             </div>
             <span [class]="'text-xs uppercase tracking-wider px-2 py-1 rounded ' + getStatusClass(service.status)">
               {{ service.status }}

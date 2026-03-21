@@ -38,7 +38,7 @@ export class DashboardComponent implements OnInit {
       id: 1,
       title: 'Kubernetes Manager',
       description: 'Manage clusters across AWS EKS, Azure AKS, GCP GKE.',
-      icon: 'https://via.placeholder.com/40?text=K8s',
+      icon: 'https://plus.unsplash.com/premium_photo-1673485529863-13770222fe0f',
       cloud: 'Multi‑Cloud',
       status: 'active'
     },
@@ -46,7 +46,7 @@ export class DashboardComponent implements OnInit {
       id: 2,
       title: 'Serverless Framework',
       description: 'Deploy functions to AWS Lambda, Azure Functions, GCP Cloud Functions.',
-      icon: 'https://via.placeholder.com/40?text=Serverless',
+      icon: 'https://plus.unsplash.com/premium_photo-1736517545207-6a147b76c9b0',
       cloud: 'Multi‑Cloud',
       status: 'active'
     },
@@ -54,7 +54,7 @@ export class DashboardComponent implements OnInit {
       id: 3,
       title: 'Cost Optimizer',
       description: 'AI‑driven recommendations to reduce cloud spend.',
-      icon: 'https://via.placeholder.com/40?text=Cost',
+      icon: 'https://plus.unsplash.com/premium_photo-1772987698999-312c441f3d6d',
       cloud: 'Multi‑Cloud',
       status: 'pending'
     },
@@ -62,7 +62,7 @@ export class DashboardComponent implements OnInit {
       id: 4,
       title: 'Security Posture Manager',
       description: 'Continuous compliance checks and threat detection.',
-      icon: 'https://via.placeholder.com/40?text=Security',
+      icon: 'https://plus.unsplash.com/premium_photo-1739371779873-32e0e3d224ee',
       cloud: 'Multi‑Cloud',
       status: 'active'
     }
