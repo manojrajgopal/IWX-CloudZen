@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import cloudsData from '../../data/clouds.json';
+import cloudsData from '../../../data/clouds.json';
 
 @Component({
   selector: 'app-popular-clouds',

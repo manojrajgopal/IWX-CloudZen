@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import testimonialsData from '../../data/testimonials.json';
+import testimonialsData from '../../../data/testimonials.json';
 
 @Component({
   selector: 'app-testimonials',

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import servicesData from '../../data/services.json';
+import servicesData from '../../../data/services.json';
 
 @Component({
   selector: 'app-featured',
