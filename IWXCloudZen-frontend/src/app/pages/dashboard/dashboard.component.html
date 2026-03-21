@@ -1,0 +1,88 @@
+<div class="container-lux py-16 md:py-24">
+  <!-- Welcome Section -->
+  <div class="mb-16">
+    <h1 class="text-4xl md:text-6xl font-serif font-bold tracking-tight mb-4">
+      Welcome back, {{ currentUser?.name || 'User' }}
+    </h1>
+    <p class="text-lg text-gray-500 max-w-2xl">
+      Manage your multi‑cloud infrastructure from one unified dashboard.
+    </p>
+  </div>
+
+  <!-- Metrics Cards (Stats) -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+    <div *ngFor="let metric of metrics" class="border border-gray-200 p-6 text-center hover:shadow-lg transition card-hover">
+      <div class="text-4xl md:text-5xl font-serif font-bold text-black mb-2 tracking-tight">
+        {{ metric.value }}
+      </div>
+      <div class="text-sm uppercase tracking-widest text-gray-500">
+        {{ metric.label }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Services Section -->
+  <div class="mb-16">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-3xl md:text-4xl font-serif font-bold">Your Services</h2>
+      <a routerLink="/services/new" class="btn">+ Add New Service</a>
+    </div>
+
+    <div *ngIf="services.length === 0; else servicesGrid" class="text-center py-20 border border-gray-200 bg-gray-50">
+      <p class="text-gray-500 text-lg">You haven't added any services yet.</p>
+      <a routerLink="/services/new" class="btn mt-4">Get Started</a>
+    </div>
+
+    <ng-template #servicesGrid>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div *ngFor="let service of services" class="border border-gray-200 p-6 hover:shadow-lg transition card-hover">
+          <div class="flex items-start justify-between mb-4">
+            <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+              <img [src]="service.icon" [alt]="service.title" class="w-6 h-6">
+            </div>
+            <span [class]="'text-xs uppercase tracking-wider px-2 py-1 rounded ' + getStatusClass(service.status)">
+              {{ service.status }}
+            </span>
+          </div>
+          <h3 class="text-xl font-serif font-bold mb-2">{{ service.title }}</h3>
+          <p class="text-gray-500 text-sm">{{ service.description }}</p>
+          <div class="mt-4 text-xs uppercase tracking-widest text-gray-400">
+            Cloud: {{ service.cloud }}
+          </div>
+          <div class="mt-4 flex gap-2">
+            <a [routerLink]="['/services', service.id]" class="text-sm text-black border-b border-black hover:border-gray-400">Manage</a>
+            <a [routerLink]="['/services', service.id, 'logs']" class="text-sm text-gray-500 border-b border-gray-300 hover:border-black">Logs</a>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Recent Activity Section (optional) -->
+  <div class="border-t border-gray-200 pt-16">
+    <h2 class="text-3xl md:text-4xl font-serif font-bold mb-8">Recent Activity</h2>
+    <div class="space-y-4">
+      <div class="flex items-center gap-4 border-b border-gray-200 pb-4">
+        <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-sm">K8s</div>
+        <div class="flex-1">
+          <p class="font-medium">Kubernetes cluster scaled to 5 nodes</p>
+          <p class="text-xs text-gray-500">2 hours ago</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 border-b border-gray-200 pb-4">
+        <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-sm">Cost</div>
+        <div class="flex-1">
+          <p class="font-medium">Cost optimization report generated</p>
+          <p class="text-xs text-gray-500">Yesterday</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-sm">Sec</div>
+        <div class="flex-1">
+          <p class="font-medium">Security scan completed – no critical issues</p>
+          <p class="text-xs text-gray-500">3 days ago</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

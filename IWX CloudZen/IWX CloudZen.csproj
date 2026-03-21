@@ -20,13 +20,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Authentication\" />
     <Folder Include="Helpers\" />
     <Folder Include="Configurations\" />
     <Folder Include="Middleware\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 
 </Project>

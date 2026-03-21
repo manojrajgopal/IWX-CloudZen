@@ -1,0 +1,45 @@
+[
+  {
+    "id": 1,
+    "title": "Kubernetes Manager",
+    "description": "Deploy and scale containers across clouds.",
+    "icon": "https://plus.unsplash.com/premium_photo-1673485529863-13770222fe0f",
+    "category": "Orchestration",
+    "clouds": ["AWS", "Azure", "GCP"]
+  },
+  {
+    "id": 2,
+    "title": "Serverless Framework",
+    "description": "Build and deploy serverless apps effortlessly.",
+    "icon": "https://plus.unsplash.com/premium_photo-1736517545207-6a147b76c9b0",
+    "category": "Serverless"
+  },
+  {
+    "id": 3,
+    "title": "Multi‑Cloud Storage",
+    "description": "Unified storage with tiering and backup.",
+    "icon": "https://images.unsplash.com/photo-1628313348684-5d75dd67e7c8",
+    "category": "Storage"
+  },
+  {
+    "id": 4,
+    "title": "Cloud Cost Optimizer",
+    "description": "Reduce cloud spend with AI recommendations.",
+    "icon": "https://plus.unsplash.com/premium_photo-1772987698999-312c441f3d6d",
+    "category": "FinOps"
+  },
+  {
+    "id": 5,
+    "title": "AI/ML Platform",
+    "description": "Train and deploy models across clouds.",
+    "icon": "https://plus.unsplash.com/premium_photo-1676637656166-cb7b3a43b81a",
+    "category": "AI/ML"
+  },
+  {
+    "id": 6,
+    "title": "Security Posture Manager",
+    "description": "Continuous compliance and threat detection.",
+    "icon": "https://plus.unsplash.com/premium_photo-1739371779873-32e0e3d224ee",
+    "category": "Security"
+  }
+]

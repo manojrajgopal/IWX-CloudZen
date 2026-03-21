@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Rahul Sharma",
+    "location": "Bangalore",
+    "text": "IWX CloudZen saved us 30% on cloud costs in the first month! The dashboard is incredibly intuitive.",
+    "rating": 5,
+    "image": "https://randomuser.me/api/portraits/men/1.jpg"
+  },
+  {
+    "id": 2,
+    "name": "Priya Patel",
+    "location": "Mumbai",
+    "text": "The unified view across AWS and Azure is a game changer. No more switching between consoles.",
+    "rating": 5,
+    "image": "https://randomuser.me/api/portraits/women/2.jpg"
+  },
+  {
+    "id": 3,
+    "name": "Amit Verma",
+    "location": "Delhi",
+    "text": "Deployment automation and security monitoring are top-notch. Highly recommended.",
+    "rating": 4,
+    "image": "https://randomuser.me/api/portraits/men/3.jpg"
+  }
+]

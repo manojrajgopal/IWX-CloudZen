@@ -1,0 +1,20 @@
+<section class="py-24 bg-gray-50">
+  <div class="container-lux">
+    <div class="text-center mb-16">
+      <h2 class="text-3xl md:text-5xl mb-4">Popular Clouds</h2>
+      <p class="text-gray-500">Discover tools optimized for your cloud provider</p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <a *ngFor="let cloud of clouds" routerLink="/dashboard" class="group relative overflow-hidden aspect-[3/4]">
+        <div class="img-zoom w-full h-full">
+          <img [src]="cloud.image" [alt]="cloud.name" class="w-full h-full object-cover">
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+        <div class="absolute bottom-0 left-0 right-0 p-4 text-white">
+          <h3 class="text-xl font-serif font-bold">{{ cloud.name }}</h3>
+          <p class="text-sm text-gray-200">{{ cloud.count }} services</p>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
