@@ -14,14 +14,17 @@
     <!-- Desktop Auth -->
     <div class="hidden md:flex items-center space-x-6">
       <ng-container *ngIf="currentUser; else authButtons">
-        <div class="relative">
-          <button class="flex items-center gap-2 nav-link" (click)="toggleProfileDropdown = !toggleProfileDropdown">
+        <div class="relative" (click)="$event.stopPropagation()">
+          <button class="flex items-center gap-2 nav-link" (click)="onProfileButtonClick()">
             <div class="w-8 h-8 bg-black text-white flex items-center justify-center rounded-full text-sm">
               {{ (currentUser.name?.charAt(0) || 'U') | uppercase }}
             </div>
             <span>Profile</span>
           </button>
-          <div *ngIf="toggleProfileDropdown" class="absolute right-0 mt-2 w-56 bg-white shadow-lg py-2 animate-fadeIn">
+          <div [hidden]="!toggleProfileDropdown && !dropdownClosing"
+               [class.animate-fadeIn]="toggleProfileDropdown && !dropdownClosing"
+               [class.animate-fadeOut]="dropdownClosing"
+               class="absolute right-0 mt-2 w-56 bg-white shadow-lg py-2">
             <a routerLink="/profile" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100">Profile</a>
             <button (click)="logout()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-100">Logout</button>
           </div>

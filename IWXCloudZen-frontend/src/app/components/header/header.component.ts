@@ -14,6 +14,7 @@ export class HeaderComponent implements OnInit {
   scrolled = false;
   mobileMenuOpen = false;
   toggleProfileDropdown = false;
+  dropdownClosing = false;
   currentUser: any = null;
 
   constructor(private authService: AuthService) {}
@@ -25,6 +26,29 @@ export class HeaderComponent implements OnInit {
   @HostListener('window:scroll', [])
   onWindowScroll() {
     this.scrolled = window.scrollY > 50;
+  }
+
+  @HostListener('document:click')
+  onDocumentClick() {
+    this.closeProfileDropdown();
+  }
+
+  onProfileButtonClick() {
+    if (this.toggleProfileDropdown) {
+      this.closeProfileDropdown();
+    } else {
+      this.dropdownClosing = false;
+      this.toggleProfileDropdown = true;
+    }
+  }
+
+  closeProfileDropdown() {
+    if (!this.toggleProfileDropdown || this.dropdownClosing) return;
+    this.dropdownClosing = true;
+    setTimeout(() => {
+      this.toggleProfileDropdown = false;
+      this.dropdownClosing = false;
+    }, 200);
   }
 
   toggleMobileMenu() {
