@@ -1,0 +1,14 @@
+<section class="py-24 bg-white border-y border-gray-200">
+  <div class="container-lux">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-8">
+      <div *ngFor="let stat of stats" class="text-center md:text-left">
+        <div class="text-5xl md:text-6xl font-serif font-bold text-black mb-2 tracking-tight">
+          {{ stat.value }}
+        </div>
+        <div class="text-sm uppercase tracking-widest text-gray-500">
+          {{ stat.label }}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

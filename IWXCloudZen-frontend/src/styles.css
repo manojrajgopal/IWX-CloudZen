@@ -1,0 +1,233 @@
+@import 'tailwindcss';
+
+/* ---------- DESIGN TOKENS ---------- */
+:root {
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-gray-100: #f7f7f7;
+  --color-gray-300: #e5e5e5;
+  --color-gray-500: #9e9e9e;
+  --color-gray-700: #616161;
+  --color-gray-900: #212121;
+
+  --font-serif: 'Playfair Display', serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  --space-unit: 0.25rem;
+  --space-xs: calc(var(--space-unit) * 2);
+  --space-sm: calc(var(--space-unit) * 4);
+  --space-md: calc(var(--space-unit) * 6);
+  --space-lg: calc(var(--space-unit) * 8);
+  --space-xl: calc(var(--space-unit) * 12);
+  --space-2xl: calc(var(--space-unit) * 16);
+}
+
+/* ---------- BASE STYLES ---------- */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-gray-900);
+  background-color: var(--color-white);
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+p {
+  font-family: var(--font-sans);
+  font-weight: 300;
+  color: var(--color-gray-700);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.7;
+}
+
+/* Luxury underline animation for nav links */
+.nav-link {
+  position: relative;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+  padding: var(--space-xs) 0;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: var(--color-black);
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Container */
+.container-lux {
+  max-width: 1440px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-lg);
+  padding-right: var(--space-lg);
+}
+
+@media (max-width: 768px) {
+  .container-lux {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.875rem;
+  padding: var(--space-sm) var(--space-lg);
+  border: 1px solid var(--color-black);
+  background: transparent;
+  color: var(--color-black);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn:hover {
+  background: var(--color-black);
+  color: var(--color-white);
+  border-color: var(--color-black);
+}
+
+.btn--white {
+  border-color: var(--color-white);
+  color: var(--color-white);
+}
+
+.btn--white:hover {
+  background: var(--color-white);
+  color: var(--color-black);
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.card-hover:hover {
+  transform: scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Image zoom container */
+.img-zoom {
+  overflow: hidden;
+}
+
+.img-zoom img {
+  transition: transform 0.6s ease;
+}
+
+.img-zoom:hover img {
+  transform: scale(1.05);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slideDown {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-gray-100);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-gray-400);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}

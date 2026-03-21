@@ -1,0 +1,79 @@
+<header [class]="scrolled ? 'bg-white py-4 shadow-sm' : 'bg-transparent py-6'" class="fixed top-0 left-0 w-full z-50 transition-all duration-300">
+  <div class="container-lux flex items-center justify-between">
+    <!-- Logo -->
+    <a routerLink="/" class="text-2xl font-serif font-bold tracking-tighter">IWX CloudZen</a>
+
+    <!-- Desktop Navigation -->
+    <nav class="hidden md:flex items-center space-x-8 lg:space-x-12">
+      <a routerLink="/" routerLinkActive="active" class="nav-link">Home</a>
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+      <a routerLink="/about" class="nav-link">About</a>
+      <a routerLink="/contact" class="nav-link">Contact</a>
+    </nav>
+
+    <!-- Desktop Auth -->
+    <div class="hidden md:flex items-center space-x-6">
+      <ng-container *ngIf="currentUser; else authButtons">
+        <div class="relative">
+          <button class="flex items-center gap-2 nav-link" (click)="toggleProfileDropdown = !toggleProfileDropdown">
+            <div class="w-8 h-8 bg-black text-white flex items-center justify-center rounded-full text-sm">
+              {{ (currentUser.name?.charAt(0) || 'U') | uppercase }}
+            </div>
+            <span>Profile</span>
+          </button>
+          <div *ngIf="toggleProfileDropdown" class="absolute right-0 mt-2 w-56 bg-white shadow-lg py-2 animate-fadeIn">
+            <a routerLink="/profile" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100">Profile</a>
+            <button (click)="logout()" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-100">Logout</button>
+          </div>
+        </div>
+      </ng-container>
+      <ng-template #authButtons>
+        <a routerLink="/login" class="nav-link">Login</a>
+        <a routerLink="/register" class="btn">Sign Up</a>
+      </ng-template>
+    </div>
+
+    <!-- Mobile menu button -->
+    <button class="md:hidden p-2 -mr-2 transition-transform duration-300 ease-in-out" (click)="toggleMobileMenu()">
+      <svg *ngIf="!mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      </svg>
+      <svg *ngIf="mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile menu drawer -->
+  <div *ngIf="mobileMenuOpen" class="fixed inset-0 z-40 md:hidden">
+    <div class="fixed inset-0 bg-black/20 backdrop-blur-md" (click)="closeMobileMenu()"></div>
+    <div class="fixed top-0 right-0 h-screen w-[75vw] max-w-[420px] bg-white z-50 shadow-2xl overflow-y-auto transform transition-transform duration-500 ease-in-out">
+      <div class="pt-6 pb-8 px-6">
+        <div class="flex justify-between items-center mb-8">
+          <span class="text-2xl font-serif font-bold">IWX CloudZen</span>
+          <button (click)="closeMobileMenu()" class="p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <nav class="flex flex-col space-y-6">
+          <a routerLink="/" class="font-serif text-xl font-bold py-2 border-b border-gray-200" (click)="closeMobileMenu()">Home</a>
+          <a routerLink="/dashboard" class="font-serif text-xl font-bold py-2 border-b border-gray-200" (click)="closeMobileMenu()">Dashboard</a>
+          <a routerLink="/about" class="font-serif text-xl font-bold py-2 border-b border-gray-200" (click)="closeMobileMenu()">About</a>
+          <a routerLink="/contact" class="font-serif text-xl font-bold py-2 border-b border-gray-200" (click)="closeMobileMenu()">Contact</a>
+          <div class="pt-6 flex flex-col space-y-4">
+            <ng-container *ngIf="currentUser; else mobileAuthButtons">
+              <a routerLink="/profile" class="nav-link text-center py-3 border border-gray-300 hover:border-black" (click)="closeMobileMenu()">Profile</a>
+              <button (click)="logout()" class="btn text-center">Logout</button>
+            </ng-container>
+            <ng-template #mobileAuthButtons>
+              <a routerLink="/login" class="nav-link text-center py-3 border border-gray-300 hover:border-black" (click)="closeMobileMenu()">Login</a>
+              <a routerLink="/register" class="btn text-center" (click)="closeMobileMenu()">Sign Up</a>
+            </ng-template>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+</header>

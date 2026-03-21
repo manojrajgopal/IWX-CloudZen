@@ -1,13 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
-using Microsoft.Extensions.Validation;
-using System.Runtime.CompilerServices;
 
 // This code is for Migration
 
 namespace IWX_CloudZen.Data
 {
-    public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
+    public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext> // Factory that creates AppDbContext
     {
         public AppDbContext CreateDbContext(string[] args)
         {
@@ -18,11 +16,11 @@ namespace IWX_CloudZen.Data
 
             var connectionString = configuration.GetConnectionString("DefaultConnection");
 
-            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>(); // Preparing database configuration
 
-            optionsBuilder.UseSqlServer(connectionString);
+            optionsBuilder.UseSqlServer(connectionString); // Use SQL Server with this connection string
 
-            return new AppDbContext(optionsBuilder.Options);
+            return new AppDbContext(optionsBuilder.Options); 
         }
     }
 }

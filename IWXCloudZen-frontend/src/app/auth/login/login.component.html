@@ -1,0 +1,44 @@
+<div class="min-h-screen flex items-center justify-center bg-white px-4 py-12">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-10">
+      <h1 class="text-5xl font-serif font-bold tracking-tight text-black">IWX CloudZen</h1>
+      <p class="text-sm text-gray-500 mt-2">Sign in to your account</p>
+    </div>
+
+    <div *ngIf="errorMessage" class="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 text-sm">
+      {{ errorMessage }}
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      <div>
+        <label class="block text-xs uppercase tracking-widest text-gray-500 mb-1">Email</label>
+        <input type="email" formControlName="email"
+               class="w-full border-b border-gray-300 py-3 text-lg focus:outline-none focus:border-black transition-colors"
+               placeholder="you@example.com">
+        <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched" class="text-red-500 text-xs mt-1">
+          Valid email required
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs uppercase tracking-widest text-gray-500 mb-1">Password</label>
+        <input type="password" formControlName="password"
+               class="w-full border-b border-gray-300 py-3 text-lg focus:outline-none focus:border-black transition-colors"
+               placeholder="••••••••">
+        <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched" class="text-red-500 text-xs mt-1">
+          Password must be at least 6 characters
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="loading"
+              class="btn w-full !py-3">
+        {{ loading ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <p class="text-center text-sm text-gray-500 mt-8">
+      Don't have an account?
+      <a routerLink="/register" class="text-black hover:underline">Sign up</a>
+    </p>
+  </div>
+</div>
