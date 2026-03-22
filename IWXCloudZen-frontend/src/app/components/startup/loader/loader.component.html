@@ -1,0 +1,33 @@
+<div class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center animate-fadeIn">
+  <div class="text-center">
+    <!-- Cloud with animated drawing -->
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <path
+          #cloudPath
+          d="M30 40 Q35 30, 45 35 Q50 25, 60 30 Q70 28, 75 35 Q85 38, 80 48 Q88 55, 78 60 Q82 70, 70 68 L45 68 Q35 70, 30 60 Q22 60, 25 50 Q20 45, 30 40Z"
+          fill="none"
+          stroke="#000"
+          stroke-width="2"
+          stroke-linecap="round"
+        />
+        <!-- Wave lines -->
+        <path
+          d="M45 55 Q50 50, 55 55 T65 55"
+          fill="none"
+          stroke="#000"
+          stroke-width="1.5"
+          stroke-dasharray="5,5"
+          class="animate-wave"
+        />
+      </svg>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="w-48 h-1 bg-gray-200 mx-auto mb-4">
+      <div class="h-full bg-black transition-all duration-100" [style.width.%]="progress"></div>
+    </div>
+
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Loading experience...</p>
+  </div>
+</div>
