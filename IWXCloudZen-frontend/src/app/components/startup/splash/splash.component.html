@@ -1,0 +1,13 @@
+<div (click)="handleStart()" class="fixed inset-0 bg-white z-50 flex items-center justify-center text-center cursor-pointer select-none">
+  <div>
+    <div class="mb-6">
+      <div class="text-5xl font-serif font-bold tracking-tight">IWX</div>
+      <div class="text-xs uppercase tracking-widest text-gray-400 mt-1">Since 2025</div>
+    </div>
+    <h1 class="text-2xl font-serif font-bold mb-2">IWX CloudZen</h1>
+    <p class="text-sm text-gray-500">Simplify Multi-Cloud</p>
+  </div>
+  <div [style.opacity]="showMessage ? '1' : '0'" class="absolute bottom-10 left-0 right-0 text-center transition-opacity duration-700 ease-in-out">
+    <p class="text-xs uppercase tracking-widest text-gray-400">Tap anywhere to begin your experience</p>
+  </div>
+</div>
