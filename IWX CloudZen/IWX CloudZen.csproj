@@ -20,6 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="CloudAccounts\Controllers\" />
+    <Folder Include="CloudAccounts\Interfaces\" />
+    <Folder Include="CloudAccounts\DTOs\" />
+    <Folder Include="CloudAccounts\Entities\" />
+    <Folder Include="CloudAccounts\Factory\" />
+    <Folder Include="CloudAccounts\Providers\" />
+    <Folder Include="CloudAccounts\Services\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Authentication\" />
     <Folder Include="Helpers\" />
