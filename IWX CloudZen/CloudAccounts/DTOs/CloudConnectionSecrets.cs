@@ -1,7 +1,9 @@
 ﻿namespace IWX_CloudZen.CloudAccounts.DTOs
 {
-    public class ConnectCloudRequest
+    public class CloudConnectionSecrets
     {
+        public int Id { get; set; }
+        public string UserEmail { get; set; } = string.Empty;
         public string Provider { get; set; } = string.Empty;
         public string AccountName { get; set; } = string.Empty;
 
@@ -13,7 +15,6 @@
         public string? ClientSecret { get; set; }
 
         public string? Region { get; set; }
-
-        public bool MakeDefault { get; set; }
+        public bool IsDefault { get; set; }
     }
 }

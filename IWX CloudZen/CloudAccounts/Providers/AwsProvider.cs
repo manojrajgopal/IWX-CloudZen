@@ -1,43 +1,35 @@
 ﻿using Amazon;
 using Amazon.S3;
+using IWX_CloudZen.CloudAccounts.DTOs;
 using IWX_CloudZen.CloudAccounts.Interfaces;
-using IWX_CloudZen.CloudAccounts.Entities;
 
 namespace IWX_CloudZen.CloudAccounts.Providers
 {
     public class AwsProvider : ICloudProvider
     {
-        public async Task<bool> ValidateConnection(CloudAccount account)
+        public async Task<bool> ValidateConnectionAsync(ConnectCloudRequest request)
         {
+            if (string.IsNullOrWhiteSpace(request.AccessKey) ||
+                string.IsNullOrWhiteSpace(request.SecretKey) ||
+                string.IsNullOrWhiteSpace(request.Region))
+            {
+                return false;
+            }
+
             try
             {
                 var client = new AmazonS3Client(
-                    account.AccessKey,
-                    account.SecretKey,
-                    RegionEndpoint.GetBySystemName(account.Region)
-                );
+                    request.AccessKey,
+                    request.SecretKey,
+                    RegionEndpoint.GetBySystemName(request.Region));
 
-                var buckets = await client.ListBucketsAsync();
-
+                await client.ListBucketsAsync();
                 return true;
             }
             catch
             {
                 return false;
             }
-        }
-
-        public async Task<List<string>> GetStorageList(CloudAccount account)
-        {
-            var client = new AmazonS3Client(
-                account.AccessKey,
-                account.SecretKey,
-                RegionEndpoint.GetBySystemName(account.Region)
-            );
-
-            var result = await client.ListBucketsAsync();
-
-            return result.Buckets.Select(x => x.BucketName).ToList();
         }
     }
 }

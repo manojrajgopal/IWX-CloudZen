@@ -1,49 +1,37 @@
 ﻿using Azure.Identity;
 using Azure.ResourceManager;
+using IWX_CloudZen.CloudAccounts.DTOs;
 using IWX_CloudZen.CloudAccounts.Interfaces;
-using IWX_CloudZen.CloudAccounts.Entities;
 
 namespace IWX_CloudZen.CloudAccounts.Providers
 {
     public class AzureProvider : ICloudProvider
     {
-
-        public async Task<bool>
-        ValidateConnection(CloudAccount account)
+        public async Task<bool> ValidateConnectionAsync(ConnectCloudRequest request)
         {
-
-            try
+            if (string.IsNullOrWhiteSpace(request.TenantId) ||
+                string.IsNullOrWhiteSpace(request.ClientId) ||
+                string.IsNullOrWhiteSpace(request.ClientSecret))
             {
-
-                var credential =
-                new ClientSecretCredential(
-
-                    account.TenantId,
-
-                    account.ClientId,
-
-                    account.ClientSecret
-                );
-
-                var arm =
-                new ArmClient(credential);
-
-                return true;
-
-            }
-            catch
-            {
-
                 return false;
             }
 
-        }
+            try
+            {
+                var credential = new ClientSecretCredential(
+                    request.TenantId,
+                    request.ClientId,
+                    request.ClientSecret);
 
-        public async Task<List<string>>
-        GetStorageList(CloudAccount account)
-        {
-            return new List<string>();
-        }
+                var arm = new ArmClient(credential);
 
+                await Task.CompletedTask;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }
