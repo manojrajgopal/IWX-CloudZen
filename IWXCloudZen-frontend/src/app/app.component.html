@@ -1,5 +1,10 @@
-<app-header></app-header>
-<main class="pt-24 md:pt-28">
+<!-- Fixed startup overlays — sit on top of everything while loading -->
+<app-splash *ngIf="splashShown"></app-splash>
+<app-loader *ngIf="!splashShown && !loadingComplete"></app-loader>
+
+<!-- App shell — always in DOM so Angular router can navigate on boot -->
+<app-header [hidden]="!loadingComplete"></app-header>
+<main class="pt-24 md:pt-28" [hidden]="!loadingComplete">
   <router-outlet></router-outlet>
 </main>
-<app-footer></app-footer>
+<app-footer [hidden]="!loadingComplete"></app-footer>
