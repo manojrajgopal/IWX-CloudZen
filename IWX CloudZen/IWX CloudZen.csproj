@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="CloudStorage\Controllers\" />
+    <Folder Include="CloudStorage\Interfaces\" />
+    <Folder Include="CloudStorage\DTOs\" />
+    <Folder Include="CloudStorage\Services\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Authentication\" />
     <Folder Include="Helpers\" />
