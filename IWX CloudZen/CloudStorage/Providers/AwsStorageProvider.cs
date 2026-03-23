@@ -4,14 +4,14 @@ using Amazon.S3;
 using Amazon;
 using Amazon.S3.Transfer;
 using Amazon.S3.Model;
-using Amazon.Runtime.EventStreams;
 using System.Net.Mime;
+using Amazon.S3.Util;
 
 namespace IWX_CloudZen.CloudStorage.Providers
 {
     public class AwsStorageProvider : IFileStorageProvider
     {
-        public const string bucket = "cloudzen-storage";
+        public const string bucket = "cloudzen-storage-iwx-001";
         public async Task<string> UploadFile(CloudConnectionSecrets account, IFormFile file, string folder)
         {
             try
@@ -50,7 +50,7 @@ namespace IWX_CloudZen.CloudStorage.Providers
 
         private async Task EnsureBucket(AmazonS3Client client, string region)
         {
-            var exists = await client.DoesS3BucketExistAsync(bucket);
+            var exists = await AmazonS3Util.DoesS3BucketExistV2Async(client, bucket);
 
             if (exists)
                 return;
