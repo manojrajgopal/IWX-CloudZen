@@ -7,5 +7,7 @@ namespace IWX_CloudZen.CloudStorage.Interfaces
         Task<string> UploadFile(CloudConnectionSecrets account, IFormFile file, string folder);
 
         Task DeleteFile(CloudConnectionSecrets account, string fileUrl);
+
+        Task<Stream> DownloadFile(CloudConnectionSecrets account, string fileUrl);
     }
 }

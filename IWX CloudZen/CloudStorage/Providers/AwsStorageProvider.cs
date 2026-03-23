@@ -73,5 +73,27 @@ namespace IWX_CloudZen.CloudStorage.Providers
                 throw new Exception("Delete failed: " + ex.Message);
             }
         }
+
+        public async Task<Stream> DownloadFile(CloudConnectionSecrets account, string fileUrl)
+        {
+            try
+            {
+                var client = new AmazonS3Client(account.AccessKey, account.SecretKey, RegionEndpoint.GetBySystemName(account.Region));
+
+                var response = await client.GetObjectAsync(bucket, fileUrl);
+
+                var memory = new MemoryStream();
+
+                await response.ResponseStream.CopyToAsync(memory);
+
+                memory.Position = 0;
+
+                return memory;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Download failed: " + ex.Message);
+            }
+        }
     }
 }

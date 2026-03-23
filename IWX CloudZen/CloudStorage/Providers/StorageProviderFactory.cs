@@ -9,6 +9,9 @@ namespace IWX_CloudZen.CloudStorage.Providers
             return provider switch
             {
                 "AWS" => new AwsStorageProvider(),
+
+                "AZURE" => new AzureStorageProvider(),
+
                 _ => throw new Exception("Provider not supported")
             };
         }
