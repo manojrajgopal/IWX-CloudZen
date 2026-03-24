@@ -1,0 +1,7 @@
+{
+    "name" : "python-test-app",
+    "type" : "container",
+    "runtime" : "python",
+    "port" : 5000,
+    "health" : "/health"
+}
