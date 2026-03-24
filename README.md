@@ -42,7 +42,6 @@
 
 ### Under Development Features
 
-1. Cloud File Storage Manager
 2. Multi-Cloud Backup System
 3. Cloud Cost Monitoring Dashboard
 4. Cloud Log Monitoring System
@@ -81,3 +80,5 @@
 ---
 
 ### Developed Features
+
+1. Cloud File Storage Manager
