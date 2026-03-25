@@ -9,6 +9,7 @@ using IWX_CloudZen.CloudAccounts.Interfaces;
 using IWX_CloudZen.CloudStorage.Services;
 using IWX_CloudZen.CloudDeployments.Services;
 using IWX_CloudZen.CloudServiceCreation.Services;
+using IWX_CloudZen.CloudDeployments.Pipeline;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,9 @@ builder.Services.AddScoped<ICloudSecretProtector, CloudSecretProtector>();
 builder.Services.AddScoped<CloudFileService>();
 builder.Services.AddScoped<CloudDeploymentService>();
 builder.Services.AddScoped<CloudInfrastructureService>();
+builder.Services.AddScoped<DockerBuilder>();
+builder.Services.AddScoped<EcrPushService>();
+builder.Services.AddScoped<DeploymentPipeline>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

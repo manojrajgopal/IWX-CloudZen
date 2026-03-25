@@ -43,6 +43,21 @@ namespace IWX_CloudZen.CloudDeployments.Services
             return entity;
         }
 
+        public async Task Stop(string user, int id)
+        {
+            var dep = _context.CloudDeployments.First(x => x.Id == id);
+
+            var account = await _accounts.ResolveCredentialsAsync(user, dep.CloudAccountId);
+
+            var provider = DeploymentProviderFactory.Get(dep.Provider);
+
+            await provider.Stop(account, dep.Name);
+
+            dep.Status = "Stoped";
+
+            await _context.SaveChangesAsync();
+        }
+
         public List<CloudDeployment> GetDeployments(string user)
         {
             return _context.CloudDeployments.Where(x => x.UploadedBy == user).OrderByDescending(x =>  x.CreatedAt).ToList();

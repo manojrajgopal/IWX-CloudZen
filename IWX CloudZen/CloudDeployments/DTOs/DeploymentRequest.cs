@@ -5,6 +5,7 @@
         public string Name { get; set; }
         public string DeploymentType { get; set; } // Container | Python | API | WebApp
         public int CloudAccountId { get; set; }
+        public string? GitRepository { get; set; }
         public IFormFile Package { get; set; }
     }
 }
