@@ -7,6 +7,7 @@ using IWX_CloudZen.Services;
 using IWX_CloudZen.CloudAccounts.Services;
 using IWX_CloudZen.CloudAccounts.Interfaces;
 using IWX_CloudZen.CloudStorage.Services;
+using IWX_CloudZen.CloudServiceCreation.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,7 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<CloudAccountService>();
 builder.Services.AddScoped<ICloudSecretProtector, CloudSecretProtector>();
 builder.Services.AddScoped<CloudFileService>();
+builder.Services.AddScoped<CloudInfrastructureService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
