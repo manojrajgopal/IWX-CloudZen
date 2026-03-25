@@ -71,3 +71,5 @@ Thumbs.db
 cache
 
 dist
+
+*.zip

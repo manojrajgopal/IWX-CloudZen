@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AWSSDK.CloudWatchLogs" Version="4.0.15.3" />
+    <PackageReference Include="AWSSDK.ECR" Version="4.0.12.1" />
+    <PackageReference Include="AWSSDK.ECS" Version="4.0.15.1" />
+    <PackageReference Include="AWSSDK.IdentityManagement" Version="4.0.9.11" />
     <PackageReference Include="AWSSDK.S3" Version="4.0.19.1" />
     <PackageReference Include="Azure.Identity" Version="1.19.0" />
     <PackageReference Include="Azure.ResourceManager" Version="1.14.0" />
@@ -24,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="CloudServiceCreation\DTOs\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Authentication\" />
     <Folder Include="Helpers\" />
