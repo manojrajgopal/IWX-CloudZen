@@ -39,61 +39,6 @@ namespace IWX_CloudZen.CloudDeployments.Pipeline
             File.WriteAllText(Path.Combine(root, "Dockerfile"), content);
         }
 
-        private static async Task EnsureDockerRunning()
-        {
-            static async Task<bool> TryDockerInfoAsync()
-            {
-                var psi = new ProcessStartInfo
-                {
-                    FileName = "docker",
-                    Arguments = "info",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using var process = Process.Start(psi);
-                if (process == null)
-                    return false;
-
-                await process.WaitForExitAsync();
-                return process.ExitCode == 0;
-            }
-
-            if (await TryDockerInfoAsync())
-                return;
-
-            var possiblePaths = new[]
-            {
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Docker", "Docker", "Docker Desktop.exe"),
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Docker", "Docker", "Docker Desktop.exe")
-            };
-
-            var dockerDesktop = possiblePaths.FirstOrDefault(File.Exists);
-
-            if (dockerDesktop == null)
-                throw new Exception("Docker Desktop is not installed.");
-
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = dockerDesktop,
-                UseShellExecute = true
-            });
-
-            var timeout = DateTime.UtcNow.AddMinutes(2);
-
-            while (DateTime.UtcNow < timeout)
-            {
-                await Task.Delay(3000);
-
-                if (await TryDockerInfoAsync())
-                    return;
-            }
-
-            throw new Exception("Docker Desktop started, but Docker engine is still not ready.");
-        }
-
         private static async Task RunProcessAsync(string fileName, string arguments, string? stdin = null)
         {
             var psi = new ProcessStartInfo
@@ -130,7 +75,7 @@ namespace IWX_CloudZen.CloudDeployments.Pipeline
         {
             var region = RegionEndpoint.GetBySystemName(account.Region);
             var ecr = new AmazonECRClient(account.AccessKey, account.SecretKey, region);
-            var sts = new AmazonSecurityTokenServiceClient(account.AccessKey, account.SecretKey, region);
+            // var sts = new AmazonSecurityTokenServiceClient(account.AccessKey, account.SecretKey, region);
 
             var repoName = NormalizeAwsName(appName);
 
@@ -174,7 +119,7 @@ namespace IWX_CloudZen.CloudDeployments.Pipeline
             }
 
             var localTag = $"iwx-{repoName}:latest";
-            await EnsureDockerRunning();
+            // await EnsureDockerRunning();
             await RunProcessAsync("docker", $"build -t {localTag} \"{buildRoot}\"");
 
             var auth = await ecr.GetAuthorizationTokenAsync(new GetAuthorizationTokenRequest());

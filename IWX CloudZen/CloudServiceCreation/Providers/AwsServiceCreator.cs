@@ -514,7 +514,7 @@ namespace IWX_CloudZen.CloudServiceCreation.Providers
             var subnetIds = await EnsurePublicSubnetsAsync(vpcId, safe);
             var sgId = await EnsureSecurityGroupAsync(vpcId, safe);
             var clusterName = await EnsureClusterAsync(safe);
-            var roleArn = await EnsureExecutionRoleAsync(safe);
+            var roleArn = await EnsureExecutionRoleAsync(accountId);
             var logGroupName = await EnsureLogGroupAsync(safe);
             var targetGroupArn = await EnsureTargetGroupAsync(vpcId, safe);
             var lb = await EnsureLoadBalancerAsync(subnetIds, sgId, safe);
@@ -528,7 +528,8 @@ namespace IWX_CloudZen.CloudServiceCreation.Providers
                 SecurityGroupId = sgId,
                 ClusterName = clusterName,
                 LoadBalancerArn = lb.LoadBalancers[0].LoadBalancerArn,
-                LoadBalancerDnsName = targetGroupArn,
+                LoadBalancerDnsName = lb.LoadBalancers[0].DNSName,
+                TargetGroupArn = targetGroupArn,
                 ExecutionRoleArn = roleArn,
                 LogGroupName = logGroupName,
             };
