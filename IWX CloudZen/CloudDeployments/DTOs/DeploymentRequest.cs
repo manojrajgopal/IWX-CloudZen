@@ -7,5 +7,7 @@
         public int CloudAccountId { get; set; }
         public string? GitRepository { get; set; }
         public IFormFile Package { get; set; }
+        public string? Branch { get; set; }
+        public bool AutoDeploy { get; set;  }
     }
 }

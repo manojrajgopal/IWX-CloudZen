@@ -10,6 +10,8 @@ using IWX_CloudZen.CloudStorage.Services;
 using IWX_CloudZen.CloudDeployments.Services;
 using IWX_CloudZen.CloudServiceCreation.Services;
 using IWX_CloudZen.CloudDeployments.Pipeline;
+using IWX_CloudZen.CloudDeployments.Logs;
+using IWX_CloudZen.CloudDeployments.Health;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +35,8 @@ builder.Services.AddScoped<CloudInfrastructureService>();
 builder.Services.AddScoped<DockerBuilder>();
 builder.Services.AddScoped<EcrPushService>();
 builder.Services.AddScoped<DeploymentPipeline>();
+builder.Services.AddScoped<CloudWatchService>();
+builder.Services.AddScoped<DeploymentHealthService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

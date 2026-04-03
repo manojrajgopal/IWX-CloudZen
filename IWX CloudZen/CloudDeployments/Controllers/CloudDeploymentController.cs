@@ -20,18 +20,21 @@ namespace IWX_CloudZen.CloudDeployments.Controllers
         [Authorize]
         public async Task<IActionResult> Deploy([FromForm] DeploymentRequest request)
         {
-            try
-            {
+            //try
+            //{
+                if (request.Package == null || request.Package.Length == 0)
+                    return BadRequest("Package file is required.");
+
                 var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
 
                 var result = await _service.Deploy(user, request.Name, request.DeploymentType, request.CloudAccountId, request.Package);
 
                 return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Failed to Deploy: " + ex.Message);
-            }
+            //}
+            //catch (Exception ex)
+            //{
+            //    return BadRequest("Failed to Deploy: " + ex.Message);
+            //}
         }
 
         [HttpGet]
@@ -92,7 +95,9 @@ namespace IWX_CloudZen.CloudDeployments.Controllers
         {
             try
             {
-                return Ok("Restarted...");
+                var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                await _service.Restart(user!, id);
+                return Ok("Restarted");
             }
             catch (Exception ex)
             {

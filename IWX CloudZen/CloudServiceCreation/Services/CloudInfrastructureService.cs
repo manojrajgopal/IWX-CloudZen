@@ -1,5 +1,6 @@
-﻿using IWX_CloudZen.CloudServiceCreation.Factory;
-using IWX_CloudZen.CloudAccounts.Services;
+﻿using IWX_CloudZen.CloudAccounts.Services;
+using IWX_CloudZen.CloudServiceCreation.Factory;
+using IWX_CloudZen.CloudServiceCreation.Providers;
 
 namespace IWX_CloudZen.CloudServiceCreation.Services
 {
@@ -14,13 +15,12 @@ namespace IWX_CloudZen.CloudServiceCreation.Services
 
         public async Task<string> SetupAwsInfrastructure(string user, int accountId)
         {
-            var account = await _accounts.ResolveCredentialsAsync(user, accountId);
+            var account = await _accounts.ResolveCredentialsAsync(user, accountId) ?? throw new Exception("Cloud account not found.");
 
-            var provider = ServiceFactory.Get(account.Provider);
+            var creator = new AwsServiceCreator();
+            var infra = await creator.EnsureInfrastructureAsync(account, account.AccountName);
 
-            var cluster = await provider.CreateCluster(account);
-
-            return "Cluster Ready: " + cluster;
+            return $"AWS infrastructure ready. VPC={infra.VpcId}, Cluster={infra.ClusterName}, ALB={infra.LoadBalancerDnsName}";
         }
     }
 }

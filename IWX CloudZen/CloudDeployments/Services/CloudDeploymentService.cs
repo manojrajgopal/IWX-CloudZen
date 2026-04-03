@@ -18,11 +18,11 @@ namespace IWX_CloudZen.CloudDeployments.Services
 
         public async Task<CloudDeployment> Deploy(string user, string name, string type, int accountId, IFormFile package)
         {
-            var account = await _accounts.ResolveCredentialsAsync(user, accountId);
+            var account = await _accounts.ResolveCredentialsAsync(user, accountId) ?? throw new Exception("Cloud account not found.");
 
             var provider = DeploymentProviderFactory.Get(account.Provider);
 
-            var status = await provider.Deploy(account, package, name);
+            var result = await provider.Deploy(account, package, name, type);
 
             var entity = new CloudDeployment
             {
@@ -30,11 +30,19 @@ namespace IWX_CloudZen.CloudDeployments.Services
                 Provider = account.Provider,
                 DeploymentType = type,
                 CloudAccountId = accountId,
-                Status = status,
+                Status = result.Status,
+                ImageUrl = result.ImageUrl,
+                ServiceName = result.ServiceName,
+                ClusterName = result.ClusterName,
+                HealthUrl = result.HealthUrl,
+                LogsGroup = result.LogsGroup,
                 PackagePath = package.FileName,
                 UploadedBy = user,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                LastUpdated = DateTime.UtcNow
             };
+
+            // entity.HealthUrl = "http://" + serviceUrl;
 
             _context.CloudDeployments.Add(entity);
 
@@ -47,14 +55,28 @@ namespace IWX_CloudZen.CloudDeployments.Services
         {
             var dep = _context.CloudDeployments.First(x => x.Id == id);
 
-            var account = await _accounts.ResolveCredentialsAsync(user, dep.CloudAccountId);
+            var account = await _accounts.ResolveCredentialsAsync(user, dep.CloudAccountId) ?? throw new Exception("Cloud account not found."); ;
 
             var provider = DeploymentProviderFactory.Get(dep.Provider);
 
             await provider.Stop(account, dep.Name);
 
             dep.Status = "Stoped";
+            dep.LastUpdated = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
 
+        public async Task Restart(string user, int id)
+        {
+            var dep = _context.CloudDeployments.First(x => x.Id == id);
+            var account = await _accounts.ResolveCredentialsAsync(user, dep.CloudAccountId)
+                ?? throw new Exception("Cloud account not found.");
+
+            var provider = DeploymentProviderFactory.Get(dep.Provider);
+            await provider.Restart(account, dep.Name);
+
+            dep.Status = "Running";
+            dep.LastUpdated = DateTime.UtcNow;
             await _context.SaveChangesAsync();
         }
 
