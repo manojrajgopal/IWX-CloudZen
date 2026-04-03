@@ -1,4 +1,4 @@
-﻿namespace IWX_CloudZen.DTOs.Auth
+﻿namespace IWX_CloudZen.Authentication.DTOs.Auth
 {
     public class RegisterRequest
     {
