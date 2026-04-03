@@ -1,4 +1,4 @@
-﻿namespace IWX_CloudZen.Models.Entities
+﻿namespace IWX_CloudZen.Authentication.Models.Entities
 {
     public class User
     {

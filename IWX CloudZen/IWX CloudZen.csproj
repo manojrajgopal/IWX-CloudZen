@@ -29,11 +29,6 @@
 
   <ItemGroup>
     <Folder Include="CloudServiceCreation\DTOs\" />
-    <Folder Include="Interfaces\" />
-    <Folder Include="Authentication\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Configurations\" />
-    <Folder Include="Middleware\" />
   </ItemGroup>
 
 </Project>

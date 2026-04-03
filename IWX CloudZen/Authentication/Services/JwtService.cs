@@ -1,10 +1,10 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using IWX_CloudZen.Models.Entities;
+using IWX_CloudZen.Authentication.Models.Entities;
 
-namespace IWX_CloudZen.Services
+namespace IWX_CloudZen.Authentication.Services
 {
     public class JwtService
     {

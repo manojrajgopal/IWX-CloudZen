@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using IWX_CloudZen.Models.Entities;
+using IWX_CloudZen.Authentication.Models.Entities;
 using IWX_CloudZen.CloudAccounts.Entities;
 using IWX_CloudZen.CloudStorage.Entities;
 
