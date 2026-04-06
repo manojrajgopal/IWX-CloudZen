@@ -1,5 +1,6 @@
 using IWX_CloudZen.CloudAccounts.Services;
-using IWX_CloudZen.CloudServices.Cluster.Providers;
+using IWX_CloudZen.CloudServices.Cluster.DTOs;
+using IWX_CloudZen.CloudServices.Cluster.Factory;
 
 namespace IWX_CloudZen.CloudServices.Cluster.Services
 {
@@ -12,15 +13,24 @@ namespace IWX_CloudZen.CloudServices.Cluster.Services
             _accounts = accounts;
         }
 
-        public async Task<string> SetupAwsInfrastructure(string user, int accountId)
+        public async Task<ClusterListResponse> ListAwsClusters(string user, int accountId)
         {
-            var account = await _accounts.ResolveCredentialsAsync(user, accountId);
+            var account = await _accounts.ResolveCredentialsAsync(user, accountId)
+                ?? throw new InvalidOperationException("Cloud account not found.");
 
-            var provider = ClusterProviderFactory.Get(account.Provider);
+            var provider = ClusterProviderFactory.Get(account.Provider ?? throw new InvalidOperationException("Cloud provider is not set."));
 
-            var cluster = await provider.CreateCluster(account);
+            return await provider.ListClusters(account);
+        }
 
-            return "Cluster Ready: " + cluster;
+        public async Task<ClusterResponse> SetupAwsInfrastructure(string user, int accountId, string clusterName)
+        {
+            var account = await _accounts.ResolveCredentialsAsync(user, accountId)
+                ?? throw new InvalidOperationException("Cloud account not found.");
+
+            var provider = ClusterProviderFactory.Get(account.Provider ?? throw new InvalidOperationException("Cloud provider is not set."));
+
+            return await provider.CreateCluster(account, clusterName);
         }
     }
 }

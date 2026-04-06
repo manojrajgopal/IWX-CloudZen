@@ -1,4 +1,5 @@
 using IWX_CloudZen.CloudServices.Cluster.Interfaces;
+using IWX_CloudZen.CloudServices.Cluster.DTOs;
 using Amazon;
 using Amazon.ECS;
 using Amazon.ECS.Model;
@@ -13,22 +14,29 @@ namespace IWX_CloudZen.CloudServices.Cluster.Providers
             return new AmazonECSClient(account.AccessKey, account.SecretKey, RegionEndpoint.GetBySystemName(account.Region));
         }
 
-        public async Task<string> CreateCluster(CloudConnectionSecrets account)
+        public async Task<ClusterListResponse> ListClusters(CloudConnectionSecrets account)
         {
             var client = GetClient(account);
 
-            var name = "iwx-cluster";
+            var response = await client.ListClustersAsync(new ListClustersRequest());
+
+            return new ClusterListResponse { ClusterArns = response.ClusterArns };
+        }
+
+        public async Task<ClusterResponse> CreateCluster(CloudConnectionSecrets account, string clusterName)
+        {
+            var client = GetClient(account);
 
             var clusters = await client.ListClustersAsync(new ListClustersRequest());
 
-            if (clusters.ClusterArns.Any(x => x.Contains(name)))
-                return name;
+            if (clusters.ClusterArns.Any(x => x.Contains(clusterName)))
+                return new ClusterResponse { Name = clusterName, Status = "Already Exists" };
 
-            var request = new CreateClusterRequest { ClusterName = name };
+            var request = new Amazon.ECS.Model.CreateClusterRequest { ClusterName = clusterName };
 
             await client.CreateClusterAsync(request);
 
-            return name;
+            return new ClusterResponse { Name = clusterName, Status = "Created" };
         }
 
         public async Task<string> CreateTaskDefinition(CloudConnectionSecrets account, string image)

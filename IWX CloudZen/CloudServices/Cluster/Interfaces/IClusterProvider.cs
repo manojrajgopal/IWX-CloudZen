@@ -1,10 +1,13 @@
 using IWX_CloudZen.CloudAccounts.DTOs;
+using IWX_CloudZen.CloudServices.Cluster.DTOs;
 
 namespace IWX_CloudZen.CloudServices.Cluster.Interfaces
 {
     public interface IClusterProvider
     {
-        Task<string> CreateCluster(CloudConnectionSecrets account);
+        Task<ClusterListResponse> ListClusters(CloudConnectionSecrets account);
+
+        Task<ClusterResponse> CreateCluster(CloudConnectionSecrets account, string clusterName);
 
         Task<string> CreateTaskDefinition(CloudConnectionSecrets account, string image);
 
