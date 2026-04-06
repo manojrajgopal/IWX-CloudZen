@@ -1,11 +1,9 @@
-﻿namespace IWX_CloudZen.CloudServiceCreation.DTOs
+namespace IWX_CloudZen.CloudServices.CloudStorage.DTOs
 {
     public class S3BucketCreateRequest
     {
         public int CloudAccountId { get; set; }
 
         public string BucketName { get; set; } = null!;
-
-        //public string Region { get; set; } = null!;
     }
 }

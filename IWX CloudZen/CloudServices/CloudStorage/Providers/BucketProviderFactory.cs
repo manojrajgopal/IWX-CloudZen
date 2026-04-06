@@ -1,9 +1,8 @@
-﻿using IWX_CloudZen.CloudServiceCreation.Interfaces;
-using IWX_CloudZen.CloudServiceCreation.Providers;
+using IWX_CloudZen.CloudServices.CloudStorage.Interfaces;
 
-namespace IWX_CloudZen.CloudServiceCreation.Factory
+namespace IWX_CloudZen.CloudServices.CloudStorage.Providers
 {
-    public class StorageServiceFactory
+    public class BucketProviderFactory
     {
         public static IStorageInfrastructure Get(string provider)
         {

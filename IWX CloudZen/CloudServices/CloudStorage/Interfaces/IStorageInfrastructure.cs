@@ -1,6 +1,6 @@
-﻿using IWX_CloudZen.CloudAccounts.DTOs;
+using IWX_CloudZen.CloudAccounts.DTOs;
 
-namespace IWX_CloudZen.CloudServiceCreation.Interfaces
+namespace IWX_CloudZen.CloudServices.CloudStorage.Interfaces
 {
     public interface IStorageInfrastructure
     {

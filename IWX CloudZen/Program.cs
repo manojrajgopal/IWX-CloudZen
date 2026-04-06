@@ -2,8 +2,8 @@ using IWX_CloudZen.Authentication.Interfaces;
 using IWX_CloudZen.Authentication.Services;
 using IWX_CloudZen.CloudAccounts.Interfaces;
 using IWX_CloudZen.CloudAccounts.Services;
-using IWX_CloudZen.CloudServiceCreation.Services;
-using IWX_CloudZen.CloudStorage.Services;
+using IWX_CloudZen.CloudServices.CloudStorage.Services;
+using IWX_CloudZen.CloudServices.Cluster.Services;
 using IWX_CloudZen.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +28,8 @@ builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<CloudAccountService>();
 builder.Services.AddScoped<ICloudSecretProtector, CloudSecretProtector>();
 builder.Services.AddScoped<CloudFileService>();
-builder.Services.AddScoped<CloudInfrastructureService>();
+builder.Services.AddScoped<CloudStorageBucketService>();
+builder.Services.AddScoped<ClusterService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

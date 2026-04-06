@@ -1,4 +1,4 @@
-﻿namespace IWX_CloudZen.CloudStorage.Entities
+namespace IWX_CloudZen.CloudServices.CloudStorage.Entities
 {
     public class CloudFile
     {

@@ -1,6 +1,6 @@
-﻿using IWX_CloudZen.CloudStorage.Interfaces;
+using IWX_CloudZen.CloudServices.CloudStorage.Interfaces;
 
-namespace IWX_CloudZen.CloudStorage.Providers
+namespace IWX_CloudZen.CloudServices.CloudStorage.Providers
 {
     public class StorageProviderFactory
     {

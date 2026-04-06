@@ -1,11 +1,11 @@
-﻿using Amazon;
+using Amazon;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
 using IWX_CloudZen.CloudAccounts.DTOs;
-using IWX_CloudZen.CloudServiceCreation.Interfaces;
+using IWX_CloudZen.CloudServices.CloudStorage.Interfaces;
 
-namespace IWX_CloudZen.CloudServiceCreation.Providers
+namespace IWX_CloudZen.CloudServices.CloudStorage.Providers
 {
     public class AwsS3ServiceCreator : IStorageInfrastructure
     {
@@ -18,7 +18,7 @@ namespace IWX_CloudZen.CloudServiceCreation.Providers
             );
         }
 
-        public async Task<string> CreateBucket( CloudConnectionSecrets account, string bucketName)
+        public async Task<string> CreateBucket(CloudConnectionSecrets account, string bucketName)
         {
             var client = GetClient(account);
 

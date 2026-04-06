@@ -1,13 +1,13 @@
-﻿using Azure.Storage.Blobs;
-using IWX_CloudZen.CloudStorage.Interfaces;
+using Azure.Storage.Blobs;
+using IWX_CloudZen.CloudServices.CloudStorage.Interfaces;
 using IWX_CloudZen.CloudAccounts.DTOs;
 
-namespace IWX_CloudZen.CloudStorage.Providers
+namespace IWX_CloudZen.CloudServices.CloudStorage.Providers
 {
     public class AzureStorageProvider : IFileStorageProvider
     {
         public const string container = "cloudzen";
-        
+
         public async Task<string> UploadFile(CloudConnectionSecrets account, IFormFile file, string folder)
         {
             try
@@ -61,6 +61,7 @@ namespace IWX_CloudZen.CloudStorage.Providers
                 var client = new BlobContainerClient(connection, container);
 
                 var blob = client.GetBlobClient(fileUrl);
+
                 var memory = new MemoryStream();
 
                 await blob.DownloadToAsync(memory);
@@ -69,7 +70,7 @@ namespace IWX_CloudZen.CloudStorage.Providers
 
                 return memory;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception("Download failed: " + ex.Message);
             }

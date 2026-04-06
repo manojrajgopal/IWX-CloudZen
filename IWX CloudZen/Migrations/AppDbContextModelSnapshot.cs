@@ -88,7 +88,7 @@ namespace IWX_CloudZen.Migrations
                     b.ToTable("CloudAccounts");
                 });
 
-            modelBuilder.Entity("IWX_CloudZen.CloudStorage.Entities.CloudFile", b =>
+            modelBuilder.Entity("IWX_CloudZen.CloudServices.CloudStorage.Entities.CloudFile", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
