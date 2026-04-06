@@ -1,4 +1,4 @@
-﻿namespace IWX_CloudZen.CloudStorage.DTOs
+namespace IWX_CloudZen.CloudServices.CloudStorage.DTOs
 {
     public class FileUploadRequest
     {

@@ -1,17 +1,17 @@
-﻿using IWX_CloudZen.CloudStorage.Interfaces;
+using IWX_CloudZen.CloudServices.CloudStorage.Interfaces;
 using IWX_CloudZen.CloudAccounts.DTOs;
 using Amazon.S3;
 using Amazon;
 using Amazon.S3.Transfer;
 using Amazon.S3.Model;
-using System.Net.Mime;
 using Amazon.S3.Util;
 
-namespace IWX_CloudZen.CloudStorage.Providers
+namespace IWX_CloudZen.CloudServices.CloudStorage.Providers
 {
     public class AwsStorageProvider : IFileStorageProvider
     {
         public const string bucket = "cloudzen-storage-iwx-001";
+
         public async Task<string> UploadFile(CloudConnectionSecrets account, IFormFile file, string folder)
         {
             try

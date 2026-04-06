@@ -1,19 +1,39 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using IWX_CloudZen.CloudStorage.Services;
-using IWX_CloudZen.CloudStorage.DTOs;
+using IWX_CloudZen.CloudServices.CloudStorage.Services;
+using IWX_CloudZen.CloudServices.CloudStorage.DTOs;
 
-namespace IWX_CloudZen.CloudStorage.Controllers
+namespace IWX_CloudZen.CloudServices.CloudStorage.Controllers
 {
     [ApiController]
-    [Route("api/storage")]
+    [Route("api/cloud/services/storage")]
     public class CloudStorageController : ControllerBase
     {
         private readonly CloudFileService _service;
+        private readonly CloudStorageBucketService _bucketService;
 
-        public CloudStorageController(CloudFileService service)
+        public CloudStorageController(CloudFileService service, CloudStorageBucketService bucketService)
         {
             _service = service;
+            _bucketService = bucketService;
+        }
+
+        [HttpPost("aws/s3/create")]
+        [Authorize]
+        public async Task<IActionResult> CreateBucket([FromBody] S3BucketCreateRequest request)
+        {
+            try
+            {
+                var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+
+                var result = await _bucketService.CreateBucket(user, request);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPost("upload")]
@@ -30,9 +50,8 @@ namespace IWX_CloudZen.CloudStorage.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error: " + ex.Message );
+                return StatusCode(500, "Error: " + ex.Message);
             }
-            
         }
 
         [HttpGet("files")]
@@ -83,7 +102,7 @@ namespace IWX_CloudZen.CloudStorage.Controllers
             }
             catch
             {
-                return NotFound(new { mesasge = "Unable to delete file, File not found..." });
+                return NotFound(new { message = "Unable to delete file, File not found..." });
             }
         }
 
@@ -101,7 +120,7 @@ namespace IWX_CloudZen.CloudStorage.Controllers
             }
             catch
             {
-                return NotFound(new { message = "Unable to update file, File not found.." });
+                return NotFound(new { message = "Unable to update file, File not found..." });
             }
         }
 

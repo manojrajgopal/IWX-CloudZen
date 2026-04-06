@@ -1,13 +1,13 @@
-﻿using IWX_CloudZen.CloudServiceCreation.Factory;
 using IWX_CloudZen.CloudAccounts.Services;
+using IWX_CloudZen.CloudServices.Cluster.Providers;
 
-namespace IWX_CloudZen.CloudServiceCreation.Services
+namespace IWX_CloudZen.CloudServices.Cluster.Services
 {
-    public class CloudInfrastructureService
+    public class ClusterService
     {
         private readonly CloudAccountService _accounts;
 
-        public CloudInfrastructureService(CloudAccountService accounts) 
+        public ClusterService(CloudAccountService accounts)
         {
             _accounts = accounts;
         }
@@ -16,7 +16,7 @@ namespace IWX_CloudZen.CloudServiceCreation.Services
         {
             var account = await _accounts.ResolveCredentialsAsync(user, accountId);
 
-            var provider = ServiceFactory.Get(account.Provider);
+            var provider = ClusterProviderFactory.Get(account.Provider);
 
             var cluster = await provider.CreateCluster(account);
 

@@ -1,8 +1,8 @@
-﻿using IWX_CloudZen.CloudAccounts.DTOs;
+using IWX_CloudZen.CloudAccounts.DTOs;
 
-namespace IWX_CloudZen.CloudServiceCreation.Interfaces
+namespace IWX_CloudZen.CloudServices.Cluster.Interfaces
 {
-    public interface ICloudServiceCreator
+    public interface IClusterProvider
     {
         Task<string> CreateCluster(CloudConnectionSecrets account);
 

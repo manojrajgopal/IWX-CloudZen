@@ -1,9 +1,9 @@
-﻿using IWX_CloudZen.Data;
-using IWX_CloudZen.CloudStorage.Entities;
-using IWX_CloudZen.CloudStorage.Providers;
+using IWX_CloudZen.Data;
+using IWX_CloudZen.CloudServices.CloudStorage.Entities;
+using IWX_CloudZen.CloudServices.CloudStorage.Providers;
 using IWX_CloudZen.CloudAccounts.Services;
 
-namespace IWX_CloudZen.CloudStorage.Services
+namespace IWX_CloudZen.CloudServices.CloudStorage.Services
 {
     public class CloudFileService
     {
@@ -35,7 +35,7 @@ namespace IWX_CloudZen.CloudStorage.Services
                 throw new Exception("Folder required");
 
             var account = await _accounts.ResolveCredentialsAsync(user, accountId);
-            
+
             if (account == null)
                 throw new Exception("Cloud account not found");
 

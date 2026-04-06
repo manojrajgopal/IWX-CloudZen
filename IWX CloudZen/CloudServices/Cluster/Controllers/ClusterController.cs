@@ -1,16 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using IWX_CloudZen.CloudServiceCreation.Services;
+using IWX_CloudZen.CloudServices.Cluster.Services;
 
-namespace IWX_CloudZen.CloudServiceCreation.Controllers
+namespace IWX_CloudZen.CloudServices.Cluster.Controllers
 {
     [ApiController]
-    [Route("api/cloud/service")]
-    public class CloudServiceController : ControllerBase
+    [Route("api/cloud/services/cluster")]
+    public class ClusterController : ControllerBase
     {
-        private readonly CloudInfrastructureService _service;
+        private readonly ClusterService _service;
 
-        public CloudServiceController(CloudInfrastructureService service)
+        public ClusterController(ClusterService service)
         {
             _service = service;
         }
@@ -27,8 +27,8 @@ namespace IWX_CloudZen.CloudServiceCreation.Controllers
 
                 return Ok(result);
             }
-            catch (Exception ex) 
-            { 
+            catch (Exception ex)
+            {
                 return BadRequest("Failed: " + ex.Message);
             }
         }

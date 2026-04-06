@@ -1,12 +1,12 @@
-﻿using IWX_CloudZen.CloudServiceCreation.Interfaces;
+using IWX_CloudZen.CloudServices.Cluster.Interfaces;
 using Amazon;
 using Amazon.ECS;
 using Amazon.ECS.Model;
 using IWX_CloudZen.CloudAccounts.DTOs;
 
-namespace IWX_CloudZen.CloudServiceCreation.Providers
+namespace IWX_CloudZen.CloudServices.Cluster.Providers
 {
-    public class AwsServiceCreator : ICloudServiceCreator
+    public class AwsClusterProvider : IClusterProvider
     {
         private AmazonECSClient GetClient(CloudConnectionSecrets account)
         {
