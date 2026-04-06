@@ -3,6 +3,7 @@ using IWX_CloudZen.Authentication.Models.Entities;
 using IWX_CloudZen.CloudAccounts.Entities;
 using IWX_CloudZen.CloudServices.CloudStorage.Entities;
 using IWX_CloudZen.CloudServices.Cluster.Entities;
+using IWX_CloudZen.CloudServices.VPC.Entities;
 
 namespace IWX_CloudZen.Data
 {
@@ -17,6 +18,7 @@ namespace IWX_CloudZen.Data
         public DbSet<CloudFile> CloudFiles { get; set; }
         public DbSet<BucketRecord> BucketRecords { get; set; }
         public DbSet<ClusterRecord> ClusterRecords { get; set; }
+        public DbSet<VpcRecord> VpcRecords { get; set; }
 
         // 'DbSet<User> Users;' This is a table that stores User objects
 
