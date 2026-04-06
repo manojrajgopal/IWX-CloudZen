@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using IWX_CloudZen.CloudServices.CloudStorage.Services;
 using IWX_CloudZen.CloudServices.CloudStorage.DTOs;
+using IWX_CloudZen.CloudServices.CloudStorage.Services;
 
 namespace IWX_CloudZen.CloudServices.CloudStorage.Controllers
 {
@@ -9,135 +9,180 @@ namespace IWX_CloudZen.CloudServices.CloudStorage.Controllers
     [Route("api/cloud/services/storage")]
     public class CloudStorageController : ControllerBase
     {
-        private readonly CloudFileService _service;
-        private readonly CloudStorageBucketService _bucketService;
+        private readonly CloudStorageService _service;
 
-        public CloudStorageController(CloudFileService service, CloudStorageBucketService bucketService)
+        public CloudStorageController(CloudStorageService service)
         {
             _service = service;
-            _bucketService = bucketService;
         }
 
-        [HttpPost("aws/s3/create")]
+        private string? CurrentUser => User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+
+        // ===================== BUCKET ENDPOINTS =====================
+
+        [HttpGet("aws/s3/buckets")]
         [Authorize]
-        public async Task<IActionResult> CreateBucket([FromBody] S3BucketCreateRequest request)
+        public async Task<IActionResult> ListBuckets(int accountId)
         {
             try
             {
-                var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
 
-                var result = await _bucketService.CreateBucket(user, request);
-
-                return Ok(result);
+                return Ok(await _service.ListBuckets(user, accountId));
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        [HttpPost("upload")]
+        [HttpPost("aws/s3/buckets")]
         [Authorize]
-        public async Task<IActionResult> Upload([FromForm] FileUploadRequest request)
+        public async Task<IActionResult> CreateBucket(int accountId, [FromBody] CreateBucketRequest request)
         {
             try
             {
-                var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
 
-                var result = await _service.Upload(user, request.File, request.Folder, request.CloudAccountId);
-
-                return Ok(result);
+                return Ok(await _service.CreateBucket(user, accountId, request.BucketName));
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Error: " + ex.Message);
-            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        [HttpGet("files")]
+        [HttpDelete("aws/s3/buckets/{bucketId}")]
         [Authorize]
-        public IActionResult Files()
+        public async Task<IActionResult> DeleteBucket(int accountId, int bucketId)
         {
             try
             {
-                var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
 
-                return Ok(_service.GetFiles(user));
+                await _service.DeleteBucket(user, accountId, bucketId);
+                return Ok("Bucket and all its files deleted.");
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Error: " + ex.Message);
-            }
+            catch (KeyNotFoundException) { return NotFound("Bucket not found."); }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        [HttpGet("download/{id}")]
+        [HttpPost("aws/s3/buckets/sync")]
         [Authorize]
-        public async Task<IActionResult> Download(int id)
+        public async Task<IActionResult> SyncBuckets(int accountId)
         {
             try
             {
-                var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
 
-                var result = await _service.Download(user, id);
-
-                return File(result.Item1, result.Item2, result.Item3);
+                return Ok(await _service.SyncBuckets(user, accountId));
             }
-            catch
-            {
-                return NotFound(new { message = "Unable to download, File not found..." });
-            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        [HttpDelete("delete/{id}")]
+        // ===================== FILE ENDPOINTS =====================
+
+        [HttpGet("aws/s3/files")]
         [Authorize]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> ListFiles(int accountId, int? bucketId)
         {
             try
             {
-                var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
 
-                await _service.Delete(user, id);
-
-                return Ok("Deleted");
+                return Ok(await _service.ListFiles(user, accountId, bucketId));
             }
-            catch
-            {
-                return NotFound(new { message = "Unable to delete file, File not found..." });
-            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        [HttpPut("update/{id}")]
+        [HttpPost("aws/s3/files")]
         [Authorize]
-        public async Task<IActionResult> Update(int id, IFormFile file)
+        public async Task<IActionResult> UploadFile(int accountId, int bucketId, [FromForm] IFormFile file, [FromForm] string folder)
         {
             try
             {
-                var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
 
-                var result = await _service.UpdateFile(user, id, file);
-
-                return Ok(result);
+                return Ok(await _service.UploadFile(user, accountId, bucketId, file, folder));
             }
-            catch
-            {
-                return NotFound(new { message = "Unable to update file, File not found..." });
-            }
+            catch (KeyNotFoundException) { return NotFound("Bucket not found."); }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
 
-        [HttpGet("folders")]
+        [HttpGet("aws/s3/files/{fileId}/download")]
         [Authorize]
-        public IActionResult Folders()
+        public async Task<IActionResult> DownloadFile(int fileId)
         {
             try
             {
-                var user = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
 
-                return Ok(_service.GetFolders(user));
+                var (stream, contentType, fileName) = await _service.DownloadFile(user, fileId);
+                return File(stream, contentType, fileName);
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException) { return NotFound("File not found."); }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpPut("aws/s3/files/{fileId}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFile(int fileId, [FromForm] IFormFile file)
+        {
+            try
             {
-                return StatusCode(500, "Error: " + ex.Message);
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
+
+                return Ok(await _service.UpdateFile(user, fileId, file));
             }
+            catch (KeyNotFoundException) { return NotFound("File not found."); }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpDelete("aws/s3/files/{fileId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteFile(int fileId)
+        {
+            try
+            {
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
+
+                await _service.DeleteFile(user, fileId);
+                return Ok("File deleted.");
+            }
+            catch (KeyNotFoundException) { return NotFound("File not found."); }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpPost("aws/s3/files/sync")]
+        [Authorize]
+        public async Task<IActionResult> SyncFiles(int accountId, int bucketId)
+        {
+            try
+            {
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
+
+                return Ok(await _service.SyncFiles(user, accountId, bucketId));
+            }
+            catch (KeyNotFoundException) { return NotFound("Bucket not found."); }
+            catch (Exception ex) { return BadRequest(ex.Message); }
+        }
+
+        [HttpPost("aws/s3/sync")]
+        [Authorize]
+        public async Task<IActionResult> SyncAll(int accountId)
+        {
+            try
+            {
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
+
+                return Ok(await _service.SyncAll(user, accountId));
+            }
+            catch (Exception ex) { return BadRequest(ex.Message); }
         }
     }
 }

@@ -27,8 +27,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<CloudAccountService>();
 builder.Services.AddScoped<ICloudSecretProtector, CloudSecretProtector>();
-builder.Services.AddScoped<CloudFileService>();
-builder.Services.AddScoped<CloudStorageBucketService>();
+builder.Services.AddScoped<CloudStorageService>();
 builder.Services.AddScoped<ClusterService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

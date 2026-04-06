@@ -4,16 +4,10 @@ namespace IWX_CloudZen.CloudServices.CloudStorage.Providers
 {
     public class StorageProviderFactory
     {
-        public static IFileStorageProvider GetProvider(string provider)
+        public static IStorageProvider Get(string provider) => provider switch
         {
-            return provider switch
-            {
-                "AWS" => new AwsStorageProvider(),
-
-                "AZURE" => new AzureStorageProvider(),
-
-                _ => throw new Exception("Provider not supported")
-            };
-        }
+            "AWS" => new AwsS3Provider(),
+            _ => throw new NotSupportedException($"Provider '{provider}' is not supported.")
+        };
     }
 }
