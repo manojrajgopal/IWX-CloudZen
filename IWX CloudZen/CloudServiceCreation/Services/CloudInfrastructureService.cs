@@ -1,5 +1,6 @@
 ﻿using IWX_CloudZen.CloudServiceCreation.Factory;
 using IWX_CloudZen.CloudAccounts.Services;
+using IWX_CloudZen.CloudServiceCreation.DTOs;
 
 namespace IWX_CloudZen.CloudServiceCreation.Services
 {
@@ -7,7 +8,7 @@ namespace IWX_CloudZen.CloudServiceCreation.Services
     {
         private readonly CloudAccountService _accounts;
 
-        public CloudInfrastructureService(CloudAccountService accounts) 
+        public CloudInfrastructureService(CloudAccountService accounts)
         {
             _accounts = accounts;
         }
@@ -21,6 +22,15 @@ namespace IWX_CloudZen.CloudServiceCreation.Services
             var cluster = await provider.CreateCluster(account);
 
             return "Cluster Ready: " + cluster;
+        }
+
+        public async Task<string> CreateAwsBucket(string user, S3BucketCreateRequest request)
+        {
+            var account = await _accounts.ResolveCredentialsAsync(user, request.CloudAccountId);
+
+            var provider = StorageServiceFactory.Get(account.Provider);
+
+            return await provider.CreateBucket(account, request.BucketName);
         }
     }
 }
