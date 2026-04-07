@@ -178,7 +178,25 @@ namespace IWX_CloudZen.CloudServices.VPC.Providers
         {
             var client = GetClient(account);
 
-            // 1. Detach and delete internet gateways
+            // 1. Disassociate Elastic IPs attached to network interfaces in this VPC
+            var eniResponse = await client.DescribeNetworkInterfacesAsync(new DescribeNetworkInterfacesRequest
+            {
+                Filters = [new Filter { Name = "vpc-id", Values = [vpcId] }]
+            });
+
+            foreach (var eni in eniResponse.NetworkInterfaces ?? [])
+            {
+                var associationId = eni.Association?.AssociationId;
+                if (!string.IsNullOrEmpty(associationId))
+                {
+                    await client.DisassociateAddressAsync(new DisassociateAddressRequest
+                    {
+                        AssociationId = associationId
+                    });
+                }
+            }
+
+            // 2. Detach and delete internet gateways
             var igwResponse = await client.DescribeInternetGatewaysAsync(new DescribeInternetGatewaysRequest
             {
                 Filters = [new Filter { Name = "attachment.vpc-id", Values = [vpcId] }]
