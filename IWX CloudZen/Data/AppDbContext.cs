@@ -5,6 +5,7 @@ using IWX_CloudZen.CloudServices.CloudStorage.Entities;
 using IWX_CloudZen.CloudServices.Cluster.Entities;
 using IWX_CloudZen.CloudServices.VPC.Entities;
 using IWX_CloudZen.Permissions.Entities;
+using IWX_CloudZen.CloudServices.ECR.Entities;
 
 namespace IWX_CloudZen.Data
 {
@@ -21,6 +22,8 @@ namespace IWX_CloudZen.Data
         public DbSet<ClusterRecord> ClusterRecords { get; set; }
         public DbSet<VpcRecord> VpcRecords { get; set; }
         public DbSet<PolicyRecord> PolicyRecords { get; set; }
+        public DbSet<EcrRepositoryRecord> EcrRepositoryRecords { get; set; }
+        public DbSet<EcrImageRecord> EcrImageRecords { get; set; }
 
         // 'DbSet<User> Users;' This is a table that stores User objects
 

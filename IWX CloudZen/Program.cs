@@ -6,6 +6,7 @@ using IWX_CloudZen.CloudServices.CloudStorage.Services;
 using IWX_CloudZen.CloudServices.Cluster.Services;
 using IWX_CloudZen.CloudServices.VPC.Services;
 using IWX_CloudZen.Permissions.Services;
+using IWX_CloudZen.CloudServices.ECR.Services;
 using IWX_CloudZen.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,7 @@ builder.Services.AddScoped<CloudStorageService>();
 builder.Services.AddScoped<ClusterService>();
 builder.Services.AddScoped<VpcService>();
 builder.Services.AddScoped<PermissionsService>();
+builder.Services.AddScoped<EcrService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
