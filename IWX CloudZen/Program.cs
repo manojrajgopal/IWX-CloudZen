@@ -9,6 +9,7 @@ using IWX_CloudZen.Permissions.Services;
 using IWX_CloudZen.CloudServices.ECR.Services;
 using IWX_CloudZen.CloudServices.ECS.Services;
 using IWX_CloudZen.CloudServices.Subnet.Services;
+using IWX_CloudZen.CloudServices.SecurityGroups.Services;
 using IWX_CloudZen.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,7 @@ builder.Services.AddScoped<PermissionsService>();
 builder.Services.AddScoped<EcrService>();
 builder.Services.AddScoped<EcsService>();
 builder.Services.AddScoped<SubnetService>();
+builder.Services.AddScoped<SecurityGroupService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

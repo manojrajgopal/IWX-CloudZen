@@ -8,6 +8,7 @@ using IWX_CloudZen.Permissions.Entities;
 using IWX_CloudZen.CloudServices.ECR.Entities;
 using IWX_CloudZen.CloudServices.ECS.Entities;
 using IWX_CloudZen.CloudServices.Subnet.Entities;
+using IWX_CloudZen.CloudServices.SecurityGroups.Entities;
 
 namespace IWX_CloudZen.Data
 {
@@ -30,6 +31,7 @@ namespace IWX_CloudZen.Data
         public DbSet<EcsServiceRecord> EcsServiceRecords { get; set; }
         public DbSet<EcsTaskRecord> EcsTaskRecords { get; set; }
         public DbSet<SubnetRecord> SubnetRecords { get; set; }
+        public DbSet<SecurityGroupRecord> SecurityGroupRecords { get; set; }
 
         // 'DbSet<User> Users;' This is a table that stores User objects
 
