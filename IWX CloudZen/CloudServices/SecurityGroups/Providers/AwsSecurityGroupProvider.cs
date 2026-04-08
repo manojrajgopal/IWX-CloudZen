@@ -53,16 +53,21 @@ namespace IWX_CloudZen.CloudServices.SecurityGroups.Providers
             }).ToList();
         }
 
-        private static CloudSecurityGroupInfo MapSecurityGroup(SecurityGroup sg) => new()
+        private static CloudSecurityGroupInfo MapSecurityGroup(SecurityGroup sg)
         {
-            SecurityGroupId = sg.GroupId,
-            GroupName = sg.GroupName,
-            Description = sg.Description ?? string.Empty,
-            VpcId = sg.VpcId,
-            OwnerId = sg.OwnerId,
-            InboundRules = MapIpPermissions(sg.IpPermissions),
-            OutboundRules = MapIpPermissions(sg.IpPermissionsEgress)
-        };
+            // Prefer the "Name" tag as the display name; fall back to the immutable AWS GroupName.
+            var nameTag = GetNameTag(sg.Tags);
+            return new CloudSecurityGroupInfo
+            {
+                SecurityGroupId = sg.GroupId,
+                GroupName = !string.IsNullOrWhiteSpace(nameTag) ? nameTag : sg.GroupName,
+                Description = sg.Description ?? string.Empty,
+                VpcId = sg.VpcId,
+                OwnerId = sg.OwnerId,
+                InboundRules = MapIpPermissions(sg.IpPermissions),
+                OutboundRules = MapIpPermissions(sg.IpPermissionsEgress)
+            };
+        }
 
         private static List<IpPermission> BuildIpPermissions(List<DtoSgRule> rules) =>
             rules.Select(r =>

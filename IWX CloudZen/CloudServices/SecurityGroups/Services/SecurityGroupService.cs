@@ -172,6 +172,12 @@ namespace IWX_CloudZen.CloudServices.SecurityGroups.Services
             var cloudInfo = await provider.UpdateSecurityGroup(account, record.SecurityGroupId, request);
 
             ApplyCloudInfo(record, cloudInfo);
+
+            // ApplyCloudInfo re-maps GroupName from the AWS Name tag (via provider).
+            // If the provider re-describe races before the tag propagates, enforce it directly from the request.
+            if (!string.IsNullOrWhiteSpace(request.Name))
+                record.GroupName = request.Name;
+
             record.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
