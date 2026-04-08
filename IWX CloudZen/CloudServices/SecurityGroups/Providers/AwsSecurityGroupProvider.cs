@@ -32,40 +32,87 @@ namespace IWX_CloudZen.CloudServices.SecurityGroups.Providers
         private static string GetNameTag(List<Tag>? tags) =>
             tags?.FirstOrDefault(t => t.Key == "Name")?.Value ?? string.Empty;
 
-        private static List<DtoSgRule> MapIpPermissions(List<IpPermission>? permissions)
+        // Maps a single SecurityGroupRule (from DescribeSecurityGroupRules) — includes RuleId.
+        private static DtoSgRule MapRule(SecurityGroupRule r) => new()
         {
-            if (permissions is null) return new();
+            RuleId      = r.SecurityGroupRuleId,
+            Protocol    = r.IpProtocol ?? "-1",
+            FromPort    = r.FromPort ?? -1,
+            ToPort      = r.ToPort ?? -1,
+            Ipv4Ranges  = !string.IsNullOrEmpty(r.CidrIpv4)
+                            ? new List<string> { r.CidrIpv4 }
+                            : new(),
+            Ipv6Ranges  = !string.IsNullOrEmpty(r.CidrIpv6)
+                            ? new List<string> { r.CidrIpv6 }
+                            : new(),
+            ReferencedGroupIds = r.ReferencedGroupInfo?.GroupId is not null
+                            ? new List<string> { r.ReferencedGroupInfo.GroupId }
+                            : new(),
+            Description = r.Description
+        };
 
-            return permissions.Select(p => new DtoSgRule
+        // Fetches all rules for a batch of group IDs in one paginated call.
+        // Returns dict[groupId] -> (inboundRules, outboundRules).
+        private static async Task<Dictionary<string, (List<DtoSgRule> In, List<DtoSgRule> Out)>>
+            FetchRulesForGroups(AmazonEC2Client client, IReadOnlyList<string> groupIds)
+        {
+            var map = groupIds.ToDictionary(id => id, _ => (In: new List<DtoSgRule>(), Out: new List<DtoSgRule>()));
+
+            if (groupIds.Count == 0) return map;
+
+            // Process in batches of 200 (AWS filter value limit)
+            const int batchSize = 200;
+            for (int i = 0; i < groupIds.Count; i += batchSize)
             {
-                Protocol = p.IpProtocol ?? "-1",
-                FromPort = p.FromPort ?? -1,
-                ToPort = p.ToPort ?? -1,
-                Ipv4Ranges = p.Ipv4Ranges?.Select(r => r.CidrIp).Where(c => c != null).ToList()!
-                             ?? new List<string>(),
-                Ipv6Ranges = p.Ipv6Ranges?.Select(r => r.CidrIpv6).Where(c => c != null).ToList()!
-                             ?? new List<string>(),
-                ReferencedGroupIds = p.UserIdGroupPairs?.Select(g => g.GroupId)
-                             .Where(id => id != null).ToList()!
-                             ?? new List<string>(),
-                Description = p.Ipv4Ranges?.FirstOrDefault()?.Description
-                              ?? p.Ipv6Ranges?.FirstOrDefault()?.Description
-            }).ToList();
+                var batch = groupIds.Skip(i).Take(batchSize).ToList();
+                var rulesRequest = new DescribeSecurityGroupRulesRequest
+                {
+                    Filters = new List<Filter>
+                    {
+                        new Filter { Name = "group-id", Values = batch }
+                    }
+                };
+
+                string? rulesToken = null;
+                do
+                {
+                    rulesRequest.NextToken = rulesToken;
+                    var rulesResponse = await client.DescribeSecurityGroupRulesAsync(rulesRequest);
+
+                    foreach (var rule in rulesResponse.SecurityGroupRules ?? new())
+                    {
+                        if (rule.GroupId is null) continue;
+                        if (!map.TryGetValue(rule.GroupId, out var lists)) continue;
+                        var dto = MapRule(rule);
+                        if (rule.IsEgress == true)
+                            lists.Out.Add(dto);
+                        else
+                            lists.In.Add(dto);
+                    }
+
+                    rulesToken = rulesResponse.NextToken;
+                }
+                while (rulesToken != null);
+            }
+
+            return map;
         }
 
-        private static CloudSecurityGroupInfo MapSecurityGroup(SecurityGroup sg)
+        private static CloudSecurityGroupInfo BuildCloudInfo(
+            SecurityGroup sg,
+            List<DtoSgRule> inbound,
+            List<DtoSgRule> outbound)
         {
-            // Prefer the "Name" tag as the display name; fall back to the immutable AWS GroupName.
             var nameTag = GetNameTag(sg.Tags);
             return new CloudSecurityGroupInfo
             {
                 SecurityGroupId = sg.GroupId,
-                GroupName = !string.IsNullOrWhiteSpace(nameTag) ? nameTag : sg.GroupName,
-                Description = sg.Description ?? string.Empty,
-                VpcId = sg.VpcId,
-                OwnerId = sg.OwnerId,
-                InboundRules = MapIpPermissions(sg.IpPermissions),
-                OutboundRules = MapIpPermissions(sg.IpPermissionsEgress)
+                GroupName       = !string.IsNullOrWhiteSpace(nameTag) ? nameTag : sg.GroupName,
+                Description     = sg.Description ?? string.Empty,
+                VpcId           = sg.VpcId,
+                OwnerId         = sg.OwnerId,
+                InboundRules    = inbound,
+                OutboundRules   = outbound
             };
         }
 
@@ -76,7 +123,7 @@ namespace IWX_CloudZen.CloudServices.SecurityGroups.Providers
                 {
                     IpProtocol = r.Protocol,
                     FromPort = r.FromPort == -1 ? null : r.FromPort,
-                    ToPort = r.ToPort == -1 ? null : r.ToPort
+                    ToPort   = r.ToPort   == -1 ? null : r.ToPort
                 };
 
                 if (r.Ipv4Ranges?.Count > 0)
@@ -100,16 +147,19 @@ namespace IWX_CloudZen.CloudServices.SecurityGroups.Providers
         private async Task<CloudSecurityGroupInfo> DescribeOne(
             AmazonEC2Client client, string securityGroupId)
         {
-            var response = await client.DescribeSecurityGroupsAsync(
+            var sgResponse = await client.DescribeSecurityGroupsAsync(
                 new DescribeSecurityGroupsRequest
                 {
                     GroupIds = new List<string> { securityGroupId }
                 });
 
-            var sg = response.SecurityGroups.FirstOrDefault()
+            var sg = sgResponse.SecurityGroups.FirstOrDefault()
                 ?? throw new KeyNotFoundException($"Security group '{securityGroupId}' not found in AWS.");
 
-            return MapSecurityGroup(sg);
+            var rulesMap = await FetchRulesForGroups(client, new[] { securityGroupId });
+            var (inbound, outbound) = rulesMap[securityGroupId];
+
+            return BuildCloudInfo(sg, inbound, outbound);
         }
 
         // ================================================================
@@ -120,7 +170,7 @@ namespace IWX_CloudZen.CloudServices.SecurityGroups.Providers
             CloudConnectionSecrets account, string? vpcId = null)
         {
             var client = GetClient(account);
-            var result = new List<CloudSecurityGroupInfo>();
+            var allGroups = new List<SecurityGroup>();
             string? nextToken = null;
 
             var request = new DescribeSecurityGroupsRequest();
@@ -137,12 +187,23 @@ namespace IWX_CloudZen.CloudServices.SecurityGroups.Providers
             {
                 request.NextToken = nextToken;
                 var response = await client.DescribeSecurityGroupsAsync(request);
-                result.AddRange(response.SecurityGroups.Select(MapSecurityGroup));
+                allGroups.AddRange(response.SecurityGroups);
                 nextToken = response.NextToken;
             }
             while (nextToken != null);
 
-            return result;
+            if (allGroups.Count == 0) return new();
+
+            // Fetch all rules in a single batched call to get ruleIds (sgr-xxx)
+            var groupIds = allGroups.Select(g => g.GroupId).ToList();
+            var rulesMap = await FetchRulesForGroups(client, groupIds);
+
+            return allGroups.Select(sg =>
+            {
+                var (inbound, outbound) = rulesMap.TryGetValue(sg.GroupId, out var r)
+                    ? r : (new List<DtoSgRule>(), new List<DtoSgRule>());
+                return BuildCloudInfo(sg, inbound, outbound);
+            }).ToList();
         }
 
         // ================================================================
