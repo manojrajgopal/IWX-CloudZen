@@ -10,6 +10,8 @@ using IWX_CloudZen.CloudServices.ECS.Entities;
 using IWX_CloudZen.CloudServices.Subnet.Entities;
 using IWX_CloudZen.CloudServices.SecurityGroups.Entities;
 using IWX_CloudZen.CloudServices.CloudWatchLogs.Entities;
+using IWX_CloudZen.CloudServices.EC2.Entities;
+using IWX_CloudZen.CloudServices.KeyPair.Entities;
 
 namespace IWX_CloudZen.Data
 {
@@ -35,6 +37,8 @@ namespace IWX_CloudZen.Data
         public DbSet<SecurityGroupRecord> SecurityGroupRecords { get; set; }
         public DbSet<LogGroupRecord> LogGroupRecords { get; set; }
         public DbSet<LogStreamRecord> LogStreamRecords { get; set; }
+        public DbSet<Ec2InstanceRecord> Ec2InstanceRecords { get; set; }
+        public DbSet<KeyPairRecord> KeyPairRecords { get; set; }
 
         // 'DbSet<User> Users;' This is a table that stores User objects
 
