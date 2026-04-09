@@ -33,12 +33,13 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Providers
 
         private static CloudKeyPairInfo MapInfo(KeyPairInfo kp) => new()
         {
-            KeyPairId       = kp.KeyPairId ?? string.Empty,
-            KeyName         = kp.KeyName,
-            KeyFingerprint  = kp.KeyFingerprint ?? string.Empty,
-            KeyType         = kp.KeyType?.Value ?? string.Empty,
-            Tags            = MapTags(kp.Tags),
-            AwsCreatedAt    = kp.CreateTime
+            KeyPairId          = kp.KeyPairId ?? string.Empty,
+            KeyName            = kp.KeyName,
+            KeyFingerprint     = kp.KeyFingerprint ?? string.Empty,
+            KeyType            = kp.KeyType?.Value ?? string.Empty,
+            PublicKeyMaterial  = kp.PublicKey ?? string.Empty,
+            Tags               = MapTags(kp.Tags),
+            AwsCreatedAt       = kp.CreateTime
         };
 
         // ---- Interface Implementation ----
@@ -49,7 +50,7 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Providers
 
             var response = await client.DescribeKeyPairsAsync(new DescribeKeyPairsRequest
             {
-                IncludePublicKey = false
+                IncludePublicKey = true
             });
 
             return response.KeyPairs.Select(MapInfo).ToList();
@@ -62,7 +63,7 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Providers
             var response = await client.DescribeKeyPairsAsync(new DescribeKeyPairsRequest
             {
                 KeyNames        = [keyName],
-                IncludePublicKey = false
+                IncludePublicKey = true
             });
 
             var kp = response.KeyPairs.FirstOrDefault()
@@ -99,12 +100,22 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Providers
 
             var response = await client.CreateKeyPairAsync(request);
 
+            // Fetch the public key material (not included in CreateKeyPair response)
+            var describeResponse = await client.DescribeKeyPairsAsync(new DescribeKeyPairsRequest
+            {
+                KeyPairIds      = [response.KeyPair.KeyPairId],
+                IncludePublicKey = true
+            });
+
+            var publicKey = describeResponse.KeyPairs.FirstOrDefault()?.PublicKey ?? string.Empty;
+
             return new CloudKeyPairCreatedInfo
             {
                 KeyPairId          = response.KeyPair.KeyPairId ?? string.Empty,
                 KeyName            = response.KeyPair.KeyName,
                 KeyFingerprint     = response.KeyPair.KeyFingerprint ?? string.Empty,
                 KeyType            = keyType,
+                PublicKeyMaterial  = publicKey,
                 Tags               = tags ?? new(),
                 AwsCreatedAt       = DateTime.UtcNow,
                 PrivateKeyMaterial = response.KeyPair.KeyMaterial ?? string.Empty

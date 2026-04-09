@@ -23,19 +23,21 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Services
 
         private static KeyPairResponse Map(KeyPairRecord r) => new()
         {
-            Id             = r.Id,
-            KeyPairId      = r.KeyPairId,
-            KeyName        = r.KeyName,
-            KeyFingerprint = r.KeyFingerprint,
-            KeyType        = r.KeyType,
-            IsImported     = r.IsImported,
-            HasPrivateKey  = !string.IsNullOrWhiteSpace(r.PrivateKeyMaterial),
-            Tags           = DeserializeTags(r.TagsJson),
-            AwsCreatedAt   = r.AwsCreatedAt,
-            Provider       = r.Provider,
-            CloudAccountId = r.CloudAccountId,
-            CreatedAt      = r.CreatedAt,
-            UpdatedAt      = r.UpdatedAt
+            Id                = r.Id,
+            KeyPairId         = r.KeyPairId,
+            KeyName           = r.KeyName,
+            KeyFingerprint    = r.KeyFingerprint,
+            KeyType           = r.KeyType,
+            IsImported        = r.IsImported,
+            HasPrivateKey     = !string.IsNullOrWhiteSpace(r.PrivateKeyMaterial),
+            PublicKeyMaterial = r.PublicKeyMaterial ?? string.Empty,
+            PrivateKeyMaterial = r.PrivateKeyMaterial ?? string.Empty,
+            Tags              = DeserializeTags(r.TagsJson),
+            AwsCreatedAt      = r.AwsCreatedAt,
+            Provider          = r.Provider,
+            CloudAccountId    = r.CloudAccountId,
+            CreatedAt         = r.CreatedAt,
+            UpdatedAt         = r.UpdatedAt
         };
 
         private static KeyPairCreatedResponse MapCreated(KeyPairRecord r) => new()
@@ -47,6 +49,7 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Services
             KeyType            = r.KeyType,
             IsImported         = r.IsImported,
             HasPrivateKey      = !string.IsNullOrWhiteSpace(r.PrivateKeyMaterial),
+            PublicKeyMaterial  = r.PublicKeyMaterial ?? string.Empty,
             PrivateKeyMaterial = r.PrivateKeyMaterial ?? string.Empty,
             Tags               = DeserializeTags(r.TagsJson),
             AwsCreatedAt       = r.AwsCreatedAt,
@@ -66,7 +69,8 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Services
 
         private static bool HasChanges(KeyPairRecord record, CloudKeyPairInfo cloud) =>
             record.KeyFingerprint != cloud.KeyFingerprint ||
-            record.KeyType != cloud.KeyType;
+            record.KeyType != cloud.KeyType ||
+            (record.PublicKeyMaterial ?? string.Empty) != cloud.PublicKeyMaterial;
 
         private async Task<(IWX_CloudZen.CloudAccounts.DTOs.CloudConnectionSecrets account,
                             IWX_CloudZen.CloudServices.KeyPair.Interfaces.IKeyPairProvider provider)>
@@ -125,7 +129,7 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Services
                 KeyFingerprint     = info.KeyFingerprint,
                 KeyType            = info.KeyType,
                 PrivateKeyMaterial = info.PrivateKeyMaterial,
-                PublicKeyMaterial  = null,
+                PublicKeyMaterial  = info.PublicKeyMaterial,
                 IsImported         = false,
                 TagsJson           = SerializeTags(info.Tags),
                 AwsCreatedAt       = info.AwsCreatedAt,
@@ -267,7 +271,7 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Services
                         KeyFingerprint     = cloud.KeyFingerprint,
                         KeyType            = cloud.KeyType,
                         PrivateKeyMaterial = null,   // never available during sync
-                        PublicKeyMaterial  = null,
+                        PublicKeyMaterial  = cloud.PublicKeyMaterial,
                         IsImported         = false,  // unknown origin during sync
                         TagsJson           = SerializeTags(cloud.Tags),
                         AwsCreatedAt       = cloud.AwsCreatedAt,
@@ -280,11 +284,12 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Services
                 }
                 else if (HasChanges(existing, cloud))
                 {
-                    existing.KeyPairId      = cloud.KeyPairId;
-                    existing.KeyName        = cloud.KeyName;
-                    existing.KeyFingerprint = cloud.KeyFingerprint;
-                    existing.KeyType        = cloud.KeyType;
-                    existing.TagsJson       = SerializeTags(cloud.Tags);
+                    existing.KeyPairId         = cloud.KeyPairId;
+                    existing.KeyName           = cloud.KeyName;
+                    existing.KeyFingerprint    = cloud.KeyFingerprint;
+                    existing.KeyType           = cloud.KeyType;
+                    existing.PublicKeyMaterial  = cloud.PublicKeyMaterial;
+                    existing.TagsJson          = SerializeTags(cloud.Tags);
                     existing.AwsCreatedAt   = cloud.AwsCreatedAt;
                     existing.UpdatedAt      = DateTime.UtcNow;
                     updated++;

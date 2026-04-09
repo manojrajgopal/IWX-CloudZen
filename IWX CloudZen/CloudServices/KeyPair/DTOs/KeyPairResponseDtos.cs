@@ -16,6 +16,12 @@ namespace IWX_CloudZen.CloudServices.KeyPair.DTOs
         /// </summary>
         public bool HasPrivateKey { get; set; }
 
+        /// <summary>PEM-encoded public key material.</summary>
+        public string PublicKeyMaterial { get; set; } = string.Empty;
+
+        /// <summary>PEM-encoded private key material. Only available for key pairs created through this API.</summary>
+        public string PrivateKeyMaterial { get; set; } = string.Empty;
+
         public Dictionary<string, string> Tags { get; set; } = new();
         public DateTime? AwsCreatedAt { get; set; }
         public string Provider { get; set; } = string.Empty;

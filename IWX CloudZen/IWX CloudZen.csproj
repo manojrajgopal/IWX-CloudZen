@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="AWSSDK.CloudWatchLogs" Version="4.0.15.3" />
     <PackageReference Include="AWSSDK.EC2" Version="4.0.82.6" />
+    <PackageReference Include="AWSSDK.EC2InstanceConnect" Version="4.0.2.25" />
     <PackageReference Include="AWSSDK.ECR" Version="4.0.12.1" />
     <PackageReference Include="AWSSDK.ECS" Version="4.0.15.1" />
     <PackageReference Include="AWSSDK.IdentityManagement" Version="4.0.9.11" />

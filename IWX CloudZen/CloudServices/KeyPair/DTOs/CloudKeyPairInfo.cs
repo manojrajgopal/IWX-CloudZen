@@ -7,6 +7,7 @@ namespace IWX_CloudZen.CloudServices.KeyPair.DTOs
         public string KeyName { get; set; } = string.Empty;
         public string KeyFingerprint { get; set; } = string.Empty;
         public string KeyType { get; set; } = string.Empty;
+        public string PublicKeyMaterial { get; set; } = string.Empty;
         public Dictionary<string, string> Tags { get; set; } = new();
         public DateTime? AwsCreatedAt { get; set; }
     }
