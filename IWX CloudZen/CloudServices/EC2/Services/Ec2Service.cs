@@ -197,6 +197,7 @@ namespace IWX_CloudZen.CloudServices.EC2.Services
                 record.InstanceId,
                 request.InstanceName,
                 request.InstanceType,
+                request.SecurityGroupIds,
                 request.Tags);
 
             UpdateRecordFromCloud(record, info);

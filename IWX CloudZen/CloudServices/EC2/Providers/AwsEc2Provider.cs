@@ -171,6 +171,7 @@ namespace IWX_CloudZen.CloudServices.EC2.Providers
             string instanceId,
             string? instanceName,
             string? instanceType,
+            List<string>? securityGroupIds,
             Dictionary<string, string>? tags)
         {
             var client = GetClient(account);
@@ -206,6 +207,16 @@ namespace IWX_CloudZen.CloudServices.EC2.Providers
                 {
                     InstanceId = instanceId,
                     InstanceType = InstanceType.FindValue(instanceType)
+                });
+            }
+
+            // Update security groups
+            if (securityGroupIds is { Count: > 0 })
+            {
+                await client.ModifyInstanceAttributeAsync(new ModifyInstanceAttributeRequest
+                {
+                    InstanceId = instanceId,
+                    Groups = securityGroupIds
                 });
             }
 

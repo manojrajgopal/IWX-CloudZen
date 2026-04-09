@@ -28,6 +28,7 @@ namespace IWX_CloudZen.CloudServices.EC2.Interfaces
             string instanceId,
             string? instanceName,
             string? instanceType,
+            List<string>? securityGroupIds,
             Dictionary<string, string>? tags);
 
         Task StartInstance(CloudConnectionSecrets account, string instanceId);
