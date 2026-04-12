@@ -13,7 +13,9 @@ import {
   LogGroupsResponse,
   Ec2InstancesResponse,
   FullSyncResult,
-  FileListResponse
+  FileListResponse,
+  S3Bucket,
+  CreateBucketRequest
 } from '../models/cloud-services.model';
 
 @Injectable({
@@ -88,6 +90,13 @@ export class CloudServicesService {
   getS3Files(accountId: number): Observable<FileListResponse> {
     return this.http.get<FileListResponse>(
       `${this.apiUrl}/api/cloud/services/storage/aws/s3/files?accountId=${accountId}`
+    );
+  }
+
+  createS3Bucket(accountId: number, request: CreateBucketRequest): Observable<S3Bucket> {
+    return this.http.post<S3Bucket>(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/buckets?accountId=${accountId}`,
+      request
     );
   }
 }

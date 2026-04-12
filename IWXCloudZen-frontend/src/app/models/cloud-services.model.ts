@@ -21,6 +21,10 @@ export interface S3Bucket {
   updatedAt: string | null;
 }
 
+export interface CreateBucketRequest {
+  bucketName: string;
+}
+
 export interface Vpc {
   id: number;
   name: string;

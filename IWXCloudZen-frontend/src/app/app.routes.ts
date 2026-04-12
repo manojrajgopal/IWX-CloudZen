@@ -13,6 +13,7 @@ import { SubnetsComponent } from './pages/CloudServices/subnets/subnets.componen
 import { SecurityGroupsComponent } from './pages/CloudServices/security-groups/security-groups.component';
 import { CloudWatchLogsComponent } from './pages/CloudServices/cloudwatch-logs/cloudwatch-logs.component';
 import { Ec2InstancesComponent } from './pages/CloudServices/ec2-instances/ec2-instances.component';
+import { CreateBucketComponent } from './pages/CloudServices/cloud-storage/create-bucket/create-bucket.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -20,6 +21,7 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'dashboard/cloud-storage', component: CloudStorageComponent },
+  { path: 'dashboard/cloud-storage/create', component: CreateBucketComponent },
   { path: 'dashboard/clusters', component: ClustersComponent },
   { path: 'dashboard/vpcs', component: VpcsComponent },
   { path: 'dashboard/ecr', component: EcrComponent },
