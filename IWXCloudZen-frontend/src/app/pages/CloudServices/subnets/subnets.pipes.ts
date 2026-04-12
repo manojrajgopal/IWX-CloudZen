@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Subnet } from '../../models/cloud-services.model';
+import { Subnet } from '../../../models/cloud-services.model';
 
 @Pipe({ name: 'subnetFilterByProvider', standalone: true })
 export class SubnetFilterByProviderPipe implements PipeTransform {

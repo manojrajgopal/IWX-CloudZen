@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Vpc } from '../../models/cloud-services.model';
+import { Vpc } from '../../../models/cloud-services.model';
 
 @Pipe({ name: 'vpcFilterByProvider', standalone: true })
 export class VpcFilterByProviderPipe implements PipeTransform {

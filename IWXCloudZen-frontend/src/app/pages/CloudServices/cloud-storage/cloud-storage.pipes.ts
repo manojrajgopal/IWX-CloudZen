@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { S3Bucket } from '../../models/cloud-services.model';
+import { S3Bucket } from '../../../models/cloud-services.model';
 
 @Pipe({ name: 'filterByProvider', standalone: true })
 export class FilterByProviderPipe implements PipeTransform {

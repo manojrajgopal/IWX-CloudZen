@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Cluster } from '../../models/cloud-services.model';
+import { Cluster } from '../../../models/cloud-services.model';
 
 @Pipe({ name: 'clusterFilterByProvider', standalone: true })
 export class ClusterFilterByProviderPipe implements PipeTransform {

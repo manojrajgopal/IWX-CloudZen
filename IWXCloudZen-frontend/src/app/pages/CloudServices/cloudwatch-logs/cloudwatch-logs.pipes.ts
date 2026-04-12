@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { LogGroup } from '../../models/cloud-services.model';
+import { LogGroup } from '../../../models/cloud-services.model';
 
 @Pipe({ name: 'logGroupFilterByProvider', standalone: true })
 export class LogGroupFilterByProviderPipe implements PipeTransform {

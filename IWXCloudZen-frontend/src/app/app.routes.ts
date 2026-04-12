@@ -4,15 +4,15 @@ import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { ProfileComponent } from './pages/profile/profile.component';
-import { CloudStorageComponent } from './pages/cloud-storage/cloud-storage.component';
-import { ClustersComponent } from './pages/clusters/clusters.component';
-import { VpcsComponent } from './pages/vpcs/vpcs.component';
-import { EcrComponent } from './pages/ecr/ecr.component';
-import { EcsComponent } from './pages/ecs/ecs.component';
-import { SubnetsComponent } from './pages/subnets/subnets.component';
-import { SecurityGroupsComponent } from './pages/security-groups/security-groups.component';
-import { CloudWatchLogsComponent } from './pages/cloudwatch-logs/cloudwatch-logs.component';
-import { Ec2InstancesComponent } from './pages/ec2-instances/ec2-instances.component';
+import { CloudStorageComponent } from './pages/CloudServices/cloud-storage/cloud-storage.component';
+import { ClustersComponent } from './pages/CloudServices/clusters/clusters.component';
+import { VpcsComponent } from './pages/CloudServices/vpcs/vpcs.component';
+import { EcrComponent } from './pages/CloudServices/ecr/ecr.component';
+import { EcsComponent } from './pages/CloudServices/ecs/ecs.component';
+import { SubnetsComponent } from './pages/CloudServices/subnets/subnets.component';
+import { SecurityGroupsComponent } from './pages/CloudServices/security-groups/security-groups.component';
+import { CloudWatchLogsComponent } from './pages/CloudServices/cloudwatch-logs/cloudwatch-logs.component';
+import { Ec2InstancesComponent } from './pages/CloudServices/ec2-instances/ec2-instances.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },

@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { Ec2Instance } from '../../models/cloud-services.model';
+import { Ec2Instance } from '../../../models/cloud-services.model';
 
 @Pipe({ name: 'ec2FilterByProvider', standalone: true })
 export class Ec2FilterByProviderPipe implements PipeTransform {

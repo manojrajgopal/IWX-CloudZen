@@ -4,10 +4,10 @@ import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { CloudAccountService } from '../../services/cloud-account.service';
-import { CloudServicesService } from '../../services/cloud-services.service';
-import { CloudAccount } from '../../models/cloud-account.model';
-import { LogGroup } from '../../models/cloud-services.model';
+import { CloudAccountService } from '../../../services/cloud-account.service';
+import { CloudServicesService } from '../../../services/cloud-services.service';
+import { CloudAccount } from '../../../models/cloud-account.model';
+import { LogGroup } from '../../../models/cloud-services.model';
 import { LogGroupFilterByProviderPipe, LogGroupFilterByClassPipe } from './cloudwatch-logs.pipes';
 
 type ViewMode = 'grid' | 'list';

@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { SecurityGroup } from '../../models/cloud-services.model';
+import { SecurityGroup } from '../../../models/cloud-services.model';
 
 @Pipe({ name: 'sgFilterByProvider', standalone: true })
 export class SgFilterByProviderPipe implements PipeTransform {

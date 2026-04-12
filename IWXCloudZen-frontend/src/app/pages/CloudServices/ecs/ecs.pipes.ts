@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { EcsService } from '../../models/cloud-services.model';
+import { EcsService } from '../../../models/cloud-services.model';
 
 @Pipe({ name: 'ecsFilterByProvider', standalone: true })
 export class EcsFilterByProviderPipe implements PipeTransform {
