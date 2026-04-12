@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -39,6 +39,7 @@ export class ProfileComponent implements OnInit {
   modalClosing = false;
   selectedAccount: CloudAccount | null = null;
   settingDefault = false;
+  mobileActionsOpen = false;
 
   // Settings toggles (persisted in localStorage)
   settings: { [key: string]: boolean } = {
@@ -92,6 +93,11 @@ export class ProfileComponent implements OnInit {
     this.loadCloudAccounts();
     this.loadProviders();
     this.loadSettings();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.mobileActionsOpen = false;
   }
 
   loadCloudAccounts(): void {
