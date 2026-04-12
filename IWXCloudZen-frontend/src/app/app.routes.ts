@@ -12,6 +12,7 @@ import { EcsComponent } from './pages/ecs/ecs.component';
 import { SubnetsComponent } from './pages/subnets/subnets.component';
 import { SecurityGroupsComponent } from './pages/security-groups/security-groups.component';
 import { CloudWatchLogsComponent } from './pages/cloudwatch-logs/cloudwatch-logs.component';
+import { Ec2InstancesComponent } from './pages/ec2-instances/ec2-instances.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -26,6 +27,7 @@ export const routes: Routes = [
   { path: 'dashboard/subnets', component: SubnetsComponent },
   { path: 'dashboard/security-groups', component: SecurityGroupsComponent },
   { path: 'dashboard/cloudwatch-logs', component: CloudWatchLogsComponent },
+  { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },
   { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }
 ];

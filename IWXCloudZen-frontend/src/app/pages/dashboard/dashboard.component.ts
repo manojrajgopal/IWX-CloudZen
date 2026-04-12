@@ -263,6 +263,10 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/dashboard/cloudwatch-logs']);
       return;
     }
+    if (category.key === 'ec2') {
+      this.router.navigate(['/dashboard/ec2-instances']);
+      return;
+    }
     this.selectedService = category;
     this.showDetailModal = true;
   }
