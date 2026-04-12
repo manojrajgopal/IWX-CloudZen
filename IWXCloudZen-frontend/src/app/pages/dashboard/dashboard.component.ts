@@ -255,6 +255,10 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/dashboard/subnets']);
       return;
     }
+    if (category.key === 'securityGroups') {
+      this.router.navigate(['/dashboard/security-groups']);
+      return;
+    }
     this.selectedService = category;
     this.showDetailModal = true;
   }

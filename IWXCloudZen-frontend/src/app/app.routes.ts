@@ -10,6 +10,7 @@ import { VpcsComponent } from './pages/vpcs/vpcs.component';
 import { EcrComponent } from './pages/ecr/ecr.component';
 import { EcsComponent } from './pages/ecs/ecs.component';
 import { SubnetsComponent } from './pages/subnets/subnets.component';
+import { SecurityGroupsComponent } from './pages/security-groups/security-groups.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -22,6 +23,7 @@ export const routes: Routes = [
   { path: 'dashboard/ecr', component: EcrComponent },
   { path: 'dashboard/ecs', component: EcsComponent },
   { path: 'dashboard/subnets', component: SubnetsComponent },
+  { path: 'dashboard/security-groups', component: SecurityGroupsComponent },
   { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }
 ];
