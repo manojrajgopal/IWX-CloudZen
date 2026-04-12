@@ -251,6 +251,10 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/dashboard/ecs']);
       return;
     }
+    if (category.key === 'subnets') {
+      this.router.navigate(['/dashboard/subnets']);
+      return;
+    }
     this.selectedService = category;
     this.showDetailModal = true;
   }

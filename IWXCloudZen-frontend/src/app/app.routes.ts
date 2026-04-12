@@ -9,6 +9,7 @@ import { ClustersComponent } from './pages/clusters/clusters.component';
 import { VpcsComponent } from './pages/vpcs/vpcs.component';
 import { EcrComponent } from './pages/ecr/ecr.component';
 import { EcsComponent } from './pages/ecs/ecs.component';
+import { SubnetsComponent } from './pages/subnets/subnets.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -20,6 +21,7 @@ export const routes: Routes = [
   { path: 'dashboard/vpcs', component: VpcsComponent },
   { path: 'dashboard/ecr', component: EcrComponent },
   { path: 'dashboard/ecs', component: EcsComponent },
+  { path: 'dashboard/subnets', component: SubnetsComponent },
   { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }
 ];
