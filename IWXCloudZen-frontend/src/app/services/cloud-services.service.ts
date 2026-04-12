@@ -14,6 +14,7 @@ import {
   Ec2InstancesResponse,
   FullSyncResult,
   FileListResponse,
+  BucketFileSyncResponse,
   S3Bucket,
   CreateBucketRequest
 } from '../models/cloud-services.model';
@@ -93,10 +94,29 @@ export class CloudServicesService {
     );
   }
 
+  getS3FilesByBucket(accountId: number, bucketId: number): Observable<FileListResponse> {
+    return this.http.get<FileListResponse>(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/files?accountId=${accountId}&bucketId=${bucketId}`
+    );
+  }
+
   createS3Bucket(accountId: number, request: CreateBucketRequest): Observable<S3Bucket> {
     return this.http.post<S3Bucket>(
       `${this.apiUrl}/api/cloud/services/storage/aws/s3/buckets?accountId=${accountId}`,
       request
+    );
+  }
+
+  deleteS3Bucket(accountId: number, bucketId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/buckets/${bucketId}?accountId=${accountId}`
+    );
+  }
+
+  syncBucketFiles(accountId: number, bucketId: number): Observable<BucketFileSyncResponse> {
+    return this.http.post<BucketFileSyncResponse>(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/files/sync?accountId=${accountId}&bucketId=${bucketId}`,
+      null
     );
   }
 }

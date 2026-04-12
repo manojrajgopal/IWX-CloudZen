@@ -194,6 +194,13 @@ export interface FileListResponse {
   files: CloudFileResponse[];
 }
 
+export interface BucketFileSyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  files: CloudFileResponse[];
+}
+
 // API response wrappers
 export interface ClustersResponse { clusters: Cluster[]; }
 export interface BucketsResponse { buckets: S3Bucket[]; }
