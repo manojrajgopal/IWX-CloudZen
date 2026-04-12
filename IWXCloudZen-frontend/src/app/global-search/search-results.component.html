@@ -1,0 +1,98 @@
+<section class="min-h-[70vh] py-12">
+  <div class="max-w-5xl mx-auto px-4">
+    <!-- Search bar -->
+    <div class="mb-8">
+      <h2 class="text-3xl font-serif font-bold mb-6">Search Results</h2>
+      <div class="flex flex-col md:flex-row gap-3 items-stretch md:items-end border-b border-gray-200 pb-4">
+        <div class="flex-1">
+          <label class="block text-xs uppercase tracking-widest mb-1 text-gray-500">Search</label>
+          <input
+            type="text"
+            [(ngModel)]="query"
+            (keydown.enter)="onSearch()"
+            placeholder="Search services, resources, pages…"
+            class="w-full bg-transparent border-none outline-none text-xl placeholder-gray-300"
+          />
+        </div>
+        <div class="flex items-center gap-3">
+          <div>
+            <label class="block text-xs uppercase tracking-widest mb-1 text-gray-500">Cloud</label>
+            <select [(ngModel)]="cloud" (ngModelChange)="onSearch()" class="bg-transparent border-none outline-none text-lg font-medium">
+              <option value="all">All Clouds</option>
+              <option value="aws">AWS</option>
+              <option value="azure">Azure</option>
+              <option value="gcp">GCP</option>
+            </select>
+          </div>
+          <button class="btn !flex flex-row items-center gap-2 !py-2 !px-6" (click)="onSearch()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <span>Search</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category filters -->
+    <div class="flex flex-wrap gap-2 mb-8" *ngIf="results.length > 0">
+      <button
+        *ngFor="let cat of activeCategories"
+        type="button"
+        (click)="onCategoryChange(cat.value)"
+        class="category-chip"
+        [class.active]="isCategoryActive(cat.value)"
+      >
+        {{ cat.label }}
+        <span class="category-count">{{ getCategoryCount(cat.value) }}</span>
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex items-center gap-3 py-12 justify-center text-gray-500">
+      <div class="w-5 h-5 border-2 border-gray-200 border-t-black rounded-full animate-spin"></div>
+      <span>Searching across all resources…</span>
+    </div>
+
+    <!-- Empty state -->
+    <div *ngIf="!loading && results.length === 0 && query" class="text-center py-20">
+      <div class="text-5xl mb-4">🔍</div>
+      <p class="text-xl text-gray-400 mb-2">No results found</p>
+      <p class="text-sm text-gray-400">Try different keywords or a broader cloud filter.</p>
+    </div>
+
+    <!-- Results -->
+    <div *ngIf="!loading && results.length > 0">
+      <p class="text-sm text-gray-500 mb-6">
+        {{ filteredResults().length }} result{{ filteredResults().length === 1 ? '' : 's' }}
+        for "<span class="font-medium text-gray-800">{{ query }}</span>"
+      </p>
+
+      <div *ngFor="let group of cachedGroups" class="mb-8">
+        <h3 class="text-xs uppercase tracking-widest font-semibold text-gray-400 mb-3">{{ group.label }}</h3>
+        <div class="space-y-2">
+          <button
+            *ngFor="let item of group.items"
+            type="button"
+            class="result-card"
+            (click)="navigateTo(item)"
+          >
+            <span class="result-icon">{{ item.icon }}</span>
+            <div class="result-text">
+              <span class="result-title">{{ item.title }}</span>
+              <span class="result-subtitle">{{ item.subtitle }}</span>
+            </div>
+            <div class="result-meta" *ngIf="item.meta?.['provider']">
+              <span class="result-badge">{{ item.meta?.['provider'] }}</span>
+            </div>
+            <svg class="result-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

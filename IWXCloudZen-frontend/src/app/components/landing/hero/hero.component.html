@@ -8,31 +8,9 @@
         One platform to orchestrate, monitor, and optimize across AWS, Azure, GCP, and more.
       </p>
 
-      <!-- Search Bar (simplified) -->
+      <!-- Global Search Bar -->
       <div class="w-full max-w-2xl mx-auto md:mx-0">
-        <div class="flex flex-col md:flex-row items-end gap-4 md:gap-0 border-b border-black pb-2">
-          <div class="flex-1 w-full">
-            <label class="block text-xs uppercase tracking-widest mb-1 text-gray-500">Service / Tool</label>
-            <input type="text" placeholder="e.g., Kubernetes, Storage, AI" class="w-full bg-transparent border-none outline-none text-xl placeholder-gray-300">
-          </div>
-          <div class="w-full md:w-auto flex items-center gap-4">
-            <div>
-              <label class="block text-xs uppercase tracking-widest mb-1 text-gray-500">Cloud</label>
-              <select class="bg-transparent border-none outline-none text-lg font-medium">
-                <option>All Clouds</option>
-                <option>AWS</option>
-                <option>Azure</option>
-                <option>GCP</option>
-              </select>
-            </div>
-            <button class="btn !flex flex-row items-center gap-2 !py-2 !px-6">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <span>Search</span>
-            </button>
-          </div>
-        </div>
+        <app-global-search></app-global-search>
       </div>
 
       <div class="mt-12 flex flex-wrap gap-8 text-sm text-gray-500">

@@ -15,11 +15,13 @@ import { CloudWatchLogsComponent } from './pages/CloudServices/cloudwatch-logs/c
 import { Ec2InstancesComponent } from './pages/CloudServices/ec2-instances/ec2-instances.component';
 import { CreateBucketComponent } from './pages/CloudServices/cloud-storage/create-bucket/create-bucket.component';
 import { BucketOverviewComponent } from './pages/CloudServices/cloud-storage/bucket-overview/bucket-overview.component';
+import { SearchResultsComponent } from './global-search/search-results.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'search', component: SearchResultsComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'dashboard/cloud-storage', component: CloudStorageComponent },
   { path: 'dashboard/cloud-storage/create', component: CreateBucketComponent },
