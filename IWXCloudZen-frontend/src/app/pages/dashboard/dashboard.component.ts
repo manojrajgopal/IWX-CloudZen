@@ -259,6 +259,10 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/dashboard/security-groups']);
       return;
     }
+    if (category.key === 'logGroups') {
+      this.router.navigate(['/dashboard/cloudwatch-logs']);
+      return;
+    }
     this.selectedService = category;
     this.showDetailModal = true;
   }
