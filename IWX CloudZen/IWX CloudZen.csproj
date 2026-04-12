@@ -15,6 +15,7 @@
     <PackageReference Include="AWSSDK.ECS" Version="4.0.15.1" />
     <PackageReference Include="AWSSDK.IdentityManagement" Version="4.0.9.11" />
     <PackageReference Include="AWSSDK.S3" Version="4.0.19.1" />
+    <PackageReference Include="AWSSDK.SimpleSystemsManagement" Version="4.0.7.10" />
     <PackageReference Include="Azure.Identity" Version="1.19.0" />
     <PackageReference Include="Azure.ResourceManager" Version="1.14.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
@@ -27,6 +28,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="SSH.NET" Version="2025.1.0" />
   </ItemGroup>
 
 </Project>
