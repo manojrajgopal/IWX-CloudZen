@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
@@ -65,7 +65,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private cloudAccountService: CloudAccountService,
-    private cloudServicesService: CloudServicesService
+    private cloudServicesService: CloudServicesService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -229,6 +230,11 @@ export class DashboardComponent implements OnInit {
   }
 
   openServiceDetail(category: ServiceCategory): void {
+    // Navigate to dedicated page for services that have one
+    if (category.key === 'storage') {
+      this.router.navigate(['/dashboard/cloud-storage']);
+      return;
+    }
     this.selectedService = category;
     this.showDetailModal = true;
   }
