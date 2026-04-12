@@ -1,0 +1,117 @@
+<div class="container-lux py-16 md:py-24">
+  <!-- Profile Header -->
+  <div class="mb-16">
+    <div class="flex flex-col md:flex-row md:items-center gap-6 mb-8">
+      <div class="w-20 h-20 bg-black text-white flex items-center justify-center rounded-full text-3xl font-serif font-bold">
+        {{ (currentUser?.name?.charAt(0) || 'U') | uppercase }}
+      </div>
+      <div>
+        <h1 class="text-4xl md:text-6xl font-serif font-bold tracking-tight mb-2">
+          {{ currentUser?.name || 'User' }}
+        </h1>
+        <p class="text-lg text-gray-500">{{ currentUser?.email || 'user@example.com' }}</p>
+        <div class="mt-2">
+          <span class="text-xs uppercase tracking-widest bg-black text-white px-3 py-1 inline-block">
+            {{ currentUser?.role || 'Member' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile Stats -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-16">
+    <div *ngFor="let stat of profileStats" class="border border-gray-200 p-6 text-center hover:shadow-lg transition card-hover">
+      <div class="text-4xl md:text-5xl font-serif font-bold text-black mb-2 tracking-tight">
+        {{ stat.value }}
+      </div>
+      <div class="text-sm uppercase tracking-widest text-gray-500">
+        {{ stat.label }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Cloud Accounts Section -->
+  <div class="mb-16">
+    <div class="flex justify-between items-center mb-8">
+      <h2 class="text-3xl md:text-4xl font-serif font-bold">Cloud Accounts</h2>
+      <a routerLink="/dashboard" class="btn">View Dashboard</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div *ngFor="let account of cloudAccounts" class="border border-gray-200 p-6 hover:shadow-lg transition card-hover">
+        <div class="flex items-start justify-between mb-4">
+          <div class="w-12 h-12 bg-black text-white flex items-center justify-center rounded-full text-sm font-bold">
+            {{ account.provider }}
+          </div>
+          <span [class]="'text-xs uppercase tracking-wider px-2 py-1 rounded ' + getStatusClass(account.status)">
+            {{ account.status }}
+          </span>
+        </div>
+        <h3 class="text-xl font-serif font-bold mb-2">{{ account.accountName }}</h3>
+        <p class="text-gray-500 text-sm">{{ account.provider }} · {{ account.region }}</p>
+        <div class="mt-4 flex gap-2">
+          <span class="text-sm text-black border-b border-black hover:border-gray-400 cursor-pointer">Manage</span>
+          <span class="text-sm text-gray-500 border-b border-gray-300 hover:border-black cursor-pointer">Settings</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Account Details Section -->
+  <div class="mb-16">
+    <h2 class="text-3xl md:text-4xl font-serif font-bold mb-8">Account Details</h2>
+    <div class="border border-gray-200 divide-y divide-gray-200">
+      <div class="flex flex-col md:flex-row md:items-center justify-between p-6">
+        <div>
+          <div class="text-xs uppercase tracking-widest text-gray-500 mb-1">Full Name</div>
+          <div class="text-lg font-medium">{{ currentUser?.name || 'User' }}</div>
+        </div>
+      </div>
+      <div class="flex flex-col md:flex-row md:items-center justify-between p-6">
+        <div>
+          <div class="text-xs uppercase tracking-widest text-gray-500 mb-1">Email Address</div>
+          <div class="text-lg font-medium">{{ currentUser?.email || 'user@example.com' }}</div>
+        </div>
+      </div>
+      <div class="flex flex-col md:flex-row md:items-center justify-between p-6">
+        <div>
+          <div class="text-xs uppercase tracking-widest text-gray-500 mb-1">Role</div>
+          <div class="text-lg font-medium">{{ currentUser?.role || 'Member' }}</div>
+        </div>
+      </div>
+      <div class="flex flex-col md:flex-row md:items-center justify-between p-6">
+        <div>
+          <div class="text-xs uppercase tracking-widest text-gray-500 mb-1">Member Since</div>
+          <div class="text-lg font-medium">April 2026</div>
+        </div>
+      </div>
+      <div class="flex flex-col md:flex-row md:items-center justify-between p-6">
+        <div>
+          <div class="text-xs uppercase tracking-widest text-gray-500 mb-1">Plan</div>
+          <div class="text-lg font-medium">Pro</div>
+        </div>
+        <span class="text-xs uppercase tracking-widest bg-green-100 text-green-800 px-3 py-1 mt-2 md:mt-0 inline-block rounded">Active</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Section -->
+  <div class="border-t border-gray-200 pt-16">
+    <h2 class="text-3xl md:text-4xl font-serif font-bold mb-8">Recent Activity</h2>
+    <div class="space-y-4">
+      <div *ngFor="let activity of recentActivity; let last = last"
+           class="flex items-center gap-4 pb-4"
+           [class.border-b]="!last"
+           [class.border-gray-200]="!last">
+        <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-xs font-bold">
+          {{ activity.icon }}
+        </div>
+        <div class="flex-1">
+          <p class="font-medium">{{ activity.title }}</p>
+          <p class="text-xs text-gray-500">{{ activity.time }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

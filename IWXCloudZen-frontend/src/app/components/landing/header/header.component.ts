@@ -1,7 +1,8 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -10,7 +11,7 @@ import { AuthService } from '../../../services/auth.service';
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   scrolled = false;
   mobileMenuOpen = false;
   menuClosing = false;
@@ -18,11 +19,18 @@ export class HeaderComponent implements OnInit {
   dropdownClosing = false;
   currentUser: any = null;
   private menuCloseTimer: ReturnType<typeof setTimeout> | null = null;
+  private userSub!: Subscription;
 
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    this.currentUser = this.authService.getUser();
+    this.userSub = this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.userSub?.unsubscribe();
   }
 
   @HostListener('window:scroll', [])
@@ -81,6 +89,7 @@ export class HeaderComponent implements OnInit {
   }
 
   logout() {
+    this.closeProfileDropdown();
     this.authService.logout();
     this.closeMobileMenu();
   }

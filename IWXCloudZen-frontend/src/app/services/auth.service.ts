@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, catchError, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { LoginResponse, User } from '../models/user.model';
 import { Router } from '@angular/router';
@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 })
 export class AuthService {
   private apiUrl = environment.apiUrl;
+  private currentUserSubject = new BehaviorSubject<User | null>(this.getUser());
+  currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {}
 
@@ -22,11 +24,13 @@ export class AuthService {
       tap(response => {
         if (response.token) {
           localStorage.setItem('token', response.token);
-          localStorage.setItem('user', JSON.stringify({
+          const user = {
             name: response.name,
             email: response.email,
             role: response.role
-          }));
+          };
+          localStorage.setItem('user', JSON.stringify(user));
+          this.currentUserSubject.next(user);
         }
       })
     );
@@ -35,6 +39,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    this.currentUserSubject.next(null);
     this.router.navigate(['/login']);
   }
 
