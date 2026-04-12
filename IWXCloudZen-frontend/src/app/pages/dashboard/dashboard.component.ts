@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CloudAccountService } from '../../services/cloud-account.service';
 
 interface Metric {
   label: string;
@@ -28,7 +29,7 @@ export class DashboardComponent implements OnInit {
   currentUser: any = null;
   metrics: Metric[] = [
     { label: 'Active Services', value: '12' },
-    { label: 'Connected Clouds', value: '3' },
+    { label: 'Connected Clouds', value: '—' },
     { label: 'Cost Savings', value: '₹42,500' },
     { label: 'Health Score', value: '98%' }
   ];
@@ -68,10 +69,21 @@ export class DashboardComponent implements OnInit {
     }
   ];
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private cloudAccountService: CloudAccountService
+  ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getUser();
+    this.cloudAccountService.getAccounts().subscribe({
+      next: (accounts) => {
+        this.metrics[1].value = accounts.length.toString();
+      },
+      error: () => {
+        this.metrics[1].value = '0';
+      }
+    });
   }
 
   getStatusClass(status: string): string {

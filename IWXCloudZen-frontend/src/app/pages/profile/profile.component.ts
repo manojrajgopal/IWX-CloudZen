@@ -2,18 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CloudAccountService } from '../../services/cloud-account.service';
+import { CloudAccount } from '../../models/cloud-account.model';
 
 interface ProfileStat {
   label: string;
   value: string;
-}
-
-interface CloudAccount {
-  id: number;
-  provider: string;
-  accountName: string;
-  region: string;
-  status: 'connected' | 'disconnected' | 'syncing';
 }
 
 interface ActivityItem {
@@ -31,43 +25,15 @@ interface ActivityItem {
 })
 export class ProfileComponent implements OnInit {
   currentUser: any = null;
+  cloudAccounts: CloudAccount[] = [];
+  loadingAccounts = true;
+  accountsError = '';
 
   profileStats: ProfileStat[] = [
-    { label: 'Cloud Accounts', value: '4' },
+    { label: 'Cloud Accounts', value: '—' },
     { label: 'Active Services', value: '12' },
     { label: 'Deployments', value: '87' },
     { label: 'Uptime', value: '99.9%' }
-  ];
-
-  cloudAccounts: CloudAccount[] = [
-    {
-      id: 1,
-      provider: 'AWS',
-      accountName: 'Production',
-      region: 'ap-south-1',
-      status: 'connected'
-    },
-    {
-      id: 2,
-      provider: 'AWS',
-      accountName: 'Development',
-      region: 'us-east-1',
-      status: 'connected'
-    },
-    {
-      id: 3,
-      provider: 'Azure',
-      accountName: 'Staging',
-      region: 'Central India',
-      status: 'syncing'
-    },
-    {
-      id: 4,
-      provider: 'GCP',
-      accountName: 'Analytics',
-      region: 'asia-south1',
-      status: 'disconnected'
-    }
   ];
 
   recentActivity: ActivityItem[] = [
@@ -78,26 +44,46 @@ export class ProfileComponent implements OnInit {
     { icon: 'VPC', title: 'Created new VPC peering connection', time: '2 days ago' }
   ];
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private cloudAccountService: CloudAccountService
+  ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getUser();
+    this.loadCloudAccounts();
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case 'connected':
-        return 'bg-green-100 text-green-800';
-      case 'syncing':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'disconnected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  loadCloudAccounts(): void {
+    this.loadingAccounts = true;
+    this.accountsError = '';
+    this.cloudAccountService.getAccounts().subscribe({
+      next: (accounts) => {
+        this.cloudAccounts = accounts;
+        this.profileStats[0].value = accounts.length.toString();
+        this.loadingAccounts = false;
+      },
+      error: () => {
+        this.accountsError = 'Failed to load cloud accounts.';
+        this.loadingAccounts = false;
+      }
+    });
   }
 
-  getProviderInitial(provider: string): string {
-    return provider.charAt(0);
+  getStatusClass(isDefault: boolean): string {
+    return isDefault
+      ? 'bg-green-100 text-green-800'
+      : 'bg-gray-100 text-gray-800';
+  }
+
+  formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   }
 }
