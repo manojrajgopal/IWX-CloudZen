@@ -50,6 +50,11 @@ export class CloudStorageComponent implements OnInit {
   selectedBucket: S3Bucket | null = null;
   showDetailPanel = false;
 
+  // Sync
+  syncing = false;
+  syncMessage: string | null = null;
+  syncMessageType: 'success' | 'error' | null = null;
+
   // Metrics
   metrics: StorageMetric[] = [
     { label: 'Total Buckets', value: '—', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4', color: 'text-black' },
@@ -207,6 +212,39 @@ export class CloudStorageComponent implements OnInit {
 
   refreshData(): void {
     this.loadData();
+  }
+
+  syncData(): void {
+    const awsAccounts = this.accounts.filter(a => a.provider?.toUpperCase() === 'AWS');
+    if (awsAccounts.length === 0) {
+      this.syncMessage = 'No AWS accounts found to sync.';
+      this.syncMessageType = 'error';
+      setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      return;
+    }
+
+    this.syncing = true;
+    this.syncMessage = null;
+
+    const requests = awsAccounts.map(a =>
+      this.cloudServicesService.syncS3Buckets(a.id).pipe(catchError(() => of({ error: true })))
+    );
+
+    forkJoin(requests).subscribe({
+      next: () => {
+        this.syncing = false;
+        this.syncMessage = `Sync completed — ${awsAccounts.length} account${awsAccounts.length !== 1 ? 's' : ''} synced.`;
+        this.syncMessageType = 'success';
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+        this.loadData();
+      },
+      error: () => {
+        this.syncing = false;
+        this.syncMessage = 'Sync failed. Please try again.';
+        this.syncMessageType = 'error';
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      }
+    });
   }
 
   getAccountName(accountId: number): string {

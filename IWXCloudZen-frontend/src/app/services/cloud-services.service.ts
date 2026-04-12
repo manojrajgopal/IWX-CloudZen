@@ -75,4 +75,11 @@ export class CloudServicesService {
       `${this.apiUrl}/api/cloud/services/ec2/aws/list?accountId=${accountId}`
     );
   }
+
+  syncS3Buckets(accountId: number): Observable<any> {
+    return this.http.post<any>(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/sync?accountId=${accountId}`,
+      null
+    );
+  }
 }
