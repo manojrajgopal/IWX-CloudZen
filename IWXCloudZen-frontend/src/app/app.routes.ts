@@ -5,6 +5,7 @@ import { RegisterComponent } from './auth/register/register.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { CloudStorageComponent } from './pages/cloud-storage/cloud-storage.component';
+import { ClustersComponent } from './pages/clusters/clusters.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -12,6 +13,7 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'dashboard/cloud-storage', component: CloudStorageComponent },
+  { path: 'dashboard/clusters', component: ClustersComponent },
   { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }
 ];

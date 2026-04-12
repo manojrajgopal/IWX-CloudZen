@@ -235,6 +235,10 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/dashboard/cloud-storage']);
       return;
     }
+    if (category.key === 'clusters') {
+      this.router.navigate(['/dashboard/clusters']);
+      return;
+    }
     this.selectedService = category;
     this.showDetailModal = true;
   }
