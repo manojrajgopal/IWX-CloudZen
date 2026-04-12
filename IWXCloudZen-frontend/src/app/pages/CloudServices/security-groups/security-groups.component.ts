@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ interface SgMetric {
   templateUrl: './security-groups.component.html',
   styleUrls: ['./security-groups.component.css']
 })
-export class SecurityGroupsComponent implements OnInit {
+export class SecurityGroupsComponent implements OnInit, OnDestroy {
   accounts: CloudAccount[] = [];
   securityGroups: SecurityGroup[] = [];
   loading = true;
@@ -179,11 +179,17 @@ export class SecurityGroupsComponent implements OnInit {
     this.selectedGroup = sg;
     this.activeRulesTab = 'inbound';
     this.showDetailPanel = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
+    document.body.style.overflow = '';
     setTimeout(() => this.selectedGroup = null, 300);
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   clearFilters(): void {

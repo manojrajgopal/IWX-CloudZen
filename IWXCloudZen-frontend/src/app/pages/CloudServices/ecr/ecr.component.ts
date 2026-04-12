@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ interface EcrMetric {
   templateUrl: './ecr.component.html',
   styleUrls: ['./ecr.component.css']
 })
-export class EcrComponent implements OnInit {
+export class EcrComponent implements OnInit, OnDestroy {
   accounts: CloudAccount[] = [];
   repositories: EcrRepository[] = [];
   loading = true;
@@ -175,11 +175,17 @@ export class EcrComponent implements OnInit {
   openDetail(repo: EcrRepository): void {
     this.selectedRepo = repo;
     this.showDetailPanel = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
+    document.body.style.overflow = '';
     setTimeout(() => this.selectedRepo = null, 300);
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   clearFilters(): void {

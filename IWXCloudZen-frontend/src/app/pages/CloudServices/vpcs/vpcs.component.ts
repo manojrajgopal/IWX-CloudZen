@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ interface VpcMetric {
   templateUrl: './vpcs.component.html',
   styleUrls: ['./vpcs.component.css']
 })
-export class VpcsComponent implements OnInit {
+export class VpcsComponent implements OnInit, OnDestroy {
   accounts: CloudAccount[] = [];
   vpcs: Vpc[] = [];
   loading = true;
@@ -196,11 +196,17 @@ export class VpcsComponent implements OnInit {
   openDetail(vpc: Vpc): void {
     this.selectedVpc = vpc;
     this.showDetailPanel = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
+    document.body.style.overflow = '';
     setTimeout(() => this.selectedVpc = null, 300);
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   clearFilters(): void {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ interface LogMetric {
   templateUrl: './cloudwatch-logs.component.html',
   styleUrls: ['./cloudwatch-logs.component.css']
 })
-export class CloudWatchLogsComponent implements OnInit {
+export class CloudWatchLogsComponent implements OnInit, OnDestroy {
   accounts: CloudAccount[] = [];
   logGroups: LogGroup[] = [];
   loading = true;
@@ -195,11 +195,17 @@ export class CloudWatchLogsComponent implements OnInit {
   openDetail(lg: LogGroup): void {
     this.selectedLogGroup = lg;
     this.showDetailPanel = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
+    document.body.style.overflow = '';
     setTimeout(() => this.selectedLogGroup = null, 300);
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   clearFilters(): void {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ interface SubnetMetric {
   templateUrl: './subnets.component.html',
   styleUrls: ['./subnets.component.css']
 })
-export class SubnetsComponent implements OnInit {
+export class SubnetsComponent implements OnInit, OnDestroy {
   accounts: CloudAccount[] = [];
   subnets: Subnet[] = [];
   loading = true;
@@ -211,11 +211,17 @@ export class SubnetsComponent implements OnInit {
   openDetail(subnet: Subnet): void {
     this.selectedSubnet = subnet;
     this.showDetailPanel = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
+    document.body.style.overflow = '';
     setTimeout(() => this.selectedSubnet = null, 300);
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   clearFilters(): void {

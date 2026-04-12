@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ interface StorageMetric {
   templateUrl: './cloud-storage.component.html',
   styleUrls: ['./cloud-storage.component.css']
 })
-export class CloudStorageComponent implements OnInit {
+export class CloudStorageComponent implements OnInit, OnDestroy {
   // Data
   accounts: CloudAccount[] = [];
   buckets: S3Bucket[] = [];
@@ -94,6 +94,10 @@ export class CloudStorageComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   private loadData(): void {
@@ -326,10 +330,12 @@ export class CloudStorageComponent implements OnInit {
     this.selectedBucket = bucket;
     this.selectedBucketFiles = this.bucketFiles.get(bucket.id) || [];
     this.showDetailPanel = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
+    document.body.style.overflow = '';
     setTimeout(() => {
       this.selectedBucket = null;
       this.selectedBucketFiles = [];

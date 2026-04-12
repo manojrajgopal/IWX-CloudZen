@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ interface ClusterMetric {
   templateUrl: './clusters.component.html',
   styleUrls: ['./clusters.component.css']
 })
-export class ClustersComponent implements OnInit {
+export class ClustersComponent implements OnInit, OnDestroy {
   // Data
   accounts: CloudAccount[] = [];
   clusters: Cluster[] = [];
@@ -190,11 +190,17 @@ export class ClustersComponent implements OnInit {
   openDetail(cluster: Cluster): void {
     this.selectedCluster = cluster;
     this.showDetailPanel = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
+    document.body.style.overflow = '';
     setTimeout(() => this.selectedCluster = null, 300);
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   clearFilters(): void {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ interface EcsMetric {
   templateUrl: './ecs.component.html',
   styleUrls: ['./ecs.component.css']
 })
-export class EcsComponent implements OnInit {
+export class EcsComponent implements OnInit, OnDestroy {
   accounts: CloudAccount[] = [];
   services: EcsService[] = [];
   loading = true;
@@ -198,11 +198,17 @@ export class EcsComponent implements OnInit {
   openDetail(svc: EcsService): void {
     this.selectedService = svc;
     this.showDetailPanel = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
+    document.body.style.overflow = '';
     setTimeout(() => this.selectedService = null, 300);
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   clearFilters(): void {

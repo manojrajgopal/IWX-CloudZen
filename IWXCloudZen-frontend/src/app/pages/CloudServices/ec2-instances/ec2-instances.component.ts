@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,7 +28,7 @@ interface Ec2Metric {
   templateUrl: './ec2-instances.component.html',
   styleUrls: ['./ec2-instances.component.css']
 })
-export class Ec2InstancesComponent implements OnInit {
+export class Ec2InstancesComponent implements OnInit, OnDestroy {
   accounts: CloudAccount[] = [];
   instances: Ec2Instance[] = [];
   loading = true;
@@ -192,11 +192,17 @@ export class Ec2InstancesComponent implements OnInit {
   openDetail(inst: Ec2Instance): void {
     this.selectedInstance = inst;
     this.showDetailPanel = true;
+    document.body.style.overflow = 'hidden';
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
+    document.body.style.overflow = '';
     setTimeout(() => this.selectedInstance = null, 300);
+  }
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   clearFilters(): void {
