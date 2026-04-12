@@ -14,6 +14,7 @@ using IWX_CloudZen.CloudServices.CloudWatchLogs.Services;
 using IWX_CloudZen.CloudServices.EC2.Services;
 using IWX_CloudZen.CloudServices.KeyPair.Services;
 using IWX_CloudZen.CloudServices.EC2InstanceConnect.Services;
+using IWX_CloudZen.CloudServices.EC2Connection.Services;
 using IWX_CloudZen.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,7 @@ builder.Services.AddScoped<CloudWatchLogsService>();
 builder.Services.AddScoped<Ec2Service>();
 builder.Services.AddScoped<KeyPairService>();
 builder.Services.AddScoped<Ec2InstanceConnectService>();
+builder.Services.AddSingleton<Ec2ConnectionService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
