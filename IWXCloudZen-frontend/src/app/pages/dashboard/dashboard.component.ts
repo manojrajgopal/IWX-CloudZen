@@ -239,6 +239,10 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/dashboard/clusters']);
       return;
     }
+    if (category.key === 'vpcs') {
+      this.router.navigate(['/dashboard/vpcs']);
+      return;
+    }
     this.selectedService = category;
     this.showDetailModal = true;
   }

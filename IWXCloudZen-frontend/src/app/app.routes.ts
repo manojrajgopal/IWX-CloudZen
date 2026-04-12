@@ -6,6 +6,7 @@ import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { CloudStorageComponent } from './pages/cloud-storage/cloud-storage.component';
 import { ClustersComponent } from './pages/clusters/clusters.component';
+import { VpcsComponent } from './pages/vpcs/vpcs.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -14,6 +15,7 @@ export const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent },
   { path: 'dashboard/cloud-storage', component: CloudStorageComponent },
   { path: 'dashboard/clusters', component: ClustersComponent },
+  { path: 'dashboard/vpcs', component: VpcsComponent },
   { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }
 ];
