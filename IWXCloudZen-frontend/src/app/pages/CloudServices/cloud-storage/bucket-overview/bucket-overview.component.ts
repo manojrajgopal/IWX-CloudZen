@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -32,7 +33,7 @@ interface FolderGroup {
   templateUrl: './bucket-overview.component.html',
   styleUrls: ['./bucket-overview.component.css']
 })
-export class BucketOverviewComponent implements OnInit {
+export class BucketOverviewComponent implements OnInit, OnDestroy {
   // State
   loading = true;
   error: string | null = null;
@@ -87,6 +88,15 @@ export class BucketOverviewComponent implements OnInit {
   // Download state
   downloadingFileId: number | null = null;
 
+  // File detail panel
+  selectedFile: CloudFileResponse | null = null;
+  showFilePanel = false;
+  filePreviewUrl: string | null = null;
+  filePreviewSafeUrl: SafeResourceUrl | null = null;
+  filePreviewText: string | null = null;
+  filePreviewLoading = false;
+  filePreviewError = false;
+
   // Toast
   toastMessage: string | null = null;
   toastType: 'success' | 'error' = 'success';
@@ -97,8 +107,13 @@ export class BucketOverviewComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private cloudAccountService: CloudAccountService,
-    private cloudServicesService: CloudServicesService
+    private cloudServicesService: CloudServicesService,
+    private sanitizer: DomSanitizer
   ) {}
+
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
+  }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');
@@ -251,6 +266,113 @@ export class BucketOverviewComponent implements OnInit {
       this.fileSortField = field;
       this.fileSortDir = 'asc';
     }
+  }
+
+  openFileDetail(file: CloudFileResponse): void {
+    this.selectedFile = file;
+    this.showFilePanel = true;
+    document.body.style.overflow = 'hidden';
+    this.loadFilePreview(file);
+  }
+
+  closeFileDetail(): void {
+    this.showFilePanel = false;
+    document.body.style.overflow = '';
+    if (this.filePreviewUrl) {
+      URL.revokeObjectURL(this.filePreviewUrl);
+    }
+    setTimeout(() => {
+      this.selectedFile = null;
+      this.filePreviewUrl = null;
+      this.filePreviewSafeUrl = null;
+      this.filePreviewText = null;
+      this.filePreviewLoading = false;
+      this.filePreviewError = false;
+    }, 300);
+  }
+
+  loadFilePreview(file: CloudFileResponse): void {
+    this.filePreviewUrl = null;
+    this.filePreviewText = null;
+    this.filePreviewLoading = true;
+    this.filePreviewError = false;
+
+    const ext = this.getFileExtension(this.getFileName(file));
+    if (!this.isPreviewableFile(ext)) {
+      this.filePreviewLoading = false;
+      return;
+    }
+
+    this.cloudServicesService.downloadS3File(file.id).subscribe({
+      next: (blob) => {
+        if (this.isTextFile(ext)) {
+          blob.text().then(text => {
+            this.filePreviewText = text;
+            this.filePreviewLoading = false;
+          });
+        } else {
+          this.filePreviewUrl = URL.createObjectURL(blob);
+          if (this.isPdfFile(ext)) {
+            this.filePreviewSafeUrl = this.sanitizer.bypassSecurityTrustResourceUrl(this.filePreviewUrl);
+          }
+          this.filePreviewLoading = false;
+        }
+      },
+      error: () => {
+        this.filePreviewLoading = false;
+        this.filePreviewError = true;
+      }
+    });
+  }
+
+  isImageFile(ext: string): boolean {
+    return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(ext);
+  }
+
+  isTextFile(ext: string): boolean {
+    return ['txt', 'json', 'xml', 'csv', 'yaml', 'yml', 'md', 'html', 'css', 'js', 'ts', 'log', 'ini', 'cfg', 'env', 'sh', 'py', 'java', 'c', 'cpp', 'h', 'rb', 'go', 'rs', 'sql', 'graphql', 'toml', 'properties'].includes(ext);
+  }
+
+  isPdfFile(ext: string): boolean {
+    return ext === 'pdf';
+  }
+
+  isVideoFile(ext: string): boolean {
+    return ['mp4', 'webm', 'ogg'].includes(ext);
+  }
+
+  isAudioFile(ext: string): boolean {
+    return ['mp3', 'wav', 'ogg', 'aac', 'flac'].includes(ext);
+  }
+
+  isPreviewableFile(ext: string): boolean {
+    return this.isImageFile(ext) || this.isTextFile(ext) || this.isPdfFile(ext) || this.isVideoFile(ext) || this.isAudioFile(ext);
+  }
+
+  openPreviewInNewTab(): void {
+    if (this.filePreviewUrl) {
+      window.open(this.filePreviewUrl, '_blank');
+    } else if (this.filePreviewText && this.selectedFile) {
+      const ext = this.getFileExtension(this.getFileName(this.selectedFile));
+      const mimeMap: Record<string, string> = {
+        'json': 'application/json', 'xml': 'application/xml', 'html': 'text/html',
+        'css': 'text/css', 'js': 'application/javascript', 'csv': 'text/csv',
+        'svg': 'image/svg+xml', 'md': 'text/markdown',
+      };
+      const mime = mimeMap[ext] || 'text/plain';
+      const blob = new Blob([this.filePreviewText], { type: mime });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    }
+  }
+
+  getFileName(file: CloudFileResponse): string {
+    if (file.fileName) return file.fileName;
+    if (file.fileUrl) {
+      const parts = file.fileUrl.split('/');
+      return parts[parts.length - 1] || file.fileUrl;
+    }
+    return '—';
   }
 
   // ── Helpers ──

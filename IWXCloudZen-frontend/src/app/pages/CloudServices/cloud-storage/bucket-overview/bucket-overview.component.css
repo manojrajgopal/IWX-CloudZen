@@ -235,3 +235,49 @@
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ── File Detail Panel ── */
+.file-panel-backdrop-enter {
+  animation: fadeInBackdrop 0.2s ease-out forwards;
+}
+.file-panel-backdrop-exit {
+  animation: fadeOutBackdrop 0.2s ease-in forwards;
+}
+
+@keyframes fadeOutBackdrop {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.file-panel-enter {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.file-panel-exit {
+  animation: slideOutRight 0.2s ease-in forwards;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+/* ── File Panel Action Button ── */
+.file-panel-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.file-panel-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
