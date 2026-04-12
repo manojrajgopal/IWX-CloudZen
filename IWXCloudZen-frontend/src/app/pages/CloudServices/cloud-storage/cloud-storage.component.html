@@ -1,0 +1,718 @@
+<div class="container-lux py-12 md:py-20">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- HEADER -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12 gap-4">
+    <div>
+      <div class="flex items-center gap-3 mb-2">
+        <a routerLink="/dashboard" class="text-gray-400 hover:text-black transition">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-3xl md:text-5xl font-serif font-bold tracking-tight">Cloud Storage</h1>
+          <p class="text-sm text-gray-400 uppercase tracking-widest mt-1">AWS S3 &middot; Azure Blob &middot; GCP Storage</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Sync toast -->
+      <div *ngIf="syncMessage"
+           class="flex items-center gap-2 text-xs px-3 py-2 border transition-all duration-300"
+           [ngClass]="syncMessageType === 'success' ? 'border-green-200 bg-green-50 text-green-700' : 'border-red-200 bg-red-50 text-red-700'">
+        <svg *ngIf="syncMessageType === 'success'" class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+        <svg *ngIf="syncMessageType === 'error'" class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        {{ syncMessage }}
+      </div>
+
+      <!-- Create Bucket button -->
+      <a routerLink="/dashboard/cloud-storage/create"
+         class="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-medium uppercase tracking-wider bg-black text-white hover:bg-gray-800 transition active:scale-[0.98]">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Create
+      </a>
+
+      <!-- Sync button -->
+      <button (click)="syncData()" class="btn-icon" [title]="syncing ? 'Syncing…' : 'Sync'" [disabled]="syncing"
+              [ngClass]="syncing ? 'opacity-60 cursor-not-allowed' : ''">
+        <!-- Spinner while syncing -->
+        <svg *ngIf="syncing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a10 10 0 100 10h-4a8 8 0 01-8-8z"/>
+        </svg>
+        <!-- Sync icon when idle -->
+        <svg *ngIf="!syncing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SYNC REPORT (shown after sync) -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="showSyncReport && lastSyncResults.length > 0" class="mb-8 border border-green-200 bg-green-50/50 p-6 sync-report-enter">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-900">Sync Report</h3>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Last sync results</p>
+        </div>
+      </div>
+      <button (click)="closeSyncReport()" class="text-gray-400 hover:text-gray-600 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Sync summary stats -->
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-5">
+      <div class="text-center p-3 bg-white border border-green-100 rounded">
+        <p class="text-xl font-bold text-green-600">{{ getTotalSyncBucketsAdded() }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Buckets Added</p>
+      </div>
+      <div class="text-center p-3 bg-white border border-blue-100 rounded">
+        <p class="text-xl font-bold text-blue-600">{{ getTotalSyncBucketsUpdated() }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Buckets Updated</p>
+      </div>
+      <div class="text-center p-3 bg-white border border-red-100 rounded">
+        <p class="text-xl font-bold text-red-500">{{ getTotalSyncBucketsRemoved() }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Buckets Removed</p>
+      </div>
+      <div class="text-center p-3 bg-white border border-green-100 rounded">
+        <p class="text-xl font-bold text-green-600">{{ getTotalSyncFilesAdded() | number }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Files Added</p>
+      </div>
+      <div class="text-center p-3 bg-white border border-blue-100 rounded">
+        <p class="text-xl font-bold text-blue-600">{{ getTotalSyncFilesUpdated() | number }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Files Updated</p>
+      </div>
+      <div class="text-center p-3 bg-white border border-red-100 rounded">
+        <p class="text-xl font-bold text-red-500">{{ getTotalSyncFilesRemoved() | number }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Files Removed</p>
+      </div>
+    </div>
+
+    <!-- Per-bucket sync details -->
+    <div class="space-y-2 max-h-48 overflow-y-auto">
+      <ng-container *ngFor="let syncResult of lastSyncResults">
+        <div *ngFor="let bs of syncResult.buckets" class="flex items-center justify-between text-xs py-2 px-3 bg-white border border-gray-100 rounded">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"></div>
+            <span class="font-medium text-gray-800 truncate">{{ bs.bucket.name }}</span>
+            <span class="text-gray-400">{{ bs.bucket.region }}</span>
+          </div>
+          <div class="flex items-center gap-4 flex-shrink-0">
+            <span class="text-gray-500">{{ bs.files.length | number }} files</span>
+            <span *ngIf="bs.filesAdded > 0" class="text-green-600">+{{ bs.filesAdded | number }}</span>
+            <span *ngIf="bs.filesUpdated > 0" class="text-blue-600">~{{ bs.filesUpdated | number }}</span>
+            <span *ngIf="bs.filesRemoved > 0" class="text-red-500">-{{ bs.filesRemoved | number }}</span>
+          </div>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- METRICS -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-12">
+    <div *ngFor="let m of metrics" class="metric-card border border-gray-200 p-6 text-center hover:shadow-lg transition card-hover">
+      <div class="w-10 h-10 mx-auto mb-3 rounded-lg bg-gray-50 flex items-center justify-center">
+        <svg class="w-5 h-5" [ngClass]="m.color" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="m.icon"/>
+        </svg>
+      </div>
+      <div class="text-3xl md:text-4xl font-serif font-bold text-black mb-1 tracking-tight">
+        {{ m.value }}
+      </div>
+      <div class="text-xs uppercase tracking-widest text-gray-400">{{ m.label }}</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FILES PER ACCOUNT SUMMARY -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && accounts.length > 0" class="mb-8 border border-gray-200 p-6">
+    <h3 class="text-sm uppercase tracking-widest text-gray-400 mb-4">Accounts</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div *ngFor="let acc of accounts" class="flex items-center justify-between p-4 bg-gray-50 border border-gray-100 rounded hover:border-gray-300 transition">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+               [ngClass]="acc.provider.toUpperCase() === 'AWS' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500'">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">{{ acc.accountName }}</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ acc.provider }} &middot; {{ getBucketCountForAccount(acc.id) }} buckets</p>
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0 ml-4">
+          <p class="text-lg font-bold text-black">{{ getFileCountForAccount(acc.id) | number }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">files</p>
+          <p class="text-xs text-amber-600 font-medium mt-0.5">{{ formatFileSize(getTotalStorageForAccount(acc.id)) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- TOOLBAR: Search, Filters, View Toggle -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="border border-gray-200 p-4 mb-6">
+    <!-- Search Row -->
+    <div class="flex flex-col md:flex-row gap-3 mb-4">
+      <div class="flex-1 relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        </svg>
+        <input type="text"
+               [(ngModel)]="searchQuery"
+               placeholder="Search buckets by name, region, or provider..."
+               class="w-full pl-10 pr-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-black transition">
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- View Toggle -->
+        <div class="flex border border-gray-200">
+          <button (click)="setViewMode('list')"
+                  class="p-2.5 transition"
+                  [ngClass]="viewMode === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+            </svg>
+          </button>
+          <button (click)="setViewMode('grid')"
+                  class="p-2.5 transition"
+                  [ngClass]="viewMode === 'grid' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Row -->
+    <div class="flex flex-wrap gap-3 items-center">
+      <!-- Provider Filter -->
+      <select [(ngModel)]="selectedProvider" class="filter-select">
+        <option *ngFor="let p of providers" [value]="p.value">{{ p.label }}</option>
+      </select>
+
+      <!-- Region Filter -->
+      <select [(ngModel)]="selectedRegion" class="filter-select">
+        <option value="all">All Regions</option>
+        <option *ngFor="let r of uniqueRegions" [value]="r">{{ r }}</option>
+      </select>
+
+      <!-- Status Filter -->
+      <select [(ngModel)]="selectedStatus" class="filter-select">
+        <option value="all">All Statuses</option>
+        <option *ngFor="let s of uniqueStatuses" [value]="s">{{ s }}</option>
+      </select>
+
+      <!-- Account Filter -->
+      <select [(ngModel)]="selectedAccount" class="filter-select">
+        <option value="all">All Accounts</option>
+        <option *ngFor="let a of accounts" [value]="a.id">{{ a.accountName }}</option>
+      </select>
+
+      <!-- Clear Filters -->
+      <button *ngIf="hasActiveFilters" (click)="clearFilters()" class="text-xs uppercase tracking-wider text-gray-500 hover:text-black transition flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Clear
+      </button>
+
+      <!-- Results Count -->
+      <span class="ml-auto text-xs text-gray-400">
+        {{ filteredBuckets.length }} of {{ buckets.length }} bucket{{ buckets.length !== 1 ? 's' : '' }}
+        &middot; {{ totalFiles | number }} total files
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="loading" class="space-y-3">
+    <div *ngFor="let _ of [1,2,3,4,5,6]" class="border border-gray-200 p-5 animate-pulse">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 bg-gray-200 rounded-lg"></div>
+        <div class="flex-1">
+          <div class="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+          <div class="h-3 bg-gray-100 rounded w-1/5"></div>
+        </div>
+        <div class="h-6 bg-gray-100 rounded w-16"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- EMPTY STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && buckets.length === 0" class="text-center py-24 border border-gray-200 bg-gray-50">
+    <svg class="w-20 h-20 mx-auto text-gray-200 mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="0.8">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+    </svg>
+    <p class="text-gray-500 text-xl font-serif mb-2">No storage buckets found</p>
+    <p class="text-gray-400 text-sm mb-6">Connect a cloud account and create your first storage bucket to get started.</p>
+    <a routerLink="/profile" class="btn">Connect Cloud Account</a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- NO RESULTS (FILTER EMPTY) -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && buckets.length > 0 && filteredBuckets.length === 0" class="text-center py-16 border border-gray-200">
+    <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+    </svg>
+    <p class="text-gray-500 mb-2">No buckets match your filters</p>
+    <button (click)="clearFilters()" class="text-sm text-black underline hover:no-underline">Clear all filters</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LIST VIEW -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && filteredBuckets.length > 0 && viewMode === 'list'">
+    <!-- Table Header -->
+    <div class="hidden md:grid grid-cols-12 gap-4 px-5 py-3 text-xs uppercase tracking-widest text-gray-400 border-b border-gray-200 mb-1">
+      <div class="col-span-1">#</div>
+      <div class="col-span-3 cursor-pointer hover:text-black transition flex items-center gap-1" (click)="toggleSort('name')">
+        Name
+        <svg *ngIf="sortField === 'name'" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="sortDir === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'"/>
+        </svg>
+      </div>
+      <div class="col-span-1 cursor-pointer hover:text-black transition flex items-center gap-1" (click)="toggleSort('region')">
+        Region
+        <svg *ngIf="sortField === 'region'" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="sortDir === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'"/>
+        </svg>
+      </div>
+      <div class="col-span-1">Provider</div>
+      <div class="col-span-1 cursor-pointer hover:text-black transition flex items-center gap-1" (click)="toggleSort('status')">
+        Status
+        <svg *ngIf="sortField === 'status'" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="sortDir === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'"/>
+        </svg>
+      </div>
+      <div class="col-span-1 cursor-pointer hover:text-black transition flex items-center gap-1" (click)="toggleSort('files')">
+        Files
+        <svg *ngIf="sortField === 'files'" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="sortDir === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'"/>
+        </svg>
+      </div>
+      <div class="col-span-1">Size</div>
+      <div class="col-span-1">Account</div>
+      <div class="col-span-2 cursor-pointer hover:text-black transition flex items-center gap-1" (click)="toggleSort('createdAt')">
+        Created
+        <svg *ngIf="sortField === 'createdAt'" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="sortDir === 'asc' ? 'M5 15l7-7 7 7' : 'M19 9l-7 7-7-7'"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Table Rows -->
+    <div *ngFor="let bucket of filteredBuckets; let i = index"
+         (click)="openDetail(bucket)"
+         class="bucket-row grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-5 py-4 border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200 mb-1 cursor-pointer group">
+      <!-- # -->
+      <div class="col-span-1 flex items-center">
+        <span class="text-xs font-mono text-gray-300">{{ i + 1 }}</span>
+      </div>
+      <!-- Name -->
+      <div class="col-span-3 flex items-center gap-3 min-w-0">
+        <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="getStatusDotClass(bucket.status)"></div>
+        <div class="min-w-0">
+          <p class="font-medium text-gray-900 truncate text-sm">{{ bucket.name }}</p>
+        </div>
+      </div>
+      <!-- Region -->
+      <div class="col-span-1 flex items-center">
+        <span class="text-xs text-gray-600">{{ bucket.region || '—' }}</span>
+      </div>
+      <!-- Provider -->
+      <div class="col-span-1 flex items-center">
+        <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-gray-100 text-gray-500">
+          {{ bucket.provider || 'AWS' }}
+        </span>
+      </div>
+      <!-- Status -->
+      <div class="col-span-1 flex items-center">
+        <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded" [ngClass]="getStatusClass(bucket.status)">
+          {{ bucket.status || '—' }}
+        </span>
+      </div>
+      <!-- Files -->
+      <div class="col-span-1 flex items-center">
+        <div class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          <span class="text-sm font-semibold" [ngClass]="getFileCountForBucket(bucket.id) > 0 ? 'text-gray-800' : 'text-gray-300'">
+            {{ getFileCountForBucket(bucket.id) | number }}
+          </span>
+        </div>
+      </div>
+      <!-- Size -->
+      <div class="col-span-1 flex items-center">
+        <span class="text-xs text-gray-500">{{ formatFileSize(getTotalStorageForBucket(bucket.id)) }}</span>
+      </div>
+      <!-- Account -->
+      <div class="col-span-1 flex items-center">
+        <span class="text-xs text-gray-400 truncate">{{ getAccountName(bucket.cloudAccountId) }}</span>
+      </div>
+      <!-- Created -->
+      <div class="col-span-2 flex items-center justify-between">
+        <span class="text-xs text-gray-400">{{ formatDate(bucket.createdAt) }}</span>
+        <svg class="w-4 h-4 text-gray-300 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- GRID VIEW -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && filteredBuckets.length > 0 && viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div *ngFor="let bucket of filteredBuckets"
+         (click)="openDetail(bucket)"
+         class="bucket-card border border-gray-200 p-5 hover:shadow-xl transition-all duration-300 cursor-pointer group relative overflow-hidden">
+      <!-- Provider badge -->
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+               [ngClass]="bucket.status.toLowerCase() === 'created' || bucket.status.toLowerCase() === 'active' ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-gray-900 truncate text-sm">{{ bucket.name }}</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ getProviderLabel(bucket.provider) }}</p>
+          </div>
+        </div>
+        <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded" [ngClass]="getStatusClass(bucket.status)">
+          {{ bucket.status || '—' }}
+        </span>
+      </div>
+
+      <!-- File count highlight -->
+      <div class="flex items-center gap-3 mb-4 p-3 bg-gray-50 border border-gray-100 rounded">
+        <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+        </svg>
+        <div>
+          <p class="text-lg font-bold text-gray-900">{{ getFileCountForBucket(bucket.id) | number }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Files</p>
+        </div>
+        <div class="ml-auto text-right">
+          <p class="text-sm font-medium text-gray-600">{{ formatFileSize(getTotalStorageForBucket(bucket.id)) }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Storage</p>
+        </div>
+      </div>
+
+      <!-- Info rows -->
+      <div class="space-y-2 mb-4">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-400">Region</span>
+          <span class="text-gray-700 font-medium">{{ bucket.region || '—' }}</span>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-400">Account</span>
+          <span class="text-gray-700 truncate ml-4">{{ getAccountName(bucket.cloudAccountId) }}</span>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-400">Created</span>
+          <span class="text-gray-700">{{ formatDate(bucket.createdAt) }}</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+        <span class="text-[10px] text-gray-300 uppercase tracking-wider">{{ getAccountProvider(bucket.cloudAccountId) }}</span>
+        <svg class="w-4 h-4 text-gray-300 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SUMMARY SECTION -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && buckets.length > 0" class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- By Provider -->
+    <div class="border border-gray-200 p-6">
+      <h3 class="text-sm uppercase tracking-widest text-gray-400 mb-4">By Provider</h3>
+      <div class="space-y-3">
+        <div *ngFor="let p of providers" class="flex items-center justify-between">
+          <ng-container *ngIf="p.value !== 'all'">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getProviderIcon(p.value)"/>
+              </svg>
+              <span class="text-sm text-gray-700">{{ p.label }}</span>
+            </div>
+            <span class="text-sm font-bold">{{ (buckets | filterByProvider:p.value).length || 0 }}</span>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <!-- By Region -->
+    <div class="border border-gray-200 p-6">
+      <h3 class="text-sm uppercase tracking-widest text-gray-400 mb-4">By Region</h3>
+      <div class="space-y-3">
+        <div *ngFor="let r of uniqueRegions" class="flex items-center justify-between">
+          <span class="text-sm text-gray-700">{{ r }}</span>
+          <span class="text-sm font-bold">{{ (buckets | filterByRegion:r).length }}</span>
+        </div>
+        <div *ngIf="uniqueRegions.length === 0" class="text-xs text-gray-300">No regions</div>
+      </div>
+    </div>
+
+    <!-- By Status -->
+    <div class="border border-gray-200 p-6">
+      <h3 class="text-sm uppercase tracking-widest text-gray-400 mb-4">By Status</h3>
+      <div class="space-y-3">
+        <div *ngFor="let s of uniqueStatuses" class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full" [ngClass]="getStatusDotClass(s)"></div>
+            <span class="text-sm text-gray-700 capitalize">{{ s }}</span>
+          </div>
+          <span class="text-sm font-bold">{{ (buckets | filterByStatus:s).length }}</span>
+        </div>
+        <div *ngIf="uniqueStatuses.length === 0" class="text-xs text-gray-300">No statuses</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- QUICK INFO SECTION -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && buckets.length > 0" class="mt-8 border border-gray-200 p-6">
+    <h3 class="text-sm uppercase tracking-widest text-gray-400 mb-4">Cloud Storage Overview</h3>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+      <div class="text-center">
+        <p class="text-2xl font-serif font-bold text-black">{{ buckets.length }}</p>
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Total Buckets</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-serif font-bold text-indigo-600">{{ totalFiles | number }}</p>
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Total Files</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-serif font-bold text-amber-600">{{ formatFileSize(totalStorage) }}</p>
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Total Storage</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-serif font-bold text-green-600">{{ metrics[3].value }}</p>
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Active</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-serif font-bold text-blue-600">{{ uniqueRegions.length }}</p>
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Regions</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-serif font-bold text-purple-600">{{ accounts.length }}</p>
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Accounts</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- BUCKET DETAIL PANEL (Slide-over) -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div *ngIf="selectedBucket"
+     class="fixed inset-0 z-50 flex justify-end"
+     [class.modal-backdrop-enter]="showDetailPanel"
+     [class.modal-backdrop-exit]="!showDetailPanel">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeDetail()"></div>
+
+  <!-- Panel -->
+  <div class="relative bg-white w-full max-w-xl h-full flex flex-col shadow-2xl border-l border-gray-200 overflow-hidden"
+       [class.panel-enter]="showDetailPanel"
+       [class.panel-exit]="!showDetailPanel">
+
+    <!-- Panel Header -->
+    <div class="flex items-center justify-between px-8 py-6 border-b border-gray-200 flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-black text-white flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-serif font-bold">{{ selectedBucket.name }}</h3>
+          <p class="text-xs text-gray-400 uppercase tracking-wider">Bucket Details</p>
+        </div>
+      </div>
+      <button (click)="closeDetail()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Panel Body -->
+    <div class="flex-1 overflow-y-auto px-8 py-6">
+      <!-- Status + Files Banner -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="flex items-center gap-3 p-4 border border-gray-100 rounded-sm">
+          <div class="w-3 h-3 rounded-full" [ngClass]="getStatusDotClass(selectedBucket.status)"></div>
+          <div>
+            <p class="text-sm font-semibold capitalize">{{ selectedBucket.status }}</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Status</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 p-4 border border-indigo-100 bg-indigo-50/50 rounded-sm">
+          <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          <div>
+            <p class="text-sm font-semibold text-indigo-700">{{ getFileCountForBucket(selectedBucket.id) | number }} files</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ formatFileSize(getTotalStorageForBucket(selectedBucket.id)) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- General Info -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">General Information</h4>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">Bucket Name</span>
+            <span class="detail-value">{{ selectedBucket.name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Region</span>
+            <span class="detail-value">{{ selectedBucket.region || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Provider</span>
+            <span class="detail-value">{{ getProviderLabel(selectedBucket.provider) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status</span>
+            <span class="detail-value capitalize">{{ selectedBucket.status || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Cloud Account</span>
+            <span class="detail-value">{{ getAccountName(selectedBucket.cloudAccountId) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Total Files</span>
+            <span class="detail-value font-semibold">{{ getFileCountForBucket(selectedBucket.id) | number }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Total Size</span>
+            <span class="detail-value">{{ formatFileSize(getTotalStorageForBucket(selectedBucket.id)) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timestamps -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Timestamps</h4>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">Created At</span>
+            <span class="detail-value">{{ formatDateTime(selectedBucket.createdAt) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Last Updated</span>
+            <span class="detail-value">{{ selectedBucket.updatedAt ? formatDateTime(selectedBucket.updatedAt) : 'Never' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resource IDs -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Resource Identifiers</h4>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">Internal ID</span>
+            <span class="detail-value font-mono text-xs">{{ selectedBucket.id }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Account ID</span>
+            <span class="detail-value font-mono text-xs">{{ selectedBucket.cloudAccountId }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Files -->
+      <div *ngIf="selectedBucketFiles.length > 0" class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">
+          Files
+          <span class="text-gray-300 ml-1">({{ selectedBucketFiles.length | number }} total)</span>
+        </h4>
+        <div class="space-y-1 max-h-64 overflow-y-auto">
+          <div *ngFor="let file of selectedBucketFiles.slice(0, 50); let fi = index"
+               class="flex items-center justify-between py-2 px-3 text-xs border border-gray-50 hover:bg-gray-50 rounded transition">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+              <span class="text-gray-700 truncate">{{ file.fileName }}</span>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0 ml-3">
+              <span class="text-gray-400">{{ formatFileSize(file.size) }}</span>
+              <span *ngIf="file.contentType" class="text-[10px] text-gray-300 uppercase">{{ file.contentType.split('/').pop() }}</span>
+            </div>
+          </div>
+          <div *ngIf="selectedBucketFiles.length > 50" class="text-center py-2 text-xs text-gray-400">
+            … and {{ selectedBucketFiles.length - 50 | number }} more files
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel Footer -->
+    <div class="px-8 py-4 border-t border-gray-200 flex-shrink-0 flex items-center justify-between bg-gray-50">
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-gray-400">{{ getProviderLabel(selectedBucket.provider) }}</span>
+        <span class="text-xs text-gray-300">&middot;</span>
+        <span class="text-xs text-gray-400">{{ getFileCountForBucket(selectedBucket.id) | number }} files</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <a [routerLink]="['/dashboard/cloud-storage', selectedBucket.id]"
+           class="inline-flex items-center gap-2 px-4 py-2 text-sm border border-black bg-black text-white hover:bg-gray-800 transition">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+          </svg>
+          View Overview
+        </a>
+        <button (click)="closeDetail()" class="px-5 py-2 text-sm border border-gray-200 hover:bg-gray-100 transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

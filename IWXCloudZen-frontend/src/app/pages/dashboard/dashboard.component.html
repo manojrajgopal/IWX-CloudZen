@@ -21,68 +21,173 @@
     </div>
   </div>
 
-  <!-- Active Services Section -->
+  <!-- Your Services Section -->
   <div class="mb-16">
     <div class="flex justify-between items-center mb-8">
       <h2 class="text-3xl md:text-4xl font-serif font-bold">Your Services</h2>
-      <a routerLink="/services/new" class="btn">+ Add New Service</a>
     </div>
 
-    <div *ngIf="services.length === 0; else servicesGrid" class="text-center py-20 border border-gray-200 bg-gray-50">
-      <p class="text-gray-500 text-lg">You haven't added any services yet.</p>
-      <a routerLink="/services/new" class="btn mt-4">Get Started</a>
-    </div>
-
-    <ng-template #servicesGrid>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div *ngFor="let service of services" class="border border-gray-200 p-6 hover:shadow-lg transition card-hover">
-          <div class="flex items-start justify-between mb-4">
-            <div class="w-12 h-12 rounded-full overflow-hidden">
-              <img [src]="service.icon" [alt]="service.title" class="w-full h-full object-cover">
-            </div>
-            <span [class]="'text-xs uppercase tracking-wider px-2 py-1 rounded ' + getStatusClass(service.status)">
-              {{ service.status }}
-            </span>
-          </div>
-          <h3 class="text-xl font-serif font-bold mb-2">{{ service.title }}</h3>
-          <p class="text-gray-500 text-sm">{{ service.description }}</p>
-          <div class="mt-4 text-xs uppercase tracking-widest text-gray-400">
-            Cloud: {{ service.cloud }}
-          </div>
-          <div class="mt-4 flex gap-2">
-            <a [routerLink]="['/services', service.id]" class="text-sm text-black border-b border-black hover:border-gray-400">Manage</a>
-            <a [routerLink]="['/services', service.id, 'logs']" class="text-sm text-gray-500 border-b border-gray-300 hover:border-black">Logs</a>
+    <!-- Loading State -->
+    <div *ngIf="loadingServices" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let _ of [1,2,3,4,5,6,7,8,9]" class="border border-gray-200 p-6 animate-pulse">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-11 h-11 bg-gray-200 rounded-lg"></div>
+          <div class="flex-1">
+            <div class="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
+            <div class="h-3 bg-gray-100 rounded w-1/3"></div>
           </div>
         </div>
+        <div class="h-10 bg-gray-100 rounded"></div>
       </div>
-    </ng-template>
+    </div>
+
+    <!-- Service Cards Grid -->
+    <div *ngIf="!loadingServices" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div *ngFor="let category of serviceCategories"
+           (click)="openServiceDetail(category)"
+           class="service-card group border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+        <!-- Top row: icon + title + count -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-lg flex items-center justify-center transition-colors duration-300"
+                 [ngClass]="category.count > 0 ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="category.icon"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-gray-900">{{ category.title }}</h3>
+              <p class="text-xs text-gray-400 uppercase tracking-wider">AWS</p>
+            </div>
+          </div>
+          <!-- Count badge -->
+          <div class="flex flex-col items-end">
+            <span class="text-2xl font-bold tracking-tight"
+                  [ngClass]="category.count > 0 ? 'text-black' : 'text-gray-300'">
+              {{ category.count }}
+            </span>
+            <span class="text-[10px] uppercase tracking-widest text-gray-400">Total</span>
+          </div>
+        </div>
+
+        <!-- Mini bar showing resource density -->
+        <div class="w-full h-1 bg-gray-100 rounded-full overflow-hidden mb-3">
+          <div class="h-full bg-black rounded-full transition-all duration-700 ease-out"
+               [style.width.%]="category.count > 0 ? Math.min(category.count * 10, 100) : 0"></div>
+        </div>
+
+        <!-- Bottom: status hint -->
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-gray-400">
+            <ng-container *ngIf="category.count > 0">
+              {{ category.count }} resource{{ category.count !== 1 ? 's' : '' }} across {{ accounts.length }} account{{ accounts.length !== 1 ? 's' : '' }}
+            </ng-container>
+            <ng-container *ngIf="category.count === 0">No resources found</ng-container>
+          </span>
+          <svg class="w-4 h-4 text-gray-300 group-hover:text-black group-hover:translate-x-0.5 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+          </svg>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- Recent Activity Section (optional) -->
-  <div class="border-t border-gray-200 pt-16">
-    <h2 class="text-3xl md:text-4xl font-serif font-bold mb-8">Recent Activity</h2>
-    <div class="space-y-4">
-      <div class="flex items-center gap-4 border-b border-gray-200 pb-4">
-        <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-sm">K8s</div>
-        <div class="flex-1">
-          <p class="font-medium">Kubernetes cluster scaled to 5 nodes</p>
-          <p class="text-xs text-gray-500">2 hours ago</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-4 border-b border-gray-200 pb-4">
-        <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-sm">Cost</div>
-        <div class="flex-1">
-          <p class="font-medium">Cost optimization report generated</p>
-          <p class="text-xs text-gray-500">Yesterday</p>
-        </div>
-      </div>
+  <!-- No accounts state -->
+  <div *ngIf="!loadingServices && accounts.length === 0" class="text-center py-20 border border-gray-200 bg-gray-50 mb-16">
+    <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+    </svg>
+    <p class="text-gray-500 text-lg mb-2">No cloud accounts connected yet.</p>
+    <p class="text-gray-400 text-sm mb-6">Connect your first cloud account to see your services here.</p>
+    <a routerLink="/profile" class="btn">Connect Account</a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Service Detail Modal -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div *ngIf="selectedService"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4"
+     [class.modal-backdrop-enter]="showDetailModal"
+     [class.modal-backdrop-exit]="!showDetailModal">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeDetailModal()"></div>
+
+  <!-- Modal Content -->
+  <div class="relative bg-white w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden"
+       [class.modal-content-enter]="showDetailModal"
+       [class.modal-content-exit]="!showDetailModal">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-8 py-6 border-b border-gray-200 flex-shrink-0">
       <div class="flex items-center gap-4">
-        <div class="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center text-sm">Sec</div>
-        <div class="flex-1">
-          <p class="font-medium">Security scan completed – no critical issues</p>
-          <p class="text-xs text-gray-500">3 days ago</p>
+        <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="selectedService.icon"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-xl font-serif font-bold">{{ selectedService.title }}</h3>
+          <p class="text-sm text-gray-400">{{ selectedService.count }} resource{{ selectedService.count !== 1 ? 's' : '' }} total</p>
         </div>
       </div>
+      <button (click)="closeDetailModal()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body (scrollable) -->
+    <div class="flex-1 overflow-y-auto px-8 py-6">
+      <!-- Empty state -->
+      <div *ngIf="selectedService.count === 0" class="text-center py-16">
+        <svg class="w-16 h-16 mx-auto text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+        </svg>
+        <p class="text-gray-400 text-lg">No {{ selectedService.title.toLowerCase() }} found.</p>
+        <p class="text-gray-300 text-sm mt-1">Resources will appear here once created.</p>
+      </div>
+
+      <!-- Resource List -->
+      <div *ngIf="selectedService.count > 0" class="space-y-3">
+        <div *ngFor="let item of selectedService.items; let i = index"
+             class="flex items-center gap-4 p-4 border border-gray-100 hover:border-gray-300 hover:shadow-sm transition-all duration-200 rounded-sm group">
+          <!-- Row number -->
+          <span class="text-xs font-mono text-gray-300 w-6 text-right">{{ i + 1 }}</span>
+
+          <!-- Status dot -->
+          <div class="w-2.5 h-2.5 rounded-full flex-shrink-0"
+               [ngClass]="getStatusDotClass(getItemStatus(item, selectedService.key))"></div>
+
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <p class="font-medium text-gray-900 truncate">{{ getItemName(item, selectedService.key) }}</p>
+              <span class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 flex-shrink-0">
+                {{ getItemStatus(item, selectedService.key) }}
+              </span>
+            </div>
+            <p class="text-xs text-gray-400 mt-0.5 truncate">{{ getItemDetail(item, selectedService.key) }}</p>
+          </div>
+
+          <!-- Account badge -->
+          <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded bg-gray-50 text-gray-400 flex-shrink-0 hidden sm:inline-block">
+            {{ getAccountName(item.cloudAccountId) }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-8 py-4 border-t border-gray-200 flex-shrink-0 flex items-center justify-between bg-gray-50">
+      <span class="text-xs text-gray-400">
+        Showing {{ selectedService.count }} of {{ selectedService.count }} resources
+      </span>
+      <button (click)="closeDetailModal()"
+              class="px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">
+        Close
+      </button>
     </div>
   </div>
 </div>

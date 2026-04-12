@@ -1,0 +1,1261 @@
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- BUCKET OVERVIEW — Full Dashboard Page                         -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+
+<!-- LOADING STATE -->
+<div *ngIf="loading" class="min-h-screen bg-white flex items-center justify-center">
+  <div class="text-center">
+    <!-- Cloud SVG animation -->
+    <svg class="w-24 h-24 mx-auto mb-6" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path class="animate-draw" d="M30 60 C10 60 0 48 0 38 C0 26 10 16 22 16 C24 8 32 2 42 2 C54 2 64 10 66 20 C68 18 72 16 76 16 C86 16 94 24 94 34 C110 34 120 46 120 56 C120 66 112 74 100 74 L30 74 C16 74 6 66 6 56" stroke="black" stroke-width="1.5" stroke-linecap="round"/>
+      <line class="animate-wave" x1="35" y1="45" x2="85" y2="45" stroke="black" stroke-width="0.75" opacity="0.3" style="animation-delay: 0s"/>
+      <line class="animate-wave" x1="40" y1="52" x2="80" y2="52" stroke="black" stroke-width="0.75" opacity="0.3" style="animation-delay: 0.3s"/>
+      <line class="animate-wave" x1="45" y1="59" x2="75" y2="59" stroke="black" stroke-width="0.75" opacity="0.3" style="animation-delay: 0.6s"/>
+    </svg>
+    <p class="text-sm text-gray-400 uppercase tracking-widest animate-fadeIn" style="animation-delay: 0.5s; opacity: 0;">Loading bucket details</p>
+    <div class="w-48 h-0.5 bg-gray-100 mx-auto mt-4 rounded-full overflow-hidden">
+      <div class="h-full animate-loading-bar rounded-full"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ERROR STATE -->
+<div *ngIf="!loading && error" class="min-h-screen bg-white flex items-center justify-center">
+  <div class="text-center max-w-sm">
+    <div class="w-16 h-16 mx-auto mb-6 border-2 border-gray-200 rounded-full flex items-center justify-center">
+      <svg class="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+    </div>
+    <h2 class="text-lg font-serif font-bold mb-2">{{ error }}</h2>
+    <p class="text-sm text-gray-400 mb-6">The requested bucket could not be found or loaded.</p>
+    <a routerLink="/dashboard/cloud-storage" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm hover:bg-gray-800 transition">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+      </svg>
+      Back to Buckets
+    </a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div *ngIf="!loading && !error && bucket" class="min-h-screen bg-gray-50/50">
+
+  <!-- ── TOP NAVIGATION BAR ── -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Breadcrumb -->
+        <div class="flex items-center gap-3 min-w-0">
+          <a routerLink="/dashboard/cloud-storage" class="flex items-center gap-2 text-sm text-gray-400 hover:text-black transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+            </svg>
+            Buckets
+          </a>
+          <svg class="w-3.5 h-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+          </svg>
+          <span class="text-sm font-medium text-black truncate">{{ bucket.name }}</span>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 border text-xs uppercase tracking-wider" [ngClass]="getStatusClass(bucket.status)">
+            <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStatusDotClass(bucket.status)"></span>
+            {{ bucket.status }}
+          </span>
+          <span class="text-xs text-gray-400 hidden sm:inline">{{ getProviderLabel(bucket.provider) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE CONTENT ── -->
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+
+    <!-- PAGE HEADER -->
+    <div class="mb-8 animate-fadeIn">
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-serif font-bold tracking-tight mb-1">{{ bucket.name }}</h1>
+          <p class="text-sm text-gray-400">
+            {{ bucket.region }} &middot; {{ account?.accountName || 'Account #' + bucket.cloudAccountId }}
+            &middot; Created {{ formatDate(bucket.createdAt) }}
+          </p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button (click)="openUploadModal()"
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+            </svg>
+            Upload File
+          </button>
+          <button (click)="syncBucketFiles()" [disabled]="syncing"
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-200 hover:border-black hover:bg-black hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182"/>
+            </svg>
+            {{ syncing ? 'Syncing…' : 'Sync Files' }}
+          </button>
+          <button (click)="openDeleteConfirm()"
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm border border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+            </svg>
+            Delete
+          </button>
+          <a routerLink="/dashboard/cloud-storage" class="px-4 py-2 text-sm border border-gray-200 hover:border-black hover:bg-black hover:text-white transition">
+            Back to List
+          </a>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ── SYNC ERROR TOAST ── -->
+    <div *ngIf="syncError" class="mb-6 sync-report-enter">
+      <div class="flex items-center gap-3 px-5 py-3 bg-red-50 border border-red-200 text-sm text-red-700">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+        </svg>
+        {{ syncError }}
+      </div>
+    </div>
+
+    <!-- ── SYNC REPORT ── -->
+    <div *ngIf="showSyncReport && syncResult" class="mb-6 sync-report-enter">
+      <div class="bg-white border border-gray-200">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 flex items-center justify-center bg-green-50 border border-green-100">
+              <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-sm font-semibold">Sync Completed</h4>
+              <p class="text-xs text-gray-400">Files have been synchronized for this bucket</p>
+            </div>
+          </div>
+          <button (click)="closeSyncReport()" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition">
+            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="grid grid-cols-3 divide-x divide-gray-100">
+          <div class="px-6 py-4 text-center">
+            <p class="text-xl font-serif font-bold text-green-600">+{{ syncResult.added }}</p>
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Added</p>
+          </div>
+          <div class="px-6 py-4 text-center">
+            <p class="text-xl font-serif font-bold text-amber-600">{{ syncResult.updated }}</p>
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Updated</p>
+          </div>
+          <div class="px-6 py-4 text-center">
+            <p class="text-xl font-serif font-bold text-red-600">{{ syncResult.removed }}</p>
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 mt-1">Removed</p>
+          </div>
+        </div>
+        <div class="px-6 py-3 bg-gray-50 border-t border-gray-100">
+          <p class="text-xs text-gray-400">Total files after sync: <span class="font-semibold text-gray-600">{{ syncResult.files.length | number }}</span></p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 1: KEY METRICS                                      -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 animate-fadeIn" style="animation-delay: 0.1s; opacity: 0;">
+      <!-- Total Files -->
+      <div class="metric-card bg-white border border-gray-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 flex items-center justify-center border border-gray-100">
+            <svg class="w-4.5 h-4.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <p class="text-[10px] uppercase tracking-widest text-gray-400">Total Files</p>
+        </div>
+        <p class="text-2xl font-serif font-bold">{{ files.length | number }}</p>
+      </div>
+
+      <!-- Total Storage -->
+      <div class="metric-card bg-white border border-gray-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 flex items-center justify-center border border-gray-100">
+            <svg class="w-4.5 h-4.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+            </svg>
+          </div>
+          <p class="text-[10px] uppercase tracking-widest text-gray-400">Total Storage</p>
+        </div>
+        <p class="text-2xl font-serif font-bold">{{ formatFileSize(totalStorage) }}</p>
+      </div>
+
+      <!-- File Types -->
+      <div class="metric-card bg-white border border-gray-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 flex items-center justify-center border border-gray-100">
+            <svg class="w-4.5 h-4.5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/>
+            </svg>
+          </div>
+          <p class="text-[10px] uppercase tracking-widest text-gray-400">File Types</p>
+        </div>
+        <p class="text-2xl font-serif font-bold">{{ fileTypeGroups.length }}</p>
+      </div>
+
+      <!-- Avg File Size -->
+      <div class="metric-card bg-white border border-gray-200 p-5">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-9 h-9 flex items-center justify-center border border-gray-100">
+            <svg class="w-4.5 h-4.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+            </svg>
+          </div>
+          <p class="text-[10px] uppercase tracking-widest text-gray-400">Avg File Size</p>
+        </div>
+        <p class="text-2xl font-serif font-bold">{{ formatFileSize(avgFileSize) }}</p>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 2: BUCKET INFORMATION                               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 animate-fadeIn" style="animation-delay: 0.15s; opacity: 0;">
+
+      <!-- General Info -->
+      <div class="bg-white border border-gray-200 p-6">
+        <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+          </svg>
+          General Information
+        </h3>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">Bucket Name</span>
+            <span class="detail-value">{{ bucket.name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Region</span>
+            <span class="detail-value">{{ bucket.region || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Provider</span>
+            <span class="detail-value">{{ getProviderLabel(bucket.provider) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status</span>
+            <span class="detail-value capitalize">{{ bucket.status || '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Info -->
+      <div class="bg-white border border-gray-200 p-6">
+        <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+          </svg>
+          Cloud Account
+        </h3>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">Account Name</span>
+            <span class="detail-value">{{ account?.accountName || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Provider</span>
+            <span class="detail-value">{{ account?.provider || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Region</span>
+            <span class="detail-value">{{ account?.region || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Account ID</span>
+            <span class="detail-value font-mono text-xs">{{ bucket.cloudAccountId }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timestamps & IDs -->
+      <div class="bg-white border border-gray-200 p-6">
+        <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Timestamps &amp; IDs
+        </h3>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">Created</span>
+            <span class="detail-value">{{ formatDateTime(bucket.createdAt) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Last Updated</span>
+            <span class="detail-value">{{ bucket.updatedAt ? formatDateTime(bucket.updatedAt) : 'Never' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Internal ID</span>
+            <span class="detail-value font-mono text-xs">{{ bucket.id }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 3: STORAGE ANALYSIS (File Types + Folders)          -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+      <!-- File Type Breakdown -->
+      <div class="bg-white border border-gray-200 animate-fadeIn" style="animation-delay: 0.2s; opacity: 0;">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 cursor-pointer" (click)="fileTypeSectionCollapsed = !fileTypeSectionCollapsed">
+          <h3 class="text-xs uppercase tracking-widest text-gray-400 flex items-center gap-2">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z"/>
+            </svg>
+            File Type Breakdown
+            <span class="text-gray-300 font-normal">({{ fileTypeGroups.length }})</span>
+          </h3>
+          <svg class="w-4 h-4 text-gray-300 transition-transform" [class.rotate-180]="!fileTypeSectionCollapsed" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+          </svg>
+        </div>
+        <div *ngIf="!fileTypeSectionCollapsed" class="p-6">
+          <div *ngIf="fileTypeGroups.length === 0" class="text-center py-8 text-sm text-gray-400">No files to analyze</div>
+          <div *ngIf="fileTypeGroups.length > 0" class="space-y-3">
+            <div *ngFor="let group of fileTypeGroups.slice(0, 10)" class="flex items-center gap-3">
+              <span class="w-14 text-right text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded" [ngClass]="getFileTypeColor(group.type)">
+                .{{ group.type }}
+              </span>
+              <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500" [ngClass]="getTypeBarColor(group.type)" [style.width.%]="group.percentage"></div>
+              </div>
+              <span class="text-xs text-gray-500 w-20 text-right">{{ group.count }} files</span>
+              <span class="text-xs text-gray-400 w-16 text-right hidden sm:inline">{{ formatFileSize(group.totalSize) }}</span>
+            </div>
+            <div *ngIf="fileTypeGroups.length > 10" class="text-center pt-2 text-xs text-gray-400">
+              + {{ fileTypeGroups.length - 10 }} more types
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Folder Structure -->
+      <div class="bg-white border border-gray-200 animate-fadeIn" style="animation-delay: 0.25s; opacity: 0;">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 cursor-pointer" (click)="folderSectionCollapsed = !folderSectionCollapsed">
+          <h3 class="text-xs uppercase tracking-widest text-gray-400 flex items-center gap-2">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/>
+            </svg>
+            Folder Structure
+            <span class="text-gray-300 font-normal">({{ folderGroups.length }})</span>
+          </h3>
+          <svg class="w-4 h-4 text-gray-300 transition-transform" [class.rotate-180]="!folderSectionCollapsed" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+          </svg>
+        </div>
+        <div *ngIf="!folderSectionCollapsed" class="p-6">
+          <div *ngIf="folderGroups.length === 0" class="text-center py-8 text-sm text-gray-400">No folders found</div>
+          <div *ngIf="folderGroups.length > 0" class="space-y-2 max-h-72 overflow-y-auto">
+            <div *ngFor="let folder of folderGroups" class="flex items-center justify-between py-2.5 px-3 hover:bg-gray-50 rounded transition group">
+              <div class="flex items-center gap-2 min-w-0 flex-1">
+                <svg class="w-4 h-4 text-gray-300 flex-shrink-0 group-hover:text-black transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/>
+                </svg>
+                <span class="text-sm text-gray-700 font-mono truncate">{{ folder.path }}</span>
+              </div>
+              <div class="flex items-center gap-4 flex-shrink-0 ml-3">
+                <span class="text-xs text-gray-500">{{ folder.count }} files</span>
+                <span class="text-xs text-gray-400 hidden sm:inline">{{ formatFileSize(folder.totalSize) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 4: RECENT ACTIVITY + LARGEST FILE                   -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 animate-fadeIn" style="animation-delay: 0.3s; opacity: 0;">
+
+      <!-- Recent Files -->
+      <div class="lg:col-span-2 bg-white border border-gray-200 p-6">
+        <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Recently Added
+        </h3>
+        <div *ngIf="recentFiles.length === 0" class="text-center py-8 text-sm text-gray-400">No recent files</div>
+        <div *ngIf="recentFiles.length > 0" class="space-y-2">
+          <div *ngFor="let file of recentFiles" class="flex items-center justify-between py-2.5 px-3 hover:bg-gray-50 rounded transition cursor-pointer" (click)="openFileDetail(file)">
+            <div class="flex items-center gap-3 min-w-0 flex-1">
+              <div class="w-8 h-8 flex items-center justify-center border border-gray-100 flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm text-gray-800 truncate">{{ getFileName(file) }}</p>
+                <p class="text-[10px] text-gray-400">{{ file.folder || '/' }} &middot; {{ formatDate(file.createdAt) }}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0 ml-3">
+              <span class="text-xs px-2 py-0.5 rounded" [ngClass]="getFileTypeColor(getFileExtension(getFileName(file)))">.{{ getFileExtension(getFileName(file)) }}</span>
+              <span class="text-xs text-gray-400">{{ formatFileSize(file.size) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Stats + Largest File -->
+      <div class="space-y-6">
+        <!-- Size Distribution -->
+        <div class="bg-white border border-gray-200 p-6">
+          <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 flex items-center gap-2">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+            </svg>
+            Storage Summary
+          </h3>
+          <div class="space-y-3">
+            <div class="detail-row">
+              <span class="detail-label">Total Size</span>
+              <span class="detail-value font-semibold">{{ formatFileSize(totalStorage) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Avg File Size</span>
+              <span class="detail-value">{{ formatFileSize(avgFileSize) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Folders</span>
+              <span class="detail-value">{{ folderGroups.length }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Largest File -->
+        <div *ngIf="largestFile" class="bg-white border border-gray-200 p-6 cursor-pointer hover:border-gray-300 transition" (click)="openFileDetail(largestFile)">
+          <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5 flex items-center gap-2">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
+            </svg>
+            Largest File
+          </h3>
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 flex items-center justify-center bg-amber-50 border border-amber-100 flex-shrink-0">
+              <svg class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-gray-800 truncate">{{ largestFile.fileName }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">{{ largestFile.folder || '/' }}</p>
+              <p class="text-lg font-serif font-bold mt-2">{{ formatFileSize(largestFile.size) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SECTION 5: FILES TABLE                                      -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <div class="bg-white border border-gray-200 animate-fadeIn" style="animation-delay: 0.35s; opacity: 0;">
+
+      <!-- Table Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 py-4 border-b border-gray-100 gap-3">
+        <h3 class="text-xs uppercase tracking-widest text-gray-400 flex items-center gap-2">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+          </svg>
+          All Files
+          <span class="text-gray-300 font-normal">({{ filteredFiles.length | number }} of {{ files.length | number }})</span>
+        </h3>
+        <div class="flex items-center gap-3">
+          <!-- Type filter -->
+          <select [(ngModel)]="selectedTypeFilter" class="filter-select">
+            <option value="all">All Types</option>
+            <option *ngFor="let t of uniqueFileTypes" [value]="t">.{{ t }}</option>
+          </select>
+          <!-- Search -->
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+            <input type="text"
+                   [(ngModel)]="fileSearch"
+                   placeholder="Search files..."
+                   class="pl-9 pr-3 py-1.5 text-xs border border-gray-200 focus:border-black focus:outline-none w-48 transition">
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="files.length === 0" class="text-center py-16">
+        <div class="w-16 h-16 mx-auto mb-4 border-2 border-gray-100 rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <p class="text-sm text-gray-400">No files in this bucket</p>
+        <p class="text-xs text-gray-300 mt-1">Sync your bucket to populate files</p>
+      </div>
+
+      <!-- No results -->
+      <div *ngIf="files.length > 0 && filteredFiles.length === 0" class="text-center py-12">
+        <p class="text-sm text-gray-400">No files match your search</p>
+      </div>
+
+      <!-- Table -->
+      <div *ngIf="filteredFiles.length > 0" class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-100 text-left">
+              <th class="px-6 py-3 text-[10px] uppercase tracking-widest text-gray-400 font-medium cursor-pointer hover:text-black transition" (click)="toggleFileSort('name')">
+                <span class="flex items-center gap-1">
+                  File Name
+                  <svg *ngIf="fileSortField === 'name'" class="w-3 h-3" [class.rotate-180]="fileSortDir === 'desc'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/>
+                  </svg>
+                </span>
+              </th>
+              <th class="px-4 py-3 text-[10px] uppercase tracking-widest text-gray-400 font-medium cursor-pointer hover:text-black transition hidden md:table-cell" (click)="toggleFileSort('folder')">
+                <span class="flex items-center gap-1">
+                  Folder
+                  <svg *ngIf="fileSortField === 'folder'" class="w-3 h-3" [class.rotate-180]="fileSortDir === 'desc'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/>
+                  </svg>
+                </span>
+              </th>
+              <th class="px-4 py-3 text-[10px] uppercase tracking-widest text-gray-400 font-medium cursor-pointer hover:text-black transition" (click)="toggleFileSort('type')">
+                <span class="flex items-center gap-1">
+                  Type
+                  <svg *ngIf="fileSortField === 'type'" class="w-3 h-3" [class.rotate-180]="fileSortDir === 'desc'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/>
+                  </svg>
+                </span>
+              </th>
+              <th class="px-4 py-3 text-[10px] uppercase tracking-widest text-gray-400 font-medium cursor-pointer hover:text-black transition text-right" (click)="toggleFileSort('size')">
+                <span class="flex items-center justify-end gap-1">
+                  Size
+                  <svg *ngIf="fileSortField === 'size'" class="w-3 h-3" [class.rotate-180]="fileSortDir === 'desc'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/>
+                  </svg>
+                </span>
+              </th>
+              <th class="px-4 py-3 text-[10px] uppercase tracking-widest text-gray-400 font-medium cursor-pointer hover:text-black transition text-right hidden lg:table-cell" (click)="toggleFileSort('date')">
+                <span class="flex items-center justify-end gap-1">
+                  Date
+                  <svg *ngIf="fileSortField === 'date'" class="w-3 h-3" [class.rotate-180]="fileSortDir === 'desc'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5"/>
+                  </svg>
+                </span>
+              </th>
+              <th class="px-4 py-3 text-[10px] uppercase tracking-widest text-gray-400 font-medium text-right">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let file of filteredFiles; let i = index"
+                class="file-row border-b border-gray-50 hover:bg-gray-50/50 transition cursor-pointer"
+                [class.bg-gray-25]="i % 2 === 1"
+                (click)="openFileDetail(file)">
+              <td class="px-6 py-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                  </svg>
+                  <span class="text-sm text-gray-800 truncate max-w-xs">{{ getFileName(file) }}</span>
+                </div>
+              </td>
+              <td class="px-4 py-3 hidden md:table-cell">
+                <span class="text-xs text-gray-400 font-mono truncate max-w-[200px] inline-block">{{ file.folder || '/' }}</span>
+              </td>
+              <td class="px-4 py-3">
+                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded" [ngClass]="getFileTypeColor(getFileExtension(getFileName(file)))">
+                  .{{ getFileExtension(getFileName(file)) }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <span class="text-xs text-gray-500 tabular-nums">{{ formatFileSize(file.size) }}</span>
+              </td>
+              <td class="px-4 py-3 text-right hidden lg:table-cell">
+                <span class="text-xs text-gray-400">{{ formatDate(file.createdAt) }}</span>
+              </td>
+              <td class="px-4 py-3 text-right" (click)="$event.stopPropagation()">
+                <div class="flex items-center justify-end gap-1">
+                  <!-- Download -->
+                  <button (click)="downloadFile(file)" [disabled]="downloadingFileId === file.id"
+                          class="action-btn" title="Download">
+                    <svg *ngIf="downloadingFileId !== file.id" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                    </svg>
+                    <svg *ngIf="downloadingFileId === file.id" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </button>
+                  <!-- Replace -->
+                  <button (click)="openUpdateModal(file)" class="action-btn" title="Replace file">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182"/>
+                    </svg>
+                  </button>
+                  <!-- Delete -->
+                  <button (click)="openFileDeleteConfirm(file)" class="action-btn action-btn-danger" title="Delete file">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Footer summary -->
+      <div *ngIf="filteredFiles.length > 0" class="px-6 py-3 border-t border-gray-100 flex items-center justify-between">
+        <span class="text-xs text-gray-400">
+          Showing {{ filteredFiles.length | number }} file{{ filteredFiles.length !== 1 ? 's' : '' }}
+          <span *ngIf="fileSearch || selectedTypeFilter !== 'all'"> (filtered)</span>
+        </span>
+        <span class="text-xs text-gray-400">
+          Total: {{ formatFileSize(totalStorage) }}
+        </span>
+      </div>
+    </div>
+
+
+    <!-- ── Bottom Spacer ── -->
+    <div class="h-16"></div>
+
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- FILE DETAIL PANEL (Slide-over)                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="selectedFile"
+       class="fixed inset-0 z-40 flex justify-end"
+       [class.file-panel-backdrop-enter]="showFilePanel"
+       [class.file-panel-backdrop-exit]="!showFilePanel">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="closeFileDetail()"></div>
+
+    <!-- Panel -->
+    <div class="relative bg-white w-full max-w-md h-full flex flex-col shadow-2xl border-l border-gray-200 overflow-hidden"
+         [class.file-panel-enter]="showFilePanel"
+         [class.file-panel-exit]="!showFilePanel">
+
+      <!-- Panel Header -->
+      <div class="flex items-center justify-between px-6 py-5 border-b border-gray-200 flex-shrink-0">
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <div class="w-10 h-10 flex items-center justify-center border border-gray-100 flex-shrink-0"
+               [ngClass]="getFileTypeColor(getFileExtension(getFileName(selectedFile)))">
+            <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h3 class="text-sm font-semibold text-gray-900 truncate">{{ getFileName(selectedFile) }}</h3>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">File Details</p>
+          </div>
+        </div>
+        <button (click)="closeFileDetail()" class="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg transition flex-shrink-0 ml-2">
+          <svg class="w-4.5 h-4.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Panel Body -->
+      <div class="flex-1 overflow-y-auto">
+
+        <!-- File Preview -->
+        <div class="px-6 py-5 bg-gradient-to-b from-gray-50 to-white border-b border-gray-100">
+
+          <!-- Loading state -->
+          <div *ngIf="filePreviewLoading" class="flex items-center justify-center py-10">
+            <svg class="w-6 h-6 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+
+          <!-- Image Preview -->
+          <div *ngIf="!filePreviewLoading && filePreviewUrl && isImageFile(getFileExtension(getFileName(selectedFile!)))" class="flex flex-col items-center cursor-pointer group/preview" (click)="openPreviewInNewTab()" title="Click to open in new tab">
+            <div class="w-full max-h-[320px] overflow-hidden rounded-lg border border-gray-200 bg-white flex items-center justify-center relative">
+              <img [src]="filePreviewUrl" [alt]="getFileName(selectedFile!)" class="max-w-full max-h-[320px] object-contain" />
+              <div class="absolute inset-0 bg-black/0 group-hover/preview:bg-black/5 transition flex items-center justify-center">
+                <div class="opacity-0 group-hover/preview:opacity-100 transition bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                  <span class="text-[10px] font-medium text-gray-600 uppercase tracking-wider">Open</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PDF Preview -->
+          <div *ngIf="!filePreviewLoading && filePreviewSafeUrl && isPdfFile(getFileExtension(getFileName(selectedFile!)))" class="flex flex-col items-center cursor-pointer group/preview" (click)="openPreviewInNewTab()" title="Click to open in new tab">
+            <div class="w-full rounded-lg border border-gray-200 overflow-hidden relative" style="height: 400px;">
+              <iframe [src]="filePreviewSafeUrl" class="w-full h-full" style="border: none;"></iframe>
+              <div class="absolute top-2 right-2 opacity-0 group-hover/preview:opacity-100 transition bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 pointer-events-none">
+                <svg class="w-3.5 h-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                <span class="text-[10px] font-medium text-gray-600 uppercase tracking-wider">Open</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Preview -->
+          <div *ngIf="!filePreviewLoading && filePreviewUrl && isVideoFile(getFileExtension(getFileName(selectedFile!)))" class="flex flex-col items-center cursor-pointer group/preview" (click)="openPreviewInNewTab()" title="Click to open in new tab">
+            <div class="w-full rounded-lg border border-gray-200 overflow-hidden bg-black relative">
+              <video [src]="filePreviewUrl" controls class="w-full max-h-[300px]"></video>
+              <div class="absolute top-2 right-2 opacity-0 group-hover/preview:opacity-100 transition bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm flex items-center gap-1.5 pointer-events-none">
+                <svg class="w-3.5 h-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                <span class="text-[10px] font-medium text-gray-600 uppercase tracking-wider">Open</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Audio Preview -->
+          <div *ngIf="!filePreviewLoading && filePreviewUrl && isAudioFile(getFileExtension(getFileName(selectedFile!)))" class="flex flex-col items-center py-4">
+            <div class="w-12 h-12 flex items-center justify-center rounded-full bg-indigo-100 text-indigo-600 mb-4">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 9l10.5-3m0 6.553v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 11-.99-3.467l2.31-.66a2.25 2.25 0 001.632-2.163zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 01-1.632 2.163l-1.32.377a1.803 1.803 0 01-.99-3.467l2.31-.66A2.25 2.25 0 009 15.553z"/>
+              </svg>
+            </div>
+            <audio [src]="filePreviewUrl" controls class="w-full"></audio>
+          </div>
+
+          <!-- Text / Code Preview -->
+          <div *ngIf="!filePreviewLoading && filePreviewText" class="flex flex-col items-center cursor-pointer group/preview" (click)="openPreviewInNewTab()" title="Click to open in new tab">
+            <div class="w-full rounded-lg border border-gray-200 bg-gray-900 overflow-hidden relative">
+              <div class="flex items-center justify-between px-3 py-2 bg-gray-800 border-b border-gray-700">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-[10px] uppercase tracking-wider text-gray-500 font-mono">.{{ getFileExtension(getFileName(selectedFile!)) }}</span>
+                  <div class="opacity-0 group-hover/preview:opacity-100 transition flex items-center gap-1">
+                    <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+                    <span class="text-[10px] text-gray-400 uppercase tracking-wider">Open</span>
+                  </div>
+                </div>
+              </div>
+              <pre class="px-4 py-3 text-xs font-mono text-gray-300 overflow-x-auto overflow-y-auto max-h-[300px] whitespace-pre-wrap break-all leading-relaxed select-text m-0">{{ filePreviewText }}</pre>
+            </div>
+          </div>
+
+          <!-- Preview Error -->
+          <div *ngIf="!filePreviewLoading && filePreviewError" class="flex flex-col items-center py-6">
+            <div class="w-12 h-12 flex items-center justify-center rounded-full bg-red-50 mb-3">
+              <svg class="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+              </svg>
+            </div>
+            <p class="text-xs text-gray-500">Failed to load preview</p>
+          </div>
+
+          <!-- No Preview Available (non-previewable file types) -->
+          <div *ngIf="!filePreviewLoading && !filePreviewUrl && !filePreviewText && !filePreviewError" class="flex flex-col items-center">
+            <div class="w-16 h-16 flex items-center justify-center rounded-lg border-2 border-gray-100"
+                 [ngClass]="getFileTypeColor(getFileExtension(getFileName(selectedFile!)))">
+              <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <p class="text-xs text-gray-400 mt-3">Preview not available for this file type</p>
+          </div>
+
+          <!-- File name & meta always shown below preview -->
+          <p class="text-center text-sm font-medium text-gray-900 mt-3 break-all px-4">{{ getFileName(selectedFile!) }}</p>
+          <div class="flex items-center justify-center gap-3 mt-2">
+            <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded" [ngClass]="getFileTypeColor(getFileExtension(getFileName(selectedFile!)))">
+              .{{ getFileExtension(getFileName(selectedFile!)) }}
+            </span>
+            <span class="text-xs text-gray-400">{{ formatFileSize(selectedFile!.size) }}</span>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="px-6 py-4 border-b border-gray-100">
+          <div class="flex items-center justify-center gap-6">
+            <!-- Download -->
+            <button (click)="downloadFile(selectedFile); $event.stopPropagation()"
+                    [disabled]="downloadingFileId === selectedFile.id"
+                    class="file-panel-action group" title="Download">
+              <div class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 group-hover:border-black group-hover:bg-black group-hover:text-white transition">
+                <svg *ngIf="downloadingFileId !== selectedFile.id" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                </svg>
+                <svg *ngIf="downloadingFileId === selectedFile.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-gray-400 mt-1.5 group-hover:text-black transition">Download</span>
+            </button>
+            <!-- Replace -->
+            <button (click)="openUpdateModal(selectedFile); $event.stopPropagation()"
+                    class="file-panel-action group" title="Replace">
+              <div class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 group-hover:border-amber-500 group-hover:bg-amber-500 group-hover:text-white transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182"/>
+                </svg>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-gray-400 mt-1.5 group-hover:text-amber-600 transition">Replace</span>
+            </button>
+            <!-- Delete -->
+            <button (click)="openFileDeleteConfirm(selectedFile); $event.stopPropagation()"
+                    class="file-panel-action group" title="Delete">
+              <div class="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 group-hover:border-red-500 group-hover:bg-red-500 group-hover:text-white transition">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                </svg>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider text-gray-400 mt-1.5 group-hover:text-red-600 transition">Delete</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- File Information -->
+        <div class="px-6 py-5">
+          <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+            </svg>
+            General Information
+          </h4>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">File Name</span>
+              <span class="detail-value text-xs break-all text-right max-w-[200px]">{{ getFileName(selectedFile) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Folder</span>
+              <span class="detail-value font-mono text-xs">{{ selectedFile.folder || '/' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Size</span>
+              <span class="detail-value">{{ formatFileSize(selectedFile.size) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Content Type</span>
+              <span class="detail-value text-xs">{{ selectedFile.contentType || '—' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Bucket</span>
+              <span class="detail-value">{{ selectedFile.bucketName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Provider</span>
+              <span class="detail-value">{{ getProviderLabel(selectedFile.provider) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- File URL -->
+        <div class="px-6 pb-5">
+          <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.19 8.688a4.5 4.5 0 011.242 7.244l-4.5 4.5a4.5 4.5 0 01-6.364-6.364l1.757-1.757m9.86-3.061a4.5 4.5 0 00-1.242-7.244l-4.5-4.5a4.5 4.5 0 00-6.364 6.364L4.5 8.737"/>
+            </svg>
+            File Path
+          </h4>
+          <div class="px-3 py-2.5 bg-gray-50 border border-gray-100 font-mono text-xs text-gray-600 break-all leading-relaxed">
+            {{ selectedFile.fileUrl || '—' }}
+          </div>
+        </div>
+
+        <!-- Timestamps -->
+        <div class="px-6 pb-5">
+          <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Timestamps
+          </h4>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">Created</span>
+              <span class="detail-value text-xs">{{ formatDateTime(selectedFile.createdAt) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Last Updated</span>
+              <span class="detail-value text-xs">{{ selectedFile.updatedAt ? formatDateTime(selectedFile.updatedAt) : 'Never' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resource IDs -->
+        <div class="px-6 pb-6">
+          <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5"/>
+            </svg>
+            Identifiers
+          </h4>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">File ID</span>
+              <span class="detail-value font-mono text-xs">{{ selectedFile.id }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Account ID</span>
+              <span class="detail-value font-mono text-xs">{{ selectedFile.cloudAccountId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel Footer -->
+      <div class="px-6 py-3 border-t border-gray-200 flex-shrink-0 flex items-center justify-between bg-gray-50">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded" [ngClass]="getFileTypeColor(getFileExtension(getFileName(selectedFile)))">
+            .{{ getFileExtension(getFileName(selectedFile)) }}
+          </span>
+          <span class="text-xs text-gray-400">{{ formatFileSize(selectedFile.size) }}</span>
+        </div>
+        <button (click)="closeFileDetail()" class="px-4 py-1.5 text-xs border border-gray-200 hover:bg-gray-100 transition">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- DELETE CONFIRMATION MODAL                                       -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-enter">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeDeleteConfirm()"></div>
+
+    <!-- Modal -->
+    <div class="relative bg-white w-full max-w-md mx-4 shadow-2xl border border-gray-200 modal-enter">
+      <!-- Header -->
+      <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
+        <div class="w-11 h-11 flex items-center justify-center bg-red-50 border border-red-100 rounded-lg flex-shrink-0">
+          <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-serif font-bold">Delete Bucket</h3>
+          <p class="text-xs text-gray-400">This action cannot be undone</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-5">
+        <p class="text-sm text-gray-600 leading-relaxed">
+          Are you sure you want to delete <span class="font-semibold text-black">{{ bucket.name }}</span>?
+          This will permanently remove the bucket and all its associated data.
+        </p>
+
+        <!-- Error -->
+        <div *ngIf="deleteError" class="mt-4 flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 text-sm text-red-700">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+          {{ deleteError }}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <button (click)="closeDeleteConfirm()" [disabled]="deleting"
+                class="px-5 py-2 text-sm border border-gray-200 hover:bg-gray-100 transition disabled:opacity-50">
+          Cancel
+        </button>
+        <button (click)="confirmDelete()" [disabled]="deleting"
+                class="inline-flex items-center gap-2 px-5 py-2 text-sm bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg *ngIf="deleting" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ deleting ? 'Deleting…' : 'Delete Bucket' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- UPLOAD FILE MODAL                                               -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="showUploadModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-enter">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeUploadModal()"></div>
+
+    <div class="relative bg-white w-full max-w-lg mx-4 shadow-2xl border border-gray-200 modal-enter">
+      <!-- Header -->
+      <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
+        <div class="w-11 h-11 flex items-center justify-center bg-indigo-50 border border-indigo-100 rounded-lg flex-shrink-0">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-serif font-bold">Upload File</h3>
+          <p class="text-xs text-gray-400">Upload a file to <span class="font-medium text-gray-600">{{ bucket.name }}</span></p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-5 space-y-5">
+        <!-- Drop Zone -->
+        <div class="upload-dropzone"
+             [class.upload-dropzone-active]="uploadDragOver"
+             [class.upload-dropzone-has-file]="uploadFile"
+             (dragover)="onUploadDragOver($event)"
+             (dragleave)="onUploadDragLeave($event)"
+             (drop)="onUploadDrop($event)">
+          <div *ngIf="!uploadFile" class="text-center py-6">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+            </svg>
+            <p class="text-sm text-gray-500 mb-1">Drag and drop your file here</p>
+            <p class="text-xs text-gray-400 mb-3">or</p>
+            <label class="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-200 hover:border-black hover:bg-black hover:text-white transition cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
+              Browse Files
+              <input type="file" class="hidden" (change)="onUploadFileSelect($event)">
+            </label>
+          </div>
+
+          <!-- Selected file preview -->
+          <div *ngIf="uploadFile" class="flex items-center gap-3 py-3 px-1">
+            <div class="w-10 h-10 flex items-center justify-center bg-indigo-50 border border-indigo-100 flex-shrink-0">
+              <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-gray-800 truncate">{{ uploadFile.name }}</p>
+              <p class="text-xs text-gray-400">{{ formatFileSize(uploadFile.size) }}</p>
+            </div>
+            <button (click)="removeUploadFile()" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition flex-shrink-0">
+              <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Folder -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Folder (optional)</label>
+          <input type="text"
+                 [(ngModel)]="uploadFolder"
+                 placeholder="e.g. Images, Documents, logs/2026"
+                 class="w-full px-4 py-2.5 text-sm border border-gray-200 focus:border-black focus:outline-none transition font-mono">
+          <p class="text-[10px] text-gray-400 mt-1.5">Leave empty to upload to the bucket root</p>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="uploadError" class="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 text-sm text-red-700">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+          {{ uploadError }}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <button (click)="closeUploadModal()" [disabled]="uploading"
+                class="px-5 py-2 text-sm border border-gray-200 hover:bg-gray-100 transition disabled:opacity-50">
+          Cancel
+        </button>
+        <button (click)="confirmUpload()" [disabled]="uploading || !uploadFile"
+                class="inline-flex items-center gap-2 px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg *ngIf="uploading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ uploading ? 'Uploading…' : 'Upload' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- REPLACE FILE MODAL                                              -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="showUpdateModal && fileToUpdate" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-enter">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeUpdateModal()"></div>
+
+    <div class="relative bg-white w-full max-w-md mx-4 shadow-2xl border border-gray-200 modal-enter">
+      <!-- Header -->
+      <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
+        <div class="w-11 h-11 flex items-center justify-center bg-amber-50 border border-amber-100 rounded-lg flex-shrink-0">
+          <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-serif font-bold">Replace File</h3>
+          <p class="text-xs text-gray-400">Choose a new file to replace the existing one</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-5 space-y-4">
+        <!-- Current file info -->
+        <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-100">
+          <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-gray-700 truncate">{{ fileToUpdate.fileName }}</p>
+            <p class="text-xs text-gray-400">{{ formatFileSize(fileToUpdate.size) }} &middot; {{ fileToUpdate.folder || '/' }}</p>
+          </div>
+        </div>
+
+        <!-- New file picker -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">New File</label>
+          <label class="flex items-center gap-3 px-4 py-3 border border-dashed border-gray-300 hover:border-black cursor-pointer transition"
+                 [class.border-black]="updateFile">
+            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            <span *ngIf="!updateFile" class="text-sm text-gray-500">Choose replacement file…</span>
+            <span *ngIf="updateFile" class="text-sm text-gray-800 truncate">{{ updateFile.name }} <span class="text-gray-400">({{ formatFileSize(updateFile.size) }})</span></span>
+            <input type="file" class="hidden" (change)="onUpdateFileSelect($event)">
+          </label>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="updateFileError" class="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 text-sm text-red-700">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+          {{ updateFileError }}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <button (click)="closeUpdateModal()" [disabled]="updatingFile"
+                class="px-5 py-2 text-sm border border-gray-200 hover:bg-gray-100 transition disabled:opacity-50">
+          Cancel
+        </button>
+        <button (click)="confirmUpdateFile()" [disabled]="updatingFile || !updateFile"
+                class="inline-flex items-center gap-2 px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg *ngIf="updatingFile" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ updatingFile ? 'Replacing…' : 'Replace File' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- DELETE FILE CONFIRMATION MODAL                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="showFileDeleteConfirm && fileToDelete" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-enter">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeFileDeleteConfirm()"></div>
+
+    <div class="relative bg-white w-full max-w-md mx-4 shadow-2xl border border-gray-200 modal-enter">
+      <!-- Header -->
+      <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
+        <div class="w-11 h-11 flex items-center justify-center bg-red-50 border border-red-100 rounded-lg flex-shrink-0">
+          <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-serif font-bold">Delete File</h3>
+          <p class="text-xs text-gray-400">This action cannot be undone</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-5">
+        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+          Are you sure you want to delete this file?
+        </p>
+        <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-100">
+          <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-gray-800 truncate">{{ fileToDelete.fileName }}</p>
+            <p class="text-xs text-gray-400">{{ formatFileSize(fileToDelete.size) }} &middot; {{ fileToDelete.folder || '/' }}</p>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="fileDeleteError" class="mt-4 flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 text-sm text-red-700">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+          {{ fileDeleteError }}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <button (click)="closeFileDeleteConfirm()" [disabled]="deletingFile"
+                class="px-5 py-2 text-sm border border-gray-200 hover:bg-gray-100 transition disabled:opacity-50">
+          Cancel
+        </button>
+        <button (click)="confirmFileDelete()" [disabled]="deletingFile"
+                class="inline-flex items-center gap-2 px-5 py-2 text-sm bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg *ngIf="deletingFile" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ deletingFile ? 'Deleting…' : 'Delete File' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- TOAST NOTIFICATION                                              -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="toastMessage" class="fixed bottom-6 right-6 z-50 toast-enter">
+    <div class="flex items-center gap-3 px-5 py-3 shadow-lg border"
+         [ngClass]="toastType === 'success' ? 'bg-white border-green-200' : 'bg-white border-red-200'">
+      <svg *ngIf="toastType === 'success'" class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <svg *ngIf="toastType === 'error'" class="w-4 h-4 text-red-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+      <span class="text-sm text-gray-700">{{ toastMessage }}</span>
+    </div>
+  </div>
+
+</div>

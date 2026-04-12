@@ -185,7 +185,24 @@ namespace IWX_CloudZen.CloudServices.CloudStorage.Providers
 
         public async Task<List<CloudFileInfo>> FetchAllFiles(CloudConnectionSecrets account, string bucketName)
         {
-            var client = GetClient(account);
+            // Resolve the bucket's actual region so we connect to the correct regional endpoint.
+            // This is necessary for opt-in regions (e.g. ap-south-2) where a client configured for
+            // a different region will receive a "location constraint is incompatible" error.
+            var baseClient = GetClient(account);
+            AmazonS3Client client;
+            try
+            {
+                var loc = await baseClient.GetBucketLocationAsync(bucketName);
+                var bucketRegion = string.IsNullOrEmpty(loc.Location?.Value) ? "us-east-1" : loc.Location.Value;
+                client = bucketRegion != account.Region
+                    ? new AmazonS3Client(account.AccessKey, account.SecretKey, RegionEndpoint.GetBySystemName(bucketRegion))
+                    : baseClient;
+            }
+            catch
+            {
+                client = baseClient;
+            }
+
             var result = new List<CloudFileInfo>();
             string? continuationToken = null;
 

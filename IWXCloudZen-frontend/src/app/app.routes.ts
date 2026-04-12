@@ -3,11 +3,35 @@ import { HomeComponent } from './pages/home/home.component';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { ProfileComponent } from './pages/profile/profile.component';
+import { CloudStorageComponent } from './pages/CloudServices/cloud-storage/cloud-storage.component';
+import { ClustersComponent } from './pages/CloudServices/clusters/clusters.component';
+import { VpcsComponent } from './pages/CloudServices/vpcs/vpcs.component';
+import { EcrComponent } from './pages/CloudServices/ecr/ecr.component';
+import { EcsComponent } from './pages/CloudServices/ecs/ecs.component';
+import { SubnetsComponent } from './pages/CloudServices/subnets/subnets.component';
+import { SecurityGroupsComponent } from './pages/CloudServices/security-groups/security-groups.component';
+import { CloudWatchLogsComponent } from './pages/CloudServices/cloudwatch-logs/cloudwatch-logs.component';
+import { Ec2InstancesComponent } from './pages/CloudServices/ec2-instances/ec2-instances.component';
+import { CreateBucketComponent } from './pages/CloudServices/cloud-storage/create-bucket/create-bucket.component';
+import { BucketOverviewComponent } from './pages/CloudServices/cloud-storage/bucket-overview/bucket-overview.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent },
+  { path: 'dashboard/cloud-storage', component: CloudStorageComponent },
+  { path: 'dashboard/cloud-storage/create', component: CreateBucketComponent },
+  { path: 'dashboard/cloud-storage/:id', component: BucketOverviewComponent },
+  { path: 'dashboard/clusters', component: ClustersComponent },
+  { path: 'dashboard/vpcs', component: VpcsComponent },
+  { path: 'dashboard/ecr', component: EcrComponent },
+  { path: 'dashboard/ecs', component: EcsComponent },
+  { path: 'dashboard/subnets', component: SubnetsComponent },
+  { path: 'dashboard/security-groups', component: SecurityGroupsComponent },
+  { path: 'dashboard/cloudwatch-logs', component: CloudWatchLogsComponent },
+  { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },
+  { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }
 ];

@@ -1,0 +1,159 @@
+/* ── ECS Services Dashboard ── */
+
+/* View fade in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out both;
+}
+
+/* Stagger children */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.10s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.20s; }
+
+/* Metric cards */
+.metric-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.metric-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.015) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px -12px rgba(0,0,0,0.12);
+}
+
+.metric-card:hover::before {
+  opacity: 1;
+}
+
+/* Table rows */
+.service-row {
+  transition: all 0.2s ease;
+}
+
+.service-row:hover {
+  background-color: rgba(0,0,0,0.012);
+}
+
+/* Status capsule */
+.status-active {
+  background-color: #f0fdf4;
+  color: #15803d;
+}
+
+.status-pending {
+  background-color: #fefce8;
+  color: #a16207;
+}
+
+.status-error {
+  background-color: #fef2f2;
+  color: #b91c1c;
+}
+
+.status-unknown {
+  background-color: #f9fafb;
+  color: #6b7280;
+}
+
+/* Grid card */
+.service-grid-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.service-grid-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.02) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.service-grid-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 30px -8px rgba(0,0,0,0.10);
+}
+
+.service-grid-card:hover::before {
+  opacity: 1;
+}
+
+/* Detail slide-over */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+.detail-panel-enter {
+  animation: slideInRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.detail-panel-exit {
+  animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Scrollbar */
+.detail-panel-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.detail-panel-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.detail-panel-body::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+  border-radius: 2px;
+}
+
+.detail-panel-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.24);
+}
+
+/* Sort header */
+.sort-header {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+}
+
+.sort-header:hover {
+  color: #111;
+}
+
+/* Task health bar */
+.health-bar-track {
+  height: 6px;
+  border-radius: 3px;
+  background: #f3f4f6;
+  overflow: hidden;
+}
+
+.health-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
