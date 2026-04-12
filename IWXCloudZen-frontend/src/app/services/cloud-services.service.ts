@@ -16,6 +16,7 @@ import {
   FileListResponse,
   BucketFileSyncResponse,
   S3Bucket,
+  CloudFileResponse,
   CreateBucketRequest
 } from '../models/cloud-services.model';
 
@@ -117,6 +118,38 @@ export class CloudServicesService {
     return this.http.post<BucketFileSyncResponse>(
       `${this.apiUrl}/api/cloud/services/storage/aws/s3/files/sync?accountId=${accountId}&bucketId=${bucketId}`,
       null
+    );
+  }
+
+  uploadS3File(accountId: number, bucketId: number, file: File, folder: string): Observable<CloudFileResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('folder', folder);
+    return this.http.post<CloudFileResponse>(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/files?accountId=${accountId}&bucketId=${bucketId}`,
+      formData
+    );
+  }
+
+  downloadS3File(fileId: number): Observable<Blob> {
+    return this.http.get(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/files/${fileId}/download`,
+      { responseType: 'blob' }
+    );
+  }
+
+  updateS3File(fileId: number, file: File): Observable<CloudFileResponse> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.put<CloudFileResponse>(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/files/${fileId}`,
+      formData
+    );
+  }
+
+  deleteS3File(fileId: number): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/files/${fileId}`
     );
   }
 }

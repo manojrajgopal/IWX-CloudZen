@@ -63,6 +63,34 @@ export class BucketOverviewComponent implements OnInit {
   showSyncReport = false;
   syncError: string | null = null;
 
+  // Upload state
+  showUploadModal = false;
+  uploadFile: File | null = null;
+  uploadFolder = '';
+  uploading = false;
+  uploadError: string | null = null;
+  uploadDragOver = false;
+
+  // File delete state
+  showFileDeleteConfirm = false;
+  fileToDelete: CloudFileResponse | null = null;
+  deletingFile = false;
+  fileDeleteError: string | null = null;
+
+  // File update (replace) state
+  showUpdateModal = false;
+  fileToUpdate: CloudFileResponse | null = null;
+  updateFile: File | null = null;
+  updatingFile = false;
+  updateFileError: string | null = null;
+
+  // Download state
+  downloadingFileId: number | null = null;
+
+  // Toast
+  toastMessage: string | null = null;
+  toastType: 'success' | 'error' = 'success';
+
   Math = Math;
 
   constructor(
@@ -375,5 +403,192 @@ export class BucketOverviewComponent implements OnInit {
 
   closeSyncReport(): void {
     this.showSyncReport = false;
+  }
+
+  // ── Upload File ──
+
+  openUploadModal(): void {
+    this.showUploadModal = true;
+    this.uploadFile = null;
+    this.uploadFolder = '';
+    this.uploadError = null;
+    this.uploadDragOver = false;
+  }
+
+  closeUploadModal(): void {
+    this.showUploadModal = false;
+    this.uploadFile = null;
+    this.uploadFolder = '';
+    this.uploadError = null;
+  }
+
+  onUploadFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.uploadFile = input.files[0];
+      this.uploadError = null;
+    }
+  }
+
+  onUploadDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.uploadDragOver = true;
+  }
+
+  onUploadDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.uploadDragOver = false;
+  }
+
+  onUploadDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.uploadDragOver = false;
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.uploadFile = event.dataTransfer.files[0];
+      this.uploadError = null;
+    }
+  }
+
+  removeUploadFile(): void {
+    this.uploadFile = null;
+  }
+
+  confirmUpload(): void {
+    if (!this.bucket || !this.uploadFile) return;
+    this.uploading = true;
+    this.uploadError = null;
+
+    this.cloudServicesService.uploadS3File(
+      this.bucket.cloudAccountId,
+      this.bucket.id,
+      this.uploadFile,
+      this.uploadFolder
+    ).subscribe({
+      next: (file) => {
+        this.uploading = false;
+        this.files = [...this.files, file];
+        this.closeUploadModal();
+        this.showToast('File uploaded successfully', 'success');
+      },
+      error: (err) => {
+        this.uploading = false;
+        this.uploadError = err?.error?.message || err?.message || 'Upload failed. Please try again.';
+      }
+    });
+  }
+
+  // ── Download File ──
+
+  downloadFile(file: CloudFileResponse): void {
+    if (this.downloadingFileId) return;
+    this.downloadingFileId = file.id;
+
+    this.cloudServicesService.downloadS3File(file.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        this.downloadingFileId = null;
+      },
+      error: () => {
+        this.downloadingFileId = null;
+        this.showToast('Download failed. Please try again.', 'error');
+      }
+    });
+  }
+
+  // ── Update (Replace) File ──
+
+  openUpdateModal(file: CloudFileResponse): void {
+    this.showUpdateModal = true;
+    this.fileToUpdate = file;
+    this.updateFile = null;
+    this.updateFileError = null;
+  }
+
+  closeUpdateModal(): void {
+    this.showUpdateModal = false;
+    this.fileToUpdate = null;
+    this.updateFile = null;
+    this.updateFileError = null;
+  }
+
+  onUpdateFileSelect(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.updateFile = input.files[0];
+      this.updateFileError = null;
+    }
+  }
+
+  confirmUpdateFile(): void {
+    if (!this.fileToUpdate || !this.updateFile) return;
+    this.updatingFile = true;
+    this.updateFileError = null;
+
+    this.cloudServicesService.updateS3File(this.fileToUpdate.id, this.updateFile).subscribe({
+      next: (updated) => {
+        this.updatingFile = false;
+        const idx = this.files.findIndex(f => f.id === updated.id);
+        if (idx >= 0) {
+          this.files = [...this.files.slice(0, idx), updated, ...this.files.slice(idx + 1)];
+        }
+        this.closeUpdateModal();
+        this.showToast('File replaced successfully', 'success');
+      },
+      error: (err) => {
+        this.updatingFile = false;
+        this.updateFileError = err?.error?.message || err?.message || 'Update failed. Please try again.';
+      }
+    });
+  }
+
+  // ── Delete File ──
+
+  openFileDeleteConfirm(file: CloudFileResponse): void {
+    this.showFileDeleteConfirm = true;
+    this.fileToDelete = file;
+    this.fileDeleteError = null;
+  }
+
+  closeFileDeleteConfirm(): void {
+    this.showFileDeleteConfirm = false;
+    this.fileToDelete = null;
+    this.fileDeleteError = null;
+  }
+
+  confirmFileDelete(): void {
+    if (!this.fileToDelete) return;
+    this.deletingFile = true;
+    this.fileDeleteError = null;
+
+    this.cloudServicesService.deleteS3File(this.fileToDelete.id).subscribe({
+      next: () => {
+        this.deletingFile = false;
+        this.files = this.files.filter(f => f.id !== this.fileToDelete!.id);
+        this.closeFileDeleteConfirm();
+        this.showToast('File deleted successfully', 'success');
+      },
+      error: (err) => {
+        this.deletingFile = false;
+        this.fileDeleteError = err?.error?.message || err?.message || 'Failed to delete file. Please try again.';
+      }
+    });
+  }
+
+  // ── Toast ──
+
+  showToast(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    setTimeout(() => { this.toastMessage = null; }, 4000);
   }
 }

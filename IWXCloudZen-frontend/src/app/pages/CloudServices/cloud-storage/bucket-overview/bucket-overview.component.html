@@ -84,7 +84,14 @@
             &middot; Created {{ formatDate(bucket.createdAt) }}
           </p>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button (click)="openUploadModal()"
+                  class="inline-flex items-center gap-2 px-4 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+            </svg>
+            Upload File
+          </button>
           <button (click)="syncBucketFiles()" [disabled]="syncing"
                   class="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-200 hover:border-black hover:bg-black hover:text-white transition disabled:opacity-50 disabled:cursor-not-allowed">
             <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -562,6 +569,9 @@
                   </svg>
                 </span>
               </th>
+              <th class="px-4 py-3 text-[10px] uppercase tracking-widest text-gray-400 font-medium text-right">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -589,6 +599,33 @@
               </td>
               <td class="px-4 py-3 text-right hidden lg:table-cell">
                 <span class="text-xs text-gray-400">{{ formatDate(file.createdAt) }}</span>
+              </td>
+              <td class="px-4 py-3 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <!-- Download -->
+                  <button (click)="downloadFile(file)" [disabled]="downloadingFileId === file.id"
+                          class="action-btn" title="Download">
+                    <svg *ngIf="downloadingFileId !== file.id" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                    </svg>
+                    <svg *ngIf="downloadingFileId === file.id" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </button>
+                  <!-- Replace -->
+                  <button (click)="openUpdateModal(file)" class="action-btn" title="Replace file">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182"/>
+                    </svg>
+                  </button>
+                  <!-- Delete -->
+                  <button (click)="openFileDeleteConfirm(file)" class="action-btn action-btn-danger" title="Delete file">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+                    </svg>
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -667,6 +704,262 @@
           {{ deleting ? 'Deleting…' : 'Delete Bucket' }}
         </button>
       </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- UPLOAD FILE MODAL                                               -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="showUploadModal" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-enter">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeUploadModal()"></div>
+
+    <div class="relative bg-white w-full max-w-lg mx-4 shadow-2xl border border-gray-200 modal-enter">
+      <!-- Header -->
+      <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
+        <div class="w-11 h-11 flex items-center justify-center bg-indigo-50 border border-indigo-100 rounded-lg flex-shrink-0">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-serif font-bold">Upload File</h3>
+          <p class="text-xs text-gray-400">Upload a file to <span class="font-medium text-gray-600">{{ bucket.name }}</span></p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-5 space-y-5">
+        <!-- Drop Zone -->
+        <div class="upload-dropzone"
+             [class.upload-dropzone-active]="uploadDragOver"
+             [class.upload-dropzone-has-file]="uploadFile"
+             (dragover)="onUploadDragOver($event)"
+             (dragleave)="onUploadDragLeave($event)"
+             (drop)="onUploadDrop($event)">
+          <div *ngIf="!uploadFile" class="text-center py-6">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+            </svg>
+            <p class="text-sm text-gray-500 mb-1">Drag and drop your file here</p>
+            <p class="text-xs text-gray-400 mb-3">or</p>
+            <label class="inline-flex items-center gap-2 px-4 py-2 text-sm border border-gray-200 hover:border-black hover:bg-black hover:text-white transition cursor-pointer">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
+              Browse Files
+              <input type="file" class="hidden" (change)="onUploadFileSelect($event)">
+            </label>
+          </div>
+
+          <!-- Selected file preview -->
+          <div *ngIf="uploadFile" class="flex items-center gap-3 py-3 px-1">
+            <div class="w-10 h-10 flex items-center justify-center bg-indigo-50 border border-indigo-100 flex-shrink-0">
+              <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-gray-800 truncate">{{ uploadFile.name }}</p>
+              <p class="text-xs text-gray-400">{{ formatFileSize(uploadFile.size) }}</p>
+            </div>
+            <button (click)="removeUploadFile()" class="w-8 h-8 flex items-center justify-center hover:bg-gray-100 rounded transition flex-shrink-0">
+              <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Folder -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Folder (optional)</label>
+          <input type="text"
+                 [(ngModel)]="uploadFolder"
+                 placeholder="e.g. Images, Documents, logs/2026"
+                 class="w-full px-4 py-2.5 text-sm border border-gray-200 focus:border-black focus:outline-none transition font-mono">
+          <p class="text-[10px] text-gray-400 mt-1.5">Leave empty to upload to the bucket root</p>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="uploadError" class="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 text-sm text-red-700">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+          {{ uploadError }}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <button (click)="closeUploadModal()" [disabled]="uploading"
+                class="px-5 py-2 text-sm border border-gray-200 hover:bg-gray-100 transition disabled:opacity-50">
+          Cancel
+        </button>
+        <button (click)="confirmUpload()" [disabled]="uploading || !uploadFile"
+                class="inline-flex items-center gap-2 px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg *ngIf="uploading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ uploading ? 'Uploading…' : 'Upload' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- REPLACE FILE MODAL                                              -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="showUpdateModal && fileToUpdate" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-enter">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeUpdateModal()"></div>
+
+    <div class="relative bg-white w-full max-w-md mx-4 shadow-2xl border border-gray-200 modal-enter">
+      <!-- Header -->
+      <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
+        <div class="w-11 h-11 flex items-center justify-center bg-amber-50 border border-amber-100 rounded-lg flex-shrink-0">
+          <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182M2.985 19.644l3.181-3.182"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-serif font-bold">Replace File</h3>
+          <p class="text-xs text-gray-400">Choose a new file to replace the existing one</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-5 space-y-4">
+        <!-- Current file info -->
+        <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-100">
+          <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-gray-700 truncate">{{ fileToUpdate.fileName }}</p>
+            <p class="text-xs text-gray-400">{{ formatFileSize(fileToUpdate.size) }} &middot; {{ fileToUpdate.folder || '/' }}</p>
+          </div>
+        </div>
+
+        <!-- New file picker -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">New File</label>
+          <label class="flex items-center gap-3 px-4 py-3 border border-dashed border-gray-300 hover:border-black cursor-pointer transition"
+                 [class.border-black]="updateFile">
+            <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            <span *ngIf="!updateFile" class="text-sm text-gray-500">Choose replacement file…</span>
+            <span *ngIf="updateFile" class="text-sm text-gray-800 truncate">{{ updateFile.name }} <span class="text-gray-400">({{ formatFileSize(updateFile.size) }})</span></span>
+            <input type="file" class="hidden" (change)="onUpdateFileSelect($event)">
+          </label>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="updateFileError" class="flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 text-sm text-red-700">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+          {{ updateFileError }}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <button (click)="closeUpdateModal()" [disabled]="updatingFile"
+                class="px-5 py-2 text-sm border border-gray-200 hover:bg-gray-100 transition disabled:opacity-50">
+          Cancel
+        </button>
+        <button (click)="confirmUpdateFile()" [disabled]="updatingFile || !updateFile"
+                class="inline-flex items-center gap-2 px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg *ngIf="updatingFile" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ updatingFile ? 'Replacing…' : 'Replace File' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- DELETE FILE CONFIRMATION MODAL                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="showFileDeleteConfirm && fileToDelete" class="fixed inset-0 z-50 flex items-center justify-center modal-backdrop-enter">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeFileDeleteConfirm()"></div>
+
+    <div class="relative bg-white w-full max-w-md mx-4 shadow-2xl border border-gray-200 modal-enter">
+      <!-- Header -->
+      <div class="flex items-center gap-4 px-6 py-5 border-b border-gray-100">
+        <div class="w-11 h-11 flex items-center justify-center bg-red-50 border border-red-100 rounded-lg flex-shrink-0">
+          <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-lg font-serif font-bold">Delete File</h3>
+          <p class="text-xs text-gray-400">This action cannot be undone</p>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="px-6 py-5">
+        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+          Are you sure you want to delete this file?
+        </p>
+        <div class="flex items-center gap-3 px-4 py-3 bg-gray-50 border border-gray-100">
+          <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+          </svg>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium text-gray-800 truncate">{{ fileToDelete.fileName }}</p>
+            <p class="text-xs text-gray-400">{{ formatFileSize(fileToDelete.size) }} &middot; {{ fileToDelete.folder || '/' }}</p>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div *ngIf="fileDeleteError" class="mt-4 flex items-start gap-2 px-4 py-3 bg-red-50 border border-red-200 text-sm text-red-700">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+          </svg>
+          {{ fileDeleteError }}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <button (click)="closeFileDeleteConfirm()" [disabled]="deletingFile"
+                class="px-5 py-2 text-sm border border-gray-200 hover:bg-gray-100 transition disabled:opacity-50">
+          Cancel
+        </button>
+        <button (click)="confirmFileDelete()" [disabled]="deletingFile"
+                class="inline-flex items-center gap-2 px-5 py-2 text-sm bg-red-600 text-white hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <svg *ngIf="deletingFile" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          {{ deletingFile ? 'Deleting…' : 'Delete File' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- TOAST NOTIFICATION                                              -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div *ngIf="toastMessage" class="fixed bottom-6 right-6 z-50 toast-enter">
+    <div class="flex items-center gap-3 px-5 py-3 shadow-lg border"
+         [ngClass]="toastType === 'success' ? 'bg-white border-green-200' : 'bg-white border-red-200'">
+      <svg *ngIf="toastType === 'success'" class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <svg *ngIf="toastType === 'error'" class="w-4 h-4 text-red-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+      <span class="text-sm text-gray-700">{{ toastMessage }}</span>
     </div>
   </div>
 
