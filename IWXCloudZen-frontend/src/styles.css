@@ -73,6 +73,11 @@ a:hover {
   opacity: 0.7;
 }
 
+/* All interactive elements should use pointer cursor */
+button, a, [role="button"], input[type="submit"], input[type="button"], select {
+  cursor: pointer;
+}
+
 /* Luxury underline animation for nav links */
 .nav-link {
   position: relative;

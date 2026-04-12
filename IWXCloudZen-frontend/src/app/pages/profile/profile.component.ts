@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
-import { CloudAccountService } from '../../services/cloud-account.service';
-import { CloudAccount } from '../../models/cloud-account.model';
+import { CloudAccountService, ConnectAccountRequest } from '../../services/cloud-account.service';
+import { CloudAccount, CloudProvider } from '../../models/cloud-account.model';
 
 interface ProfileStat {
   label: string;
@@ -19,15 +20,52 @@ interface ActivityItem {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './profile.component.html',
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
   currentUser: any = null;
   cloudAccounts: CloudAccount[] = [];
+  providers: CloudProvider[] = [];
   loadingAccounts = true;
   accountsError = '';
+
+  // Modal states
+  showCreateModal = false;
+  showManageModal = false;
+  showSettingsModal = false;
+  showDeleteModal = false;
+  modalClosing = false;
+  selectedAccount: CloudAccount | null = null;
+  settingDefault = false;
+
+  // Settings toggles (persisted in localStorage)
+  settings: { [key: string]: boolean } = {
+    autoValidation: true,
+    costAlerts: false,
+    resourceMonitoring: true,
+    securityScanning: false,
+    emailNotifications: true,
+    smsAlerts: false,
+    inAppNotifications: true
+  };
+
+  // Create form
+  createLoading = false;
+  createError = '';
+  createSuccess = '';
+  connectForm: ConnectAccountRequest = {
+    Provider: '',
+    AccountName: '',
+    AccessKey: '',
+    SecretKey: '',
+    TenantId: null,
+    ClientId: null,
+    ClientSecret: null,
+    Region: '',
+    MakeDefault: false
+  };
 
   profileStats: ProfileStat[] = [
     { label: 'Cloud Accounts', value: '—' },
@@ -52,6 +90,8 @@ export class ProfileComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.authService.getUser();
     this.loadCloudAccounts();
+    this.loadProviders();
+    this.loadSettings();
   }
 
   loadCloudAccounts(): void {
@@ -59,7 +99,7 @@ export class ProfileComponent implements OnInit {
     this.accountsError = '';
     this.cloudAccountService.getAccounts().subscribe({
       next: (accounts) => {
-        this.cloudAccounts = accounts;
+        this.cloudAccounts = accounts.sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
         this.profileStats[0].value = accounts.length.toString();
         this.loadingAccounts = false;
       },
@@ -70,12 +110,162 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  getStatusClass(isDefault: boolean): string {
-    return isDefault
-      ? 'bg-green-100 text-green-800'
-      : 'bg-gray-100 text-gray-800';
+  loadProviders(): void {
+    this.cloudAccountService.getProviders().subscribe({
+      next: (providers) => {
+        this.providers = providers;
+      }
+    });
   }
 
+  // --- Create Modal ---
+  openCreateModal(): void {
+    this.resetConnectForm();
+    this.createError = '';
+    this.createSuccess = '';
+    this.showCreateModal = true;
+    this.modalClosing = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeCreateModal(): void {
+    this.modalClosing = true;
+    setTimeout(() => {
+      this.showCreateModal = false;
+      this.modalClosing = false;
+      document.body.style.overflow = '';
+    }, 300);
+  }
+
+  resetConnectForm(): void {
+    this.connectForm = {
+      Provider: '',
+      AccountName: '',
+      AccessKey: '',
+      SecretKey: '',
+      TenantId: null,
+      ClientId: null,
+      ClientSecret: null,
+      Region: '',
+      MakeDefault: false
+    };
+  }
+
+  getSelectedProviderFields(): string[] {
+    const provider = this.providers.find(p => p.value === this.connectForm.Provider);
+    return provider ? provider.requiredFields : [];
+  }
+
+  isFieldRequired(field: string): boolean {
+    return this.getSelectedProviderFields().includes(field);
+  }
+
+  submitConnect(): void {
+    this.createLoading = true;
+    this.createError = '';
+    this.createSuccess = '';
+    this.cloudAccountService.connectAccount(this.connectForm).subscribe({
+      next: (response) => {
+        this.createSuccess = response.message;
+        this.createLoading = false;
+        this.loadCloudAccounts();
+        setTimeout(() => this.closeCreateModal(), 1500);
+      },
+      error: (err) => {
+        this.createError = err.error?.message || 'Failed to connect account.';
+        this.createLoading = false;
+      }
+    });
+  }
+
+  // --- Manage Modal ---
+  openManageModal(account: CloudAccount): void {
+    this.selectedAccount = account;
+    this.showManageModal = true;
+    this.modalClosing = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeManageModal(): void {
+    this.modalClosing = true;
+    setTimeout(() => {
+      this.showManageModal = false;
+      this.modalClosing = false;
+      this.selectedAccount = null;
+      document.body.style.overflow = '';
+    }, 300);
+  }
+
+  setDefaultAccount(): void {
+    if (!this.selectedAccount || this.selectedAccount.isDefault || this.cloudAccounts.length <= 1 || this.settingDefault) return;
+    this.settingDefault = true;
+    this.cloudAccountService.setDefaultAccount(this.selectedAccount.id).subscribe({
+      next: (response) => {
+        this.cloudAccounts.forEach(a => a.isDefault = a.id === this.selectedAccount!.id);
+        this.selectedAccount!.isDefault = true;
+        this.settingDefault = false;
+      },
+      error: () => {
+        this.settingDefault = false;
+      }
+    });
+  }
+
+  // --- Settings Modal ---
+  openSettingsModal(account: CloudAccount): void {
+    this.selectedAccount = account;
+    this.showSettingsModal = true;
+    this.modalClosing = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeSettingsModal(): void {
+    this.modalClosing = true;
+    setTimeout(() => {
+      this.showSettingsModal = false;
+      this.modalClosing = false;
+      this.selectedAccount = null;
+      document.body.style.overflow = '';
+    }, 300);
+  }
+
+  // --- Delete Modal ---
+  openDeleteModal(account: CloudAccount): void {
+    this.selectedAccount = account;
+    this.showDeleteModal = true;
+    this.modalClosing = false;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeDeleteModal(): void {
+    this.modalClosing = true;
+    setTimeout(() => {
+      this.showDeleteModal = false;
+      this.modalClosing = false;
+      this.selectedAccount = null;
+      document.body.style.overflow = '';
+    }, 300);
+  }
+
+  confirmDelete(): void {
+    // Dummy — just close for now
+    this.closeDeleteModal();
+  }
+
+  // --- Settings ---
+  loadSettings(): void {
+    const saved = localStorage.getItem('cloudzen_settings');
+    if (saved) {
+      this.settings = { ...this.settings, ...JSON.parse(saved) };
+    }
+  }
+
+  toggleSetting(key: string): void {
+    this.settings[key] = !this.settings[key];
+    localStorage.setItem('cloudzen_settings', JSON.stringify(this.settings));
+  }
+
+  // --- Helpers ---
   formatDate(dateStr: string): string {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', {
