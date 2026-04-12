@@ -7,11 +7,11 @@ import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../services/cloud-services.service';
 import { CloudAccount } from '../../../models/cloud-account.model';
-import { S3Bucket } from '../../../models/cloud-services.model';
+import { S3Bucket, FullSyncResult, BucketFileSyncResult, CloudFileResponse } from '../../../models/cloud-services.model';
 import { FilterByProviderPipe, FilterByRegionPipe, FilterByStatusPipe } from './cloud-storage.pipes';
 
 type ViewMode = 'grid' | 'list';
-type SortField = 'name' | 'region' | 'status' | 'createdAt';
+type SortField = 'name' | 'region' | 'status' | 'createdAt' | 'files';
 type SortDir = 'asc' | 'desc';
 
 interface StorageMetric {
@@ -34,6 +34,17 @@ export class CloudStorageComponent implements OnInit {
   buckets: S3Bucket[] = [];
   loading = true;
 
+  // File counts (per bucket id)
+  bucketFileCount: Map<number, number> = new Map();
+  bucketFiles: Map<number, CloudFileResponse[]> = new Map();
+  totalFiles = 0;
+  totalStorage = 0;
+  filesLoading = false;
+
+  // Sync results
+  lastSyncResults: FullSyncResult[] = [];
+  showSyncReport = false;
+
   // Filters
   searchQuery = '';
   selectedProvider = 'all';
@@ -48,6 +59,7 @@ export class CloudStorageComponent implements OnInit {
 
   // Detail panel
   selectedBucket: S3Bucket | null = null;
+  selectedBucketFiles: CloudFileResponse[] = [];
   showDetailPanel = false;
 
   // Sync
@@ -58,6 +70,8 @@ export class CloudStorageComponent implements OnInit {
   // Metrics
   metrics: StorageMetric[] = [
     { label: 'Total Buckets', value: '—', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4', color: 'text-black' },
+    { label: 'Total Files', value: '—', icon: 'M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z', color: 'text-indigo-600' },
+    { label: 'Total Storage', value: '—', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4', color: 'text-amber-600' },
     { label: 'Active', value: '—', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', color: 'text-green-600' },
     { label: 'Regions', value: '—', icon: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z', color: 'text-blue-600' },
     { label: 'Cloud Accounts', value: '—', icon: 'M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z', color: 'text-purple-600' }
@@ -110,16 +124,127 @@ export class CloudStorageComponent implements OnInit {
     forkJoin(requests).subscribe(results => {
       this.buckets = results.flatMap((r: any) => r.buckets || []);
       this.loading = false;
+      this.loadFileCounts(accounts);
+      this.updateMetrics();
+    });
+  }
+
+  private loadFileCounts(accounts: CloudAccount[]): void {
+    this.filesLoading = true;
+    const requests = accounts.map(a =>
+      this.cloudServicesService.getS3Files(a.id).pipe(catchError(() => of({ files: [] })))
+    );
+
+    forkJoin(requests).subscribe(results => {
+      this.bucketFileCount.clear();
+      this.bucketFiles.clear();
+      this.totalFiles = 0;
+      this.totalStorage = 0;
+
+      const allFiles = results.flatMap((r: any) => r.files || []);
+      this.totalFiles = allFiles.length;
+      this.totalStorage = allFiles.reduce((sum: number, f: any) => sum + (f.size || 0), 0);
+
+      // Group files by bucket name
+      for (const file of allFiles) {
+        const bucket = this.buckets.find(b => b.name === file.bucketName && b.cloudAccountId === file.cloudAccountId);
+        if (bucket) {
+          this.bucketFileCount.set(bucket.id, (this.bucketFileCount.get(bucket.id) || 0) + 1);
+          if (!this.bucketFiles.has(bucket.id)) {
+            this.bucketFiles.set(bucket.id, []);
+          }
+          this.bucketFiles.get(bucket.id)!.push(file);
+        }
+      }
+
+      this.filesLoading = false;
       this.updateMetrics();
     });
   }
 
   private updateMetrics(): void {
     this.metrics[0].value = this.buckets.length.toString();
-    this.metrics[1].value = this.buckets.filter(b => b.status?.toLowerCase() === 'created' || b.status?.toLowerCase() === 'active').length.toString();
+    this.metrics[1].value = this.totalFiles.toLocaleString();
+    this.metrics[2].value = this.formatFileSize(this.totalStorage);
+    this.metrics[3].value = this.buckets.filter(b => b.status?.toLowerCase() === 'created' || b.status?.toLowerCase() === 'active').length.toString();
     const uniqueRegions = new Set(this.buckets.map(b => b.region));
-    this.metrics[2].value = uniqueRegions.size.toString();
-    this.metrics[3].value = this.accounts.length.toString();
+    this.metrics[4].value = uniqueRegions.size.toString();
+    this.metrics[5].value = this.accounts.length.toString();
+  }
+
+  // ── File helpers ──
+
+  getFileCountForBucket(bucketId: number): number {
+    return this.bucketFileCount.get(bucketId) || 0;
+  }
+
+  getFileCountForAccount(accountId: number): number {
+    let count = 0;
+    for (const bucket of this.buckets) {
+      if (bucket.cloudAccountId === accountId) {
+        count += this.bucketFileCount.get(bucket.id) || 0;
+      }
+    }
+    return count;
+  }
+
+  getBucketCountForAccount(accountId: number): number {
+    return this.buckets.filter(b => b.cloudAccountId === accountId).length;
+  }
+
+  getTotalStorageForAccount(accountId: number): number {
+    let size = 0;
+    for (const bucket of this.buckets) {
+      if (bucket.cloudAccountId === accountId) {
+        const files = this.bucketFiles.get(bucket.id) || [];
+        size += files.reduce((sum, f) => sum + (f.size || 0), 0);
+      }
+    }
+    return size;
+  }
+
+  getTotalSyncFilesAdded(): number {
+    return this.lastSyncResults.reduce((sum, r) =>
+      sum + r.buckets.reduce((s, b) => s + b.filesAdded, 0), 0);
+  }
+
+  getTotalSyncFilesUpdated(): number {
+    return this.lastSyncResults.reduce((sum, r) =>
+      sum + r.buckets.reduce((s, b) => s + b.filesUpdated, 0), 0);
+  }
+
+  getTotalSyncFilesRemoved(): number {
+    return this.lastSyncResults.reduce((sum, r) =>
+      sum + r.buckets.reduce((s, b) => s + b.filesRemoved, 0), 0);
+  }
+
+  getTotalSyncBucketsAdded(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + r.bucketsAdded, 0);
+  }
+
+  getTotalSyncBucketsUpdated(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + r.bucketsUpdated, 0);
+  }
+
+  getTotalSyncBucketsRemoved(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + r.bucketsRemoved, 0);
+  }
+
+  getTotalSyncFiles(): number {
+    return this.lastSyncResults.reduce((sum, r) =>
+      sum + r.buckets.reduce((s, b) => s + b.files.length, 0), 0);
+  }
+
+  formatFileSize(bytes: number): string {
+    if (!bytes || bytes === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(i > 0 ? 1 : 0) + ' ' + units[i];
+  }
+
+  getTotalStorageForBucket(bucketId: number): number {
+    const files = this.bucketFiles.get(bucketId) || [];
+    return files.reduce((sum, f) => sum + (f.size || 0), 0);
   }
 
   // ── Filtering & Sorting ──
@@ -154,15 +279,20 @@ export class CloudStorageComponent implements OnInit {
 
     // Sort
     result.sort((a, b) => {
-      let valA: string, valB: string;
+      let valA: string | number, valB: string | number;
       switch (this.sortField) {
         case 'name': valA = a.name; valB = b.name; break;
         case 'region': valA = a.region || ''; valB = b.region || ''; break;
         case 'status': valA = a.status || ''; valB = b.status || ''; break;
         case 'createdAt': valA = a.createdAt || ''; valB = b.createdAt || ''; break;
+        case 'files':
+          valA = this.getFileCountForBucket(a.id);
+          valB = this.getFileCountForBucket(b.id);
+          const numCmp = (valA as number) - (valB as number);
+          return this.sortDir === 'asc' ? numCmp : -numCmp;
         default: valA = a.name; valB = b.name;
       }
-      const cmp = valA.localeCompare(valB);
+      const cmp = String(valA).localeCompare(String(valB));
       return this.sortDir === 'asc' ? cmp : -cmp;
     });
 
@@ -194,12 +324,16 @@ export class CloudStorageComponent implements OnInit {
 
   openDetail(bucket: S3Bucket): void {
     this.selectedBucket = bucket;
+    this.selectedBucketFiles = this.bucketFiles.get(bucket.id) || [];
     this.showDetailPanel = true;
   }
 
   closeDetail(): void {
     this.showDetailPanel = false;
-    setTimeout(() => this.selectedBucket = null, 300);
+    setTimeout(() => {
+      this.selectedBucket = null;
+      this.selectedBucketFiles = [];
+    }, 300);
   }
 
   clearFilters(): void {
@@ -225,17 +359,29 @@ export class CloudStorageComponent implements OnInit {
 
     this.syncing = true;
     this.syncMessage = null;
+    this.lastSyncResults = [];
+    this.showSyncReport = false;
 
     const requests = awsAccounts.map(a =>
-      this.cloudServicesService.syncS3Buckets(a.id).pipe(catchError(() => of({ error: true })))
+      this.cloudServicesService.syncS3Buckets(a.id).pipe(catchError(() => of(null)))
     );
 
     forkJoin(requests).subscribe({
-      next: () => {
+      next: (results) => {
         this.syncing = false;
-        this.syncMessage = `Sync completed — ${awsAccounts.length} account${awsAccounts.length !== 1 ? 's' : ''} synced.`;
+        this.lastSyncResults = results.filter((r): r is FullSyncResult => r !== null);
+
+        const totalBucketsAdded = this.getTotalSyncBucketsAdded();
+        const totalBucketsUpdated = this.getTotalSyncBucketsUpdated();
+        const totalFilesAdded = this.getTotalSyncFilesAdded();
+        const totalFilesUpdated = this.getTotalSyncFilesUpdated();
+        const totalFilesRemoved = this.getTotalSyncFilesRemoved();
+        const totalFiles = this.getTotalSyncFiles();
+
+        this.syncMessage = `Sync completed — ${awsAccounts.length} account${awsAccounts.length !== 1 ? 's' : ''} · ${totalFiles.toLocaleString()} files · +${totalFilesAdded.toLocaleString()} added`;
         this.syncMessageType = 'success';
-        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+        this.showSyncReport = true;
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 6000);
         this.loadData();
       },
       error: () => {
@@ -245,6 +391,10 @@ export class CloudStorageComponent implements OnInit {
         setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
       }
     });
+  }
+
+  closeSyncReport(): void {
+    this.showSyncReport = false;
   }
 
   getAccountName(accountId: number): string {

@@ -11,7 +11,9 @@ import {
   SubnetsResponse,
   SecurityGroupsResponse,
   LogGroupsResponse,
-  Ec2InstancesResponse
+  Ec2InstancesResponse,
+  FullSyncResult,
+  FileListResponse
 } from '../models/cloud-services.model';
 
 @Injectable({
@@ -76,10 +78,16 @@ export class CloudServicesService {
     );
   }
 
-  syncS3Buckets(accountId: number): Observable<any> {
-    return this.http.post<any>(
+  syncS3Buckets(accountId: number): Observable<FullSyncResult> {
+    return this.http.post<FullSyncResult>(
       `${this.apiUrl}/api/cloud/services/storage/aws/s3/sync?accountId=${accountId}`,
       null
+    );
+  }
+
+  getS3Files(accountId: number): Observable<FileListResponse> {
+    return this.http.get<FileListResponse>(
+      `${this.apiUrl}/api/cloud/services/storage/aws/s3/files?accountId=${accountId}`
     );
   }
 }

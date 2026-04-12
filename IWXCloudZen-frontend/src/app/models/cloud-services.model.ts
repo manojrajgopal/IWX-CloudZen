@@ -156,6 +156,40 @@ export interface Ec2Instance {
   updatedAt: string | null;
 }
 
+// Cloud Storage Sync Response
+export interface CloudFileResponse {
+  id: number;
+  fileName: string;
+  fileUrl: string;
+  bucketName: string;
+  folder: string;
+  size: number;
+  contentType: string;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface BucketFileSyncResult {
+  bucket: S3Bucket;
+  filesAdded: number;
+  filesUpdated: number;
+  filesRemoved: number;
+  files: CloudFileResponse[];
+}
+
+export interface FullSyncResult {
+  bucketsAdded: number;
+  bucketsUpdated: number;
+  bucketsRemoved: number;
+  buckets: BucketFileSyncResult[];
+}
+
+export interface FileListResponse {
+  files: CloudFileResponse[];
+}
+
 // API response wrappers
 export interface ClustersResponse { clusters: Cluster[]; }
 export interface BucketsResponse { buckets: S3Bucket[]; }
