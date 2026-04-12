@@ -243,6 +243,10 @@ export class DashboardComponent implements OnInit {
       this.router.navigate(['/dashboard/vpcs']);
       return;
     }
+    if (category.key === 'ecr') {
+      this.router.navigate(['/dashboard/ecr']);
+      return;
+    }
     this.selectedService = category;
     this.showDetailModal = true;
   }
