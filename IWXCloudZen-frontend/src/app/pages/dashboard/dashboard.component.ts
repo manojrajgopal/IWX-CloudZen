@@ -44,7 +44,7 @@ export class DashboardComponent implements OnInit {
 
   serviceCategories: ServiceCategory[] = [
     { key: 'clusters', title: 'Clusters', icon: 'M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z', count: 0, items: [], loading: true },
-    { key: 'storage', title: 'Cloud Storage (S3)', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4', count: 0, items: [], loading: true },
+    { key: 'storage', title: 'Cloud Storage', icon: 'M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4', count: 0, items: [], loading: true },
     { key: 'vpcs', title: 'VPCs', icon: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z', count: 0, items: [], loading: true },
     { key: 'ecr', title: 'ECR Repositories', icon: 'M21 16.5V7.5a2.25 2.25 0 00-1.133-1.957l-6.75-3.857a2.25 2.25 0 00-2.234 0l-6.75 3.857A2.25 2.25 0 003 7.5v9a2.25 2.25 0 001.133 1.957l6.75 3.857a2.25 2.25 0 002.234 0l6.75-3.857A2.25 2.25 0 0021 16.5zM12 8.25l-6.75-3.857M12 8.25v13.5m0-13.5L18.75 4.393', count: 0, items: [], loading: true },
     { key: 'ecs', title: 'ECS Services', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', count: 0, items: [], loading: true },
