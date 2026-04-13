@@ -1,0 +1,313 @@
+<div class="container-lux py-12 md:py-20">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- HEADER -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="flex items-center gap-3 mb-12">
+    <a routerLink="/dashboard/clusters" class="text-gray-400 hover:text-black transition">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </a>
+    <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-3xl md:text-5xl font-serif font-bold tracking-tight">Create Cluster</h1>
+      <p class="text-sm text-gray-400 uppercase tracking-widest mt-1">AWS ECS &middot; New Cluster</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'loading'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <path
+          #clusterPath
+          d="M50 15 L65 25 L65 45 L50 55 L35 45 L35 25 Z M50 55 L65 65 L65 85 L50 95 L35 85 L35 65 Z M20 35 L35 25 L50 35 L50 55 L35 65 L20 55 Z M50 35 L65 25 L80 35 L80 55 L65 65 L50 55 Z"
+          fill="none"
+          stroke="#000"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </div>
+    <div class="w-48 h-1 bg-gray-200 mx-auto mb-4">
+      <div class="h-full bg-black animate-loading-bar"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Loading accounts...</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- CREATING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'creating'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <path
+          d="M50 15 L65 25 L65 45 L50 55 L35 45 L35 25 Z"
+          fill="none"
+          stroke="#000"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="animate-draw"
+        />
+        <path
+          d="M35 55 L50 65 L65 55"
+          fill="none"
+          stroke="#000"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          class="animate-wave"
+        />
+        <!-- Plus sign -->
+        <line x1="50" y1="72" x2="50" y2="88" stroke="#000" stroke-width="2" stroke-linecap="round" class="animate-wave"/>
+        <line x1="42" y1="80" x2="58" y2="80" stroke="#000" stroke-width="2" stroke-linecap="round" class="animate-wave"/>
+      </svg>
+    </div>
+    <div class="w-64 h-1.5 bg-gray-200 mx-auto mb-4 overflow-hidden">
+      <div class="h-full bg-black transition-all duration-200 ease-out" [style.width.%]="progress"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Creating cluster...</p>
+    <p class="text-xs text-gray-400 mt-2">{{ clusterName }}</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FORM -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'form'" class="max-w-2xl mx-auto animate-fadeIn">
+    <div class="border border-gray-200 bg-white">
+      <!-- Form Header -->
+      <div class="px-8 py-6 border-b border-gray-100">
+        <h2 class="text-lg font-serif font-bold">Cluster Configuration</h2>
+        <p class="text-sm text-gray-400 mt-1">Configure and create a new ECS cluster on your AWS account.</p>
+      </div>
+
+      <!-- Form Body -->
+      <div class="px-8 py-8 space-y-8">
+
+        <!-- Cloud Account Selection -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Cloud Account</label>
+          <div *ngIf="accounts.length === 0" class="p-6 border border-dashed border-gray-200 text-center">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+            </svg>
+            <p class="text-sm text-gray-500 mb-2">No AWS accounts connected</p>
+            <a routerLink="/profile" class="text-xs text-black underline hover:no-underline">Connect an account</a>
+          </div>
+          <div *ngIf="accounts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div *ngFor="let acc of accounts"
+                 (click)="selectedAccountId = acc.id"
+                 class="account-card flex items-center gap-3 p-4 border cursor-pointer transition-all duration-200"
+                 [ngClass]="selectedAccountId === acc.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="selectedAccountId === acc.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ acc.accountName }}</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ acc.provider }} &middot; {{ acc.region }}</p>
+              </div>
+              <div *ngIf="selectedAccountId === acc.id" class="flex-shrink-0">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cluster Name Input -->
+        <div>
+          <label for="clusterName" class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Cluster Name</label>
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+            </svg>
+            <input
+              #clusterInput
+              id="clusterName"
+              type="text"
+              [(ngModel)]="clusterName"
+              (blur)="clusterNameTouched = true"
+              (keydown.enter)="createCluster()"
+              placeholder="my-production-cluster"
+              autocomplete="off"
+              class="w-full pl-11 pr-4 py-3.5 border text-sm transition-all duration-200 focus:outline-none"
+              [ngClass]="clusterNameError ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'">
+          </div>
+          <!-- Validation Error -->
+          <p *ngIf="clusterNameError" class="mt-2 text-xs text-red-500 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            {{ clusterNameError }}
+          </p>
+          <!-- Naming rules -->
+          <div class="mt-3 space-y-1">
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Naming Rules</p>
+            <p class="text-xs text-gray-400 flex items-center gap-1.5">
+              <span class="w-1 h-1 rounded-full bg-gray-300 flex-shrink-0"></span>
+              Must start with a letter
+            </p>
+            <p class="text-xs text-gray-400 flex items-center gap-1.5">
+              <span class="w-1 h-1 rounded-full bg-gray-300 flex-shrink-0"></span>
+              Letters, numbers, hyphens, and underscores allowed
+            </p>
+            <p class="text-xs text-gray-400 flex items-center gap-1.5">
+              <span class="w-1 h-1 rounded-full bg-gray-300 flex-shrink-0"></span>
+              Maximum 255 characters
+            </p>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div *ngIf="selectedAccount && clusterName.trim()" class="p-5 bg-gray-50 border border-gray-100">
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-3">Preview</p>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Cluster Name</span>
+              <span class="text-gray-900 font-medium font-mono">{{ clusterName.trim() }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Provider</span>
+              <span class="text-gray-900 font-medium">AWS ECS</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Account</span>
+              <span class="text-gray-900 font-medium">{{ selectedAccount.accountName }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Region</span>
+              <span class="text-gray-900 font-medium">{{ selectedAccount.region }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Footer -->
+      <div class="px-8 py-5 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <a routerLink="/dashboard/clusters" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Back to Clusters
+        </a>
+        <button
+          (click)="createCluster()"
+          [disabled]="!isFormValid"
+          class="px-8 py-3 text-sm font-medium transition-all duration-200"
+          [ngClass]="isFormValid ? 'bg-black text-white hover:bg-gray-800 active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+          Create Cluster
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SUCCESS STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'success' && createdCluster" class="max-w-2xl mx-auto animate-fadeIn">
+    <div class="border border-green-200 bg-green-50/30">
+      <!-- Success Header -->
+      <div class="px-8 py-8 text-center border-b border-green-100">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+          <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-serif font-bold text-gray-900 mb-1">Cluster Created</h2>
+        <p class="text-sm text-gray-500">Your new ECS cluster has been provisioned successfully.</p>
+      </div>
+
+      <!-- Cluster Details -->
+      <div class="px-8 py-6">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Cluster Name</span>
+            <span class="text-sm font-medium text-gray-900 font-mono">{{ createdCluster.name }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Status</span>
+            <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-green-100 text-green-700">{{ createdCluster.status }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Provider</span>
+            <span class="text-sm font-medium text-gray-900">{{ createdCluster.provider }}</span>
+          </div>
+          <div *ngIf="createdCluster.clusterArn" class="py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400 block mb-1">Cluster ARN</span>
+            <span class="text-xs font-mono text-gray-700 break-all select-all">{{ createdCluster.clusterArn }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Container Insights</span>
+            <span class="text-sm font-medium text-gray-900">{{ createdCluster.containerInsightsEnabled ? 'Enabled' : 'Disabled' }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Account</span>
+            <span class="text-sm font-medium text-gray-900">{{ selectedAccount?.accountName || 'Account #' + createdCluster.cloudAccountId }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Internal ID</span>
+            <span class="text-sm font-medium text-gray-900 font-mono">{{ createdCluster.id }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Created At</span>
+            <span class="text-sm font-medium text-gray-900">{{ formatDate(createdCluster.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-8 py-5 border-t border-green-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-green-50/50">
+        <button (click)="resetForm()" class="text-xs uppercase tracking-wider text-gray-500 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          Create Another
+        </button>
+        <div class="flex items-center gap-3">
+          <button (click)="goToCluster()" class="px-6 py-3 text-sm font-medium border border-black text-black hover:bg-black hover:text-white transition">
+            View Cluster
+          </button>
+          <button (click)="goToDashboard()" class="px-8 py-3 text-sm font-medium bg-black text-white hover:bg-gray-800 transition active:scale-[0.98]">
+            Go to Dashboard
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'error'" class="max-w-2xl mx-auto animate-fadeIn">
+    <div class="border border-red-200 bg-red-50/30 p-8 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+        <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-serif font-bold text-gray-900 mb-2">Creation Failed</h2>
+      <p class="text-sm text-gray-500 mb-6">{{ errorMessage }}</p>
+      <div class="flex items-center justify-center gap-4">
+        <button (click)="resetForm()" class="px-6 py-2.5 text-sm border border-gray-300 text-gray-700 hover:border-black hover:text-black transition">
+          Try Again
+        </button>
+        <button (click)="goToDashboard()" class="px-6 py-2.5 text-sm bg-black text-white hover:bg-gray-800 transition">
+          Back to Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

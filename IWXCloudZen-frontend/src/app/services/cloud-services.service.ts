@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   ClustersResponse,
+  ClusterSyncResponse,
   BucketsResponse,
   VpcsResponse,
   EcrRepositoriesResponse,
@@ -16,8 +17,10 @@ import {
   FileListResponse,
   BucketFileSyncResponse,
   S3Bucket,
+  Cluster,
   CloudFileResponse,
-  CreateBucketRequest
+  CreateBucketRequest,
+  CreateClusterRequest
 } from '../models/cloud-services.model';
 
 @Injectable({
@@ -31,6 +34,20 @@ export class CloudServicesService {
   getClusters(accountId: number): Observable<ClustersResponse> {
     return this.http.get<ClustersResponse>(
       `${this.apiUrl}/api/cloud/services/cluster/aws/list?accountId=${accountId}`
+    );
+  }
+
+  createCluster(accountId: number, request: CreateClusterRequest): Observable<Cluster> {
+    return this.http.post<Cluster>(
+      `${this.apiUrl}/api/cloud/services/cluster/aws/create?accountId=${accountId}`,
+      request
+    );
+  }
+
+  syncClusters(accountId: number): Observable<ClusterSyncResponse> {
+    return this.http.post<ClusterSyncResponse>(
+      `${this.apiUrl}/api/cloud/services/cluster/aws/sync?accountId=${accountId}`,
+      null
     );
   }
 

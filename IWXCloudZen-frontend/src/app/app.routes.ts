@@ -17,6 +17,7 @@ import { CreateBucketComponent } from './pages/CloudServices/cloud-storage/creat
 import { BucketOverviewComponent } from './pages/CloudServices/cloud-storage/bucket-overview/bucket-overview.component';
 import { SearchResultsComponent } from './global-search/search-results.component';
 import { ClusterOverviewComponent } from './pages/CloudServices/clusters/cluster-overview/cluster-overview.component';
+import { CreateClusterComponent } from './pages/CloudServices/clusters/create-cluster/create-cluster.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -28,6 +29,7 @@ export const routes: Routes = [
   { path: 'dashboard/cloud-storage/create', component: CreateBucketComponent },
   { path: 'dashboard/cloud-storage/:id', component: BucketOverviewComponent },
   { path: 'dashboard/clusters', component: ClustersComponent },
+  { path: 'dashboard/clusters/create', component: CreateClusterComponent },
   { path: 'dashboard/clusters/:id', component: ClusterOverviewComponent },
   { path: 'dashboard/vpcs', component: VpcsComponent },
   { path: 'dashboard/ecr', component: EcrComponent },

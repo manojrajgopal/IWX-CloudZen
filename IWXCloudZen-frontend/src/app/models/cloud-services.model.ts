@@ -25,6 +25,10 @@ export interface CreateBucketRequest {
   bucketName: string;
 }
 
+export interface CreateClusterRequest {
+  clusterName: string;
+}
+
 export interface Vpc {
   id: number;
   name: string;
@@ -203,6 +207,12 @@ export interface BucketFileSyncResponse {
 
 // API response wrappers
 export interface ClustersResponse { clusters: Cluster[]; }
+export interface ClusterSyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  clusters: Cluster[];
+}
 export interface BucketsResponse { buckets: S3Bucket[]; }
 export interface VpcsResponse { vpcs: Vpc[]; }
 export interface EcrRepositoriesResponse { totalRepositories: number; repositories: EcrRepository[]; }

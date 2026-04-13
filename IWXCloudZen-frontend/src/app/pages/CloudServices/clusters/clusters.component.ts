@@ -8,6 +8,7 @@ import { CloudAccountService } from '../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../services/cloud-services.service';
 import { CloudAccount } from '../../../models/cloud-account.model';
 import { Cluster } from '../../../models/cloud-services.model';
+import { ClusterSyncResponse } from '../../../models/cloud-services.model';
 import { ClusterFilterByProviderPipe, ClusterFilterByStatusPipe } from './clusters.pipes';
 
 type ViewMode = 'grid' | 'list';
@@ -49,6 +50,13 @@ export class ClustersComponent implements OnInit, OnDestroy {
   // Detail panel
   selectedCluster: Cluster | null = null;
   showDetailPanel = false;
+
+  // Sync state
+  syncing = false;
+  lastSyncResults: ClusterSyncResponse[] = [];
+  showSyncReport = false;
+  syncMessage: string | null = null;
+  syncMessageType: 'success' | 'error' | null = null;
 
   // Metrics
   metrics: ClusterMetric[] = [
@@ -213,6 +221,71 @@ export class ClustersComponent implements OnInit, OnDestroy {
 
   refreshData(): void {
     this.loadData();
+  }
+
+  syncData(): void {
+    if (this.syncing) return;
+    this.syncing = true;
+    this.syncMessage = null;
+    this.lastSyncResults = [];
+    this.showSyncReport = false;
+
+    const awsAccounts = this.accounts.filter(a => a.provider?.toUpperCase() === 'AWS');
+    if (awsAccounts.length === 0) {
+      this.syncing = false;
+      this.syncMessage = 'No AWS accounts found to sync.';
+      this.syncMessageType = 'error';
+      setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      return;
+    }
+
+    const syncRequests = awsAccounts.map(a =>
+      this.cloudServicesService.syncClusters(a.id).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin(syncRequests).subscribe({
+      next: (results) => {
+        this.syncing = false;
+        this.lastSyncResults = results.filter((r): r is ClusterSyncResponse => r !== null);
+
+        const totalAdded = this.getTotalSyncAdded();
+        const totalUpdated = this.getTotalSyncUpdated();
+        const totalRemoved = this.getTotalSyncRemoved();
+        const totalClusters = this.getTotalSyncClusters();
+
+        this.syncMessage = `Sync completed — ${awsAccounts.length} account${awsAccounts.length !== 1 ? 's' : ''} · ${totalClusters} cluster${totalClusters !== 1 ? 's' : ''} · +${totalAdded} added`;
+        this.syncMessageType = 'success';
+        this.showSyncReport = true;
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 6000);
+        this.loadData();
+      },
+      error: () => {
+        this.syncing = false;
+        this.syncMessage = 'Sync failed. Please try again.';
+        this.syncMessageType = 'error';
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      }
+    });
+  }
+
+  closeSyncReport(): void {
+    this.showSyncReport = false;
+  }
+
+  getTotalSyncAdded(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.added || 0), 0);
+  }
+
+  getTotalSyncUpdated(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.updated || 0), 0);
+  }
+
+  getTotalSyncRemoved(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.removed || 0), 0);
+  }
+
+  getTotalSyncClusters(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.clusters?.length || 0), 0);
   }
 
   getAccountName(accountId: number): string {
