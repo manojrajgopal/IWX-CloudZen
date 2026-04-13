@@ -653,9 +653,14 @@
     <!-- Footer -->
     <div class="px-8 py-4 border-t border-gray-200 flex-shrink-0 flex items-center justify-between bg-gray-50">
       <span class="text-xs text-gray-400">{{ getProviderLabel(selectedVpc.provider) }}</span>
-      <button (click)="closeDetail()" class="px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">
-        Close
-      </button>
+      <div class="flex items-center gap-3">
+        <a [routerLink]="['/dashboard/vpcs', selectedVpc.id]" class="px-5 py-2 text-sm border border-gray-300 text-gray-700 hover:border-black hover:bg-black hover:text-white transition">
+          View Dashboard
+        </a>
+        <button (click)="closeDetail()" class="px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </div>

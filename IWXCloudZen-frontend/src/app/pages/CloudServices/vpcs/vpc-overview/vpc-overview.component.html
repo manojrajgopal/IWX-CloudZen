@@ -1,0 +1,1190 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="loading" class="space-y-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-gray-100 rounded-lg animate-pulse"></div>
+      <div>
+        <div class="h-8 w-64 bg-gray-100 rounded animate-pulse mb-2"></div>
+        <div class="h-4 w-40 bg-gray-100 rounded animate-pulse"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div *ngFor="let i of [1,2,3,4]" class="border border-gray-200 p-6 animate-pulse">
+        <div class="h-4 w-20 bg-gray-100 rounded mb-3"></div>
+        <div class="h-8 w-16 bg-gray-100 rounded"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div class="xl:col-span-2 space-y-8">
+        <div *ngFor="let i of [1,2,3]" class="border border-gray-200 p-8 animate-pulse">
+          <div class="h-5 w-48 bg-gray-100 rounded mb-6"></div>
+          <div class="space-y-4">
+            <div class="h-4 w-full bg-gray-100 rounded"></div>
+            <div class="h-4 w-3/4 bg-gray-100 rounded"></div>
+            <div class="h-4 w-1/2 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-8">
+        <div *ngFor="let i of [1,2]" class="border border-gray-200 p-8 animate-pulse">
+          <div class="h-4 w-32 bg-gray-100 rounded mb-4"></div>
+          <div class="space-y-3">
+            <div class="h-4 w-full bg-gray-100 rounded"></div>
+            <div class="h-4 w-2/3 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && error" class="text-center py-20">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">{{ error }}</h2>
+    <p class="text-gray-500 mb-6">The requested VPC could not be loaded.</p>
+    <a routerLink="/dashboard/vpcs" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to VPCs
+    </a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && !error && vpc">
+
+    <!-- ─── Breadcrumb & Header ─── -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-10 gap-6">
+      <div class="flex-1 min-w-0">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+          <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <a routerLink="/dashboard/vpcs" class="hover:text-black transition">VPCs</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span class="text-black font-medium truncate max-w-[200px]">{{ getDisplayName(vpc) }}</span>
+        </nav>
+
+        <!-- Title Row -->
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-lg bg-black text-white flex items-center justify-center flex-shrink-0">
+            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-serif font-bold tracking-tight truncate">{{ getDisplayName(vpc) }}</h1>
+            <div class="flex items-center gap-3 mt-2 flex-wrap">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getProviderBgClass(vpc.provider)">
+                {{ getProviderShort(vpc.provider) }}
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getStateBgClass(vpc.state)">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStateDotClass(vpc.state)"></span>
+                {{ vpc.state }}
+              </span>
+              <span *ngIf="vpc.isDefault" class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm bg-yellow-50 border-yellow-200 text-yellow-700">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                Default
+              </span>
+              <span class="text-xs text-gray-400 font-mono">{{ vpc.vpcId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <button (click)="refreshData()" class="btn-overview-icon" title="Refresh">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+        <a routerLink="/dashboard/vpcs" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-black hover:bg-black hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          All VPCs
+        </a>
+        <button (click)="openUpdatePanel()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-blue-600 hover:bg-blue-600 hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+          </svg>
+          Update
+        </button>
+        <button (click)="openDeleteConfirm()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-red-600 hover:bg-red-600 hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+          </svg>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- KEY METRICS CARDS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      <!-- State -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <span class="w-3 h-3 rounded-full" [ngClass]="getStateDotClass(vpc.state)"></span>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">State</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold capitalize">{{ vpc.state || '—' }}</p>
+        <p class="text-xs text-gray-400 mt-1">Current state</p>
+      </div>
+
+      <!-- CIDR -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">CIDR</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold font-mono">{{ getCidrPrefix(vpc.cidrBlock) }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ getCidrIpCount(vpc.cidrBlock) }} addresses</p>
+      </div>
+
+      <!-- DNS Config -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+               [ngClass]="(vpc.enableDnsSupport && vpc.enableDnsHostnames) ? 'bg-blue-50' : 'bg-gray-50'">
+            <svg class="w-5 h-5" [ngClass]="(vpc.enableDnsSupport && vpc.enableDnsHostnames) ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">DNS</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold" [ngClass]="(vpc.enableDnsSupport && vpc.enableDnsHostnames) ? 'text-blue-700' : 'text-gray-400'">
+          {{ (vpc.enableDnsSupport && vpc.enableDnsHostnames) ? 'Full' : vpc.enableDnsSupport ? 'Partial' : 'Off' }}
+        </p>
+        <p class="text-xs text-gray-400 mt-1">DNS Configuration</p>
+      </div>
+
+      <!-- Uptime -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Uptime</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold">{{ getUptime(vpc.createdAt) }}</p>
+        <p class="text-xs text-gray-400 mt-1">Since creation</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- STATUS OVERVIEW BANNER -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="mb-10 p-6 border rounded-sm flex flex-col sm:flex-row sm:items-center gap-4"
+         [ngClass]="getStateBgClass(vpc.state)">
+      <div class="flex items-center gap-3 flex-1">
+        <div class="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center flex-shrink-0">
+          <span class="w-4 h-4 rounded-full" [ngClass]="getStateDotClass(vpc.state)"></span>
+        </div>
+        <div>
+          <p class="text-lg font-serif font-bold capitalize" [ngClass]="getStateTextClass(vpc.state)">
+            VPC is {{ vpc.state }}
+          </p>
+          <p class="text-xs mt-0.5" [ngClass]="getStateTextClass(vpc.state)" style="opacity: 0.7">
+            Last checked {{ formatRelativeTime(vpc.updatedAt || vpc.createdAt) }}
+          </p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-xs uppercase tracking-widest mb-1" [ngClass]="getStateTextClass(vpc.state)" style="opacity: 0.6">Created</p>
+        <p class="text-sm font-medium" [ngClass]="getStateTextClass(vpc.state)">{{ formatDate(vpc.createdAt) }}</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MAIN TWO-COLUMN LAYOUT -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10">
+
+      <!-- ─── LEFT COLUMN (2/3) ─── -->
+      <div class="xl:col-span-2 space-y-8">
+
+        <!-- ▸ General Information Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('general')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">General Information</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('general')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('general')">
+            <div class="overview-grid">
+              <div class="overview-field">
+                <span class="overview-field-label">VPC Name</span>
+                <span class="overview-field-value font-semibold">{{ vpc.name || '(unnamed)' }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">VPC ID</span>
+                <span class="overview-field-value font-mono text-sm">{{ vpc.vpcId }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Internal ID</span>
+                <span class="overview-field-value font-mono text-sm">{{ vpc.id }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Cloud Provider</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="getProviderBgClass(vpc.provider)">
+                    {{ getProviderLabel(vpc.provider) }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Current State</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium capitalize border rounded-sm"
+                        [ngClass]="getStateBgClass(vpc.state)">
+                    <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStateDotClass(vpc.state)"></span>
+                    {{ vpc.state }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Default VPC</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="vpc.isDefault ? 'bg-yellow-50 border-yellow-200 text-yellow-700' : 'bg-gray-50 border-gray-200 text-gray-500'">
+                    {{ vpc.isDefault ? 'Yes — Default VPC' : 'No — Custom VPC' }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Cloud Account</span>
+                <span class="overview-field-value">{{ account?.accountName || ('Account #' + vpc.cloudAccountId) }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Account ID</span>
+                <span class="overview-field-value font-mono text-sm">{{ vpc.cloudAccountId }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Network Configuration Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('network')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Network Configuration</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('network')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('network')">
+            <!-- CIDR Breakdown Card -->
+            <div class="p-5 bg-gray-50 border border-gray-100 rounded-sm mb-5">
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">IPv4 CIDR Block</p>
+                  <p class="font-mono text-lg font-bold text-gray-900 select-all">{{ vpc.cidrBlock }}</p>
+                </div>
+                <button (click)="copyToClipboard(vpc.cidrBlock, 'cidr')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition"
+                        title="Copy CIDR">
+                  <svg *ngIf="copiedField !== 'cidr'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'cidr'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- CIDR Details Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm text-center">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Network</p>
+                <p class="text-sm font-mono font-bold">{{ getCidrNetwork(vpc.cidrBlock) }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm text-center">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Prefix Length</p>
+                <p class="text-sm font-mono font-bold">{{ getCidrPrefix(vpc.cidrBlock) }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm text-center">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Total Addresses</p>
+                <p class="text-sm font-bold">{{ getCidrIpCount(vpc.cidrBlock) }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm text-center">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Network Class</p>
+                <p class="text-sm font-bold">{{ getCidrClass(vpc.cidrBlock) }}</p>
+              </div>
+            </div>
+
+            <!-- Network visual -->
+            <div class="p-5 border border-gray-100 rounded-sm">
+              <p class="text-xs uppercase tracking-widest text-gray-400 mb-4">Network Topology (Simplified)</p>
+              <div class="flex items-center gap-4 flex-wrap">
+                <!-- Internet -->
+                <div class="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-sm">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/>
+                  </svg>
+                  <span class="text-xs font-medium text-blue-700">Internet</span>
+                </div>
+                <svg class="w-6 h-6 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                </svg>
+                <!-- VPC -->
+                <div class="flex-1 min-w-[200px] p-4 border-2 border-dashed border-gray-300 rounded-sm">
+                  <div class="flex items-center gap-2 mb-3">
+                    <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span class="text-xs font-semibold text-gray-700">{{ getDisplayName(vpc) }}</span>
+                    <span class="text-[10px] font-mono text-gray-400 ml-auto">{{ vpc.cidrBlock }}</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="p-2 bg-green-50 border border-green-200 rounded text-center">
+                      <p class="text-[10px] uppercase text-green-600 font-medium">Public Subnet</p>
+                    </div>
+                    <div class="p-2 bg-purple-50 border border-purple-200 rounded text-center">
+                      <p class="text-[10px] uppercase text-purple-600 font-medium">Private Subnet</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ DNS Configuration Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('dns')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md flex items-center justify-center"
+                   [ngClass]="(vpc.enableDnsSupport && vpc.enableDnsHostnames) ? 'bg-blue-600 text-white' : 'bg-black text-white'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">DNS Configuration</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('dns')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('dns')">
+            <!-- DNS Status Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+              <div class="p-5 border rounded-sm flex items-center gap-4"
+                   [ngClass]="vpc.enableDnsSupport ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                     [ngClass]="vpc.enableDnsSupport ? 'bg-blue-100' : 'bg-gray-200'">
+                  <svg class="w-6 h-6" [ngClass]="vpc.enableDnsSupport ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path *ngIf="vpc.enableDnsSupport" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path *ngIf="!vpc.enableDnsSupport" stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-lg font-serif font-bold" [ngClass]="vpc.enableDnsSupport ? 'text-blue-700' : 'text-gray-600'">
+                    {{ vpc.enableDnsSupport ? 'Enabled' : 'Disabled' }}
+                  </p>
+                  <p class="text-xs mt-0.5" [ngClass]="vpc.enableDnsSupport ? 'text-blue-500' : 'text-gray-400'">
+                    DNS Resolution Support
+                  </p>
+                </div>
+              </div>
+              <div class="p-5 border rounded-sm flex items-center gap-4"
+                   [ngClass]="vpc.enableDnsHostnames ? 'bg-indigo-50 border-indigo-200' : 'bg-gray-50 border-gray-200'">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                     [ngClass]="vpc.enableDnsHostnames ? 'bg-indigo-100' : 'bg-gray-200'">
+                  <svg class="w-6 h-6" [ngClass]="vpc.enableDnsHostnames ? 'text-indigo-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path *ngIf="vpc.enableDnsHostnames" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path *ngIf="!vpc.enableDnsHostnames" stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-lg font-serif font-bold" [ngClass]="vpc.enableDnsHostnames ? 'text-indigo-700' : 'text-gray-600'">
+                    {{ vpc.enableDnsHostnames ? 'Enabled' : 'Disabled' }}
+                  </p>
+                  <p class="text-xs mt-0.5" [ngClass]="vpc.enableDnsHostnames ? 'text-indigo-500' : 'text-gray-400'">
+                    DNS Hostnames
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- DNS Feature Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 border border-gray-100 rounded-sm text-center">
+                <div class="w-10 h-10 mx-auto mb-3 rounded-lg flex items-center justify-center"
+                     [ngClass]="vpc.enableDnsSupport ? 'bg-blue-50' : 'bg-gray-50'">
+                  <svg class="w-5 h-5" [ngClass]="vpc.enableDnsSupport ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold mb-1">DNS Resolution</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">Resolve domain names</p>
+              </div>
+              <div class="p-4 border border-gray-100 rounded-sm text-center">
+                <div class="w-10 h-10 mx-auto mb-3 rounded-lg flex items-center justify-center"
+                     [ngClass]="vpc.enableDnsHostnames ? 'bg-indigo-50' : 'bg-gray-50'">
+                  <svg class="w-5 h-5" [ngClass]="vpc.enableDnsHostnames ? 'text-indigo-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold mb-1">Public Hostnames</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">Public DNS names</p>
+              </div>
+              <div class="p-4 border border-gray-100 rounded-sm text-center">
+                <div class="w-10 h-10 mx-auto mb-3 rounded-lg flex items-center justify-center"
+                     [ngClass]="(vpc.enableDnsSupport && vpc.enableDnsHostnames) ? 'bg-green-50' : 'bg-gray-50'">
+                  <svg class="w-5 h-5" [ngClass]="(vpc.enableDnsSupport && vpc.enableDnsHostnames) ? 'text-green-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold mb-1">Full Stack</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">
+                  {{ (vpc.enableDnsSupport && vpc.enableDnsHostnames) ? 'Fully configured' : 'Incomplete' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ VPC ID & Resource Identifier Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('vpcid')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">VPC Identifier</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('vpcid')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('vpcid')">
+            <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm mb-4">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">AWS VPC ID</p>
+                  <p class="font-mono text-lg font-bold text-gray-900 select-all leading-relaxed">{{ vpc.vpcId }}</p>
+                </div>
+                <button (click)="copyToClipboard(vpc.vpcId, 'vpcId')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition"
+                        title="Copy VPC ID">
+                  <svg *ngIf="copiedField !== 'vpcId'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'vpcId'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- ID Breakdown -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Prefix</p>
+                <p class="text-sm font-medium font-mono">vpc-</p>
+              </div>
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Identifier</p>
+                <p class="text-sm font-medium font-mono">{{ vpc.vpcId.replace('vpc-', '') }}</p>
+              </div>
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Region</p>
+                <p class="text-sm font-medium font-mono">{{ account?.region || '—' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Timestamps & Lifecycle Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('timeline')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Timestamps & Lifecycle</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('timeline')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('timeline')">
+            <!-- Timeline -->
+            <div class="relative pl-8 border-l-2 border-gray-200 space-y-8">
+              <!-- Created -->
+              <div class="relative">
+                <div class="absolute -left-[calc(2rem+5px)] w-3 h-3 rounded-full bg-black border-2 border-white"></div>
+                <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Created</p>
+                    <p class="text-xs text-gray-400">{{ formatRelativeTime(vpc.createdAt) }}</p>
+                  </div>
+                  <p class="text-sm font-semibold">{{ formatDateTime(vpc.createdAt) }}</p>
+                </div>
+              </div>
+
+              <!-- Updated -->
+              <div class="relative">
+                <div class="absolute -left-[calc(2rem+5px)] w-3 h-3 rounded-full border-2 border-white"
+                     [ngClass]="vpc.updatedAt ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Last Updated</p>
+                    <p class="text-xs text-gray-400">{{ vpc.updatedAt ? formatRelativeTime(vpc.updatedAt) : '—' }}</p>
+                  </div>
+                  <p class="text-sm font-semibold">{{ vpc.updatedAt ? formatDateTime(vpc.updatedAt) : 'Never updated' }}</p>
+                </div>
+              </div>
+
+              <!-- Uptime -->
+              <div class="relative">
+                <div class="absolute -left-[calc(2rem+5px)] w-3 h-3 rounded-full bg-green-500 border-2 border-white"></div>
+                <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Total Uptime</p>
+                    <p class="text-xs text-green-600 font-medium capitalize">{{ vpc.state }}</p>
+                  </div>
+                  <p class="text-sm font-semibold">{{ getUptime(vpc.createdAt) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Date Comparison -->
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="p-4 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Date Created (Short)</p>
+                <p class="text-lg font-serif font-bold">{{ formatDate(vpc.createdAt) }}</p>
+              </div>
+              <div class="p-4 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Date Updated (Short)</p>
+                <p class="text-lg font-serif font-bold">{{ vpc.updatedAt ? formatDate(vpc.updatedAt) : '—' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── RIGHT COLUMN (1/3) ─── -->
+      <div class="space-y-8">
+
+        <!-- ▸ Quick Summary Card -->
+        <div class="overview-section">
+          <div class="p-6">
+            <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-5">Quick Summary</h4>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Name</span>
+                <span class="text-sm font-medium truncate ml-4 max-w-[180px]">{{ vpc.name || '(unnamed)' }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">VPC ID</span>
+                <span class="text-sm font-mono font-medium truncate ml-4 max-w-[180px]">{{ vpc.vpcId }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Provider</span>
+                <span class="text-sm font-medium">{{ getProviderShort(vpc.provider) }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">State</span>
+                <span class="inline-flex items-center gap-1.5 text-sm font-medium capitalize">
+                  <span class="w-2 h-2 rounded-full" [ngClass]="getStateDotClass(vpc.state)"></span>
+                  {{ vpc.state }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">CIDR</span>
+                <span class="text-sm font-mono font-medium">{{ vpc.cidrBlock }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Default</span>
+                <span class="text-sm font-medium" [ngClass]="vpc.isDefault ? 'text-yellow-600' : 'text-gray-400'">
+                  {{ vpc.isDefault ? 'Yes' : 'No' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">DNS Support</span>
+                <span class="text-sm font-medium" [ngClass]="vpc.enableDnsSupport ? 'text-blue-600' : 'text-gray-400'">
+                  {{ vpc.enableDnsSupport ? 'Enabled' : 'Disabled' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">DNS Hostnames</span>
+                <span class="text-sm font-medium" [ngClass]="vpc.enableDnsHostnames ? 'text-indigo-600' : 'text-gray-400'">
+                  {{ vpc.enableDnsHostnames ? 'Enabled' : 'Disabled' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Account</span>
+                <span class="text-sm font-medium">{{ account?.accountName || '—' }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Region</span>
+                <span class="text-sm font-mono font-medium">{{ account?.region || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Cloud Account Card -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('account')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Cloud Account</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('account')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('account')">
+            <div *ngIf="account" class="space-y-3">
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Account Name</span>
+                <span class="text-sm font-medium">{{ account.accountName }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Provider</span>
+                <span class="text-sm font-medium">{{ account.provider }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Region</span>
+                <span class="text-sm font-mono font-medium">{{ account.region }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Default</span>
+                <span class="text-sm font-medium" [ngClass]="account.isDefault ? 'text-green-600' : 'text-gray-400'">
+                  {{ account.isDefault ? 'Yes' : 'No' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Last Validated</span>
+                <span class="text-sm font-medium">{{ formatDate(account.lastValidatedAt) }}</span>
+              </div>
+            </div>
+            <div *ngIf="!account" class="text-center py-4 text-gray-400 text-sm">
+              Account details unavailable
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Resource Identifiers Card -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('identifiers')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Identifiers</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('identifiers')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('identifiers')">
+            <div class="space-y-3">
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Internal ID</p>
+                  <button (click)="copyToClipboard(vpc.id.toString(), 'id')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy ID">
+                    <svg *ngIf="copiedField !== 'id'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'id'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ vpc.id }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">AWS VPC ID</p>
+                  <button (click)="copyToClipboard(vpc.vpcId, 'vpcId2')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy VPC ID">
+                    <svg *ngIf="copiedField !== 'vpcId2'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'vpcId2'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ vpc.vpcId }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Cloud Account ID</p>
+                  <button (click)="copyToClipboard(vpc.cloudAccountId.toString(), 'accountId')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy Account ID">
+                    <svg *ngIf="copiedField !== 'accountId'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'accountId'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ vpc.cloudAccountId }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">CIDR Block</p>
+                  <button (click)="copyToClipboard(vpc.cidrBlock, 'cidr2')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy CIDR">
+                    <svg *ngIf="copiedField !== 'cidr2'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'cidr2'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ vpc.cidrBlock }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Configuration Summary Card -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('config')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Configuration</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('config')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('config')">
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Virtual Private Cloud</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">{{ getProviderLabel(vpc.provider) }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">CIDR Range</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 font-mono">{{ vpc.cidrBlock }} · {{ getCidrIpCount(vpc.cidrBlock) }} IPs</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">DNS Settings</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">
+                    Support {{ vpc.enableDnsSupport ? 'On' : 'Off' }} · Hostnames {{ vpc.enableDnsHostnames ? 'On' : 'Off' }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">VPC Type</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">{{ vpc.isDefault ? 'Default VPC' : 'Custom VPC' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Region</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 font-mono">{{ account?.region || '—' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- UPDATE VPC PANEL -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div *ngIf="showUpdatePanel" id="updatePanel" class="overview-section mb-10 border-blue-200 animate-fadeIn">
+      <div class="px-6 py-5 border-b border-blue-100 bg-blue-50/30 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-md bg-blue-600 text-white flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-serif font-bold">Update VPC</h3>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Modify VPC settings</p>
+          </div>
+        </div>
+        <button (click)="closeUpdatePanel()" class="text-gray-400 hover:text-gray-600 transition p-1">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        <!-- Success Message -->
+        <div *ngIf="updateSuccess" class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-sm text-sm text-green-800 animate-fadeIn">
+          <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+          {{ updateSuccess }}
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="updateError" class="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-sm text-sm text-red-800 animate-fadeIn">
+          <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+          {{ updateError }}
+        </div>
+
+        <!-- DNS Support Toggle -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">DNS Resolution Support</label>
+          <div class="flex gap-3">
+            <button (click)="updateFields.enableDnsSupport = true"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.enableDnsSupport === true ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.enableDnsSupport === true ? 'bg-blue-100' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.enableDnsSupport === true ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.enableDnsSupport === true ? 'text-blue-700' : 'text-gray-600'">Enable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">DNS On</p>
+            </button>
+            <button (click)="updateFields.enableDnsSupport = false"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.enableDnsSupport === false ? 'border-gray-500 bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.enableDnsSupport === false ? 'bg-gray-200' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.enableDnsSupport === false ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.enableDnsSupport === false ? 'text-gray-700' : 'text-gray-600'">Disable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">DNS Off</p>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">
+            Currently: <span class="font-medium" [ngClass]="vpc.enableDnsSupport ? 'text-blue-600' : 'text-gray-500'">{{ vpc.enableDnsSupport ? 'Enabled' : 'Disabled' }}</span>
+          </p>
+        </div>
+
+        <!-- DNS Hostnames Toggle -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">DNS Hostnames</label>
+          <div class="flex gap-3">
+            <button (click)="updateFields.enableDnsHostnames = true"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.enableDnsHostnames === true ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.enableDnsHostnames === true ? 'bg-indigo-100' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.enableDnsHostnames === true ? 'text-indigo-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.enableDnsHostnames === true ? 'text-indigo-700' : 'text-gray-600'">Enable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">Hostnames On</p>
+            </button>
+            <button (click)="updateFields.enableDnsHostnames = false"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.enableDnsHostnames === false ? 'border-gray-500 bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.enableDnsHostnames === false ? 'bg-gray-200' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.enableDnsHostnames === false ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.enableDnsHostnames === false ? 'text-gray-700' : 'text-gray-600'">Disable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">Hostnames Off</p>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">
+            Currently: <span class="font-medium" [ngClass]="vpc.enableDnsHostnames ? 'text-indigo-600' : 'text-gray-500'">{{ vpc.enableDnsHostnames ? 'Enabled' : 'Disabled' }}</span>
+          </p>
+        </div>
+
+        <!-- Amazon Provided IPv6 CIDR Block Toggle -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Amazon Provided IPv6 CIDR Block</label>
+          <div class="flex gap-3">
+            <button (click)="updateFields.amazonProvidedIpv6CidrBlock = true"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.amazonProvidedIpv6CidrBlock === true ? 'border-green-500 bg-green-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.amazonProvidedIpv6CidrBlock === true ? 'bg-green-100' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.amazonProvidedIpv6CidrBlock === true ? 'text-green-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.amazonProvidedIpv6CidrBlock === true ? 'text-green-700' : 'text-gray-600'">Enable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">IPv6 On</p>
+            </button>
+            <button (click)="updateFields.amazonProvidedIpv6CidrBlock = false"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.amazonProvidedIpv6CidrBlock === false ? 'border-gray-500 bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.amazonProvidedIpv6CidrBlock === false ? 'bg-gray-200' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.amazonProvidedIpv6CidrBlock === false ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.amazonProvidedIpv6CidrBlock === false ? 'text-gray-700' : 'text-gray-600'">Disable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">IPv6 Off</p>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Assign an Amazon-provided IPv6 CIDR block to this VPC</p>
+        </div>
+
+        <!-- Pending Changes Preview -->
+        <div *ngIf="(updateFields.enableDnsSupport !== null && updateFields.enableDnsSupport !== vpc.enableDnsSupport) ||
+                     (updateFields.enableDnsHostnames !== null && updateFields.enableDnsHostnames !== vpc.enableDnsHostnames) ||
+                     updateFields.amazonProvidedIpv6CidrBlock !== null"
+             class="p-4 bg-yellow-50 border border-yellow-200 rounded-sm animate-fadeIn">
+          <p class="text-[10px] text-yellow-600 uppercase tracking-wider mb-2 font-medium">Pending Changes</p>
+          <div class="space-y-2">
+            <div *ngIf="updateFields.enableDnsSupport !== null && updateFields.enableDnsSupport !== vpc.enableDnsSupport"
+                 class="flex items-center justify-between text-xs">
+              <span class="text-gray-600">DNS Support</span>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-400 line-through">{{ vpc.enableDnsSupport ? 'Enabled' : 'Disabled' }}</span>
+                <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                <span class="font-medium" [ngClass]="updateFields.enableDnsSupport ? 'text-blue-600' : 'text-gray-600'">{{ updateFields.enableDnsSupport ? 'Enabled' : 'Disabled' }}</span>
+              </div>
+            </div>
+            <div *ngIf="updateFields.enableDnsHostnames !== null && updateFields.enableDnsHostnames !== vpc.enableDnsHostnames"
+                 class="flex items-center justify-between text-xs">
+              <span class="text-gray-600">DNS Hostnames</span>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-400 line-through">{{ vpc.enableDnsHostnames ? 'Enabled' : 'Disabled' }}</span>
+                <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                <span class="font-medium" [ngClass]="updateFields.enableDnsHostnames ? 'text-indigo-600' : 'text-gray-600'">{{ updateFields.enableDnsHostnames ? 'Enabled' : 'Disabled' }}</span>
+              </div>
+            </div>
+            <div *ngIf="updateFields.amazonProvidedIpv6CidrBlock !== null"
+                 class="flex items-center justify-between text-xs">
+              <span class="text-gray-600">IPv6 CIDR Block</span>
+              <div class="flex items-center gap-2">
+                <span class="font-medium" [ngClass]="updateFields.amazonProvidedIpv6CidrBlock ? 'text-green-600' : 'text-gray-600'">{{ updateFields.amazonProvidedIpv6CidrBlock ? 'Enable' : 'Disable' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Update Actions -->
+      <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <button (click)="closeUpdatePanel()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition">
+          Cancel
+        </button>
+        <button (click)="updateVpc()"
+                [disabled]="updating"
+                class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-all duration-200"
+                [ngClass]="updating ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98]'">
+          <svg *ngIf="updating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a10 10 0 100 10h-4a8 8 0 01-8-8z"/>
+          </svg>
+          {{ updating ? 'Updating...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- DELETE CONFIRMATION MODAL -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div *ngIf="showDeleteConfirm"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="animation: fadeIn 0.2s ease-out forwards">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeDeleteConfirm()"></div>
+
+      <!-- Dialog -->
+      <div class="relative bg-white w-full max-w-md border border-gray-200 shadow-2xl" style="animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards">
+        <!-- Header -->
+        <div class="px-6 py-5 border-b border-red-100 bg-red-50/50">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-serif font-bold text-gray-900">Delete VPC</h3>
+              <p class="text-xs text-gray-500 mt-0.5">This action cannot be undone</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 py-5">
+          <p class="text-sm text-gray-600 mb-4">
+            Are you sure you want to delete the VPC
+            <span class="font-semibold text-gray-900 font-mono">{{ getDisplayName(vpc) }}</span>?
+            This will permanently remove the VPC and all associated resources.
+          </p>
+
+          <!-- VPC Info -->
+          <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Name</span>
+              <span class="font-medium text-gray-900">{{ getDisplayName(vpc) }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">VPC ID</span>
+              <span class="font-medium text-gray-900 font-mono">{{ vpc.vpcId }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">CIDR Block</span>
+              <span class="font-medium text-gray-900 font-mono">{{ vpc.cidrBlock }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Provider</span>
+              <span class="font-medium text-gray-900">{{ getProviderLabel(vpc.provider) }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">State</span>
+              <span class="font-medium capitalize" [ngClass]="getStateTextClass(vpc.state)">{{ vpc.state }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs" *ngIf="account">
+              <span class="text-gray-500">Account</span>
+              <span class="font-medium text-gray-900">{{ account.accountName }}</span>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="deleteError" class="mt-4 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-sm text-xs text-red-700 animate-fadeIn">
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            {{ deleteError }}
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <button (click)="closeDeleteConfirm()" class="px-5 py-2.5 text-sm border border-gray-200 text-gray-700 hover:border-black hover:text-black transition">
+            Cancel
+          </button>
+          <button (click)="deleteVpc()"
+                  [disabled]="deleting"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-all duration-200"
+                  [ngClass]="deleting ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700 active:scale-[0.98]'">
+            <svg *ngIf="deleting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a10 10 0 100 10h-4a8 8 0 01-8-8z"/>
+            </svg>
+            {{ deleting ? 'Deleting...' : 'Delete VPC' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- FOOTER -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="border-t border-gray-200 pt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-serif font-bold">{{ getDisplayName(vpc) }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-widest">VPC Dashboard &middot; {{ getProviderLabel(vpc.provider) }}</p>
+        </div>
+      </div>
+      <a routerLink="/dashboard/vpcs" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to All VPCs
+      </a>
+    </div>
+  </div>
+</div>

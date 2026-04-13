@@ -25,7 +25,9 @@ import {
   CreateClusterRequest,
   CreateVpcRequest,
   UpdateClusterRequest,
-  DeleteClusterResponse
+  DeleteClusterResponse,
+  UpdateVpcRequest,
+  DeleteVpcResponse
 } from '../models/cloud-services.model';
 
 @Injectable({
@@ -92,6 +94,19 @@ export class CloudServicesService {
     return this.http.post<VpcSyncResponse>(
       `${this.apiUrl}/api/cloud/services/vpc/aws/sync?accountId=${accountId}`,
       null
+    );
+  }
+
+  updateVpc(vpcId: number, accountId: number, request: UpdateVpcRequest): Observable<Vpc> {
+    return this.http.put<Vpc>(
+      `${this.apiUrl}/api/cloud/services/vpc/aws/update/${vpcId}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deleteVpc(vpcId: number, accountId: number): Observable<DeleteVpcResponse> {
+    return this.http.delete<DeleteVpcResponse>(
+      `${this.apiUrl}/api/cloud/services/vpc/aws/delete/${vpcId}?accountId=${accountId}`
     );
   }
 

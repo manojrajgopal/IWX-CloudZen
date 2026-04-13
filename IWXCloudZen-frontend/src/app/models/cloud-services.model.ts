@@ -60,6 +60,17 @@ export interface CreateVpcRequest {
   enableDnsHostnames: boolean;
 }
 
+export interface UpdateVpcRequest {
+  enableDnsSupport?: boolean;
+  enableDnsHostnames?: boolean;
+  amazonProvidedIpv6CidrBlock?: boolean;
+}
+
+export interface DeleteVpcResponse {
+  vpcId: string;
+  status: string;
+}
+
 export interface VpcSyncResponse {
   added: number;
   updated: number;

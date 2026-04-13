@@ -19,6 +19,7 @@ import { SearchResultsComponent } from './global-search/search-results.component
 import { ClusterOverviewComponent } from './pages/CloudServices/clusters/cluster-overview/cluster-overview.component';
 import { CreateClusterComponent } from './pages/CloudServices/clusters/create-cluster/create-cluster.component';
 import { CreateVpcComponent } from './pages/CloudServices/vpcs/create-vpc/create-vpc.component';
+import { VpcOverviewComponent } from './pages/CloudServices/vpcs/vpc-overview/vpc-overview.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -34,6 +35,7 @@ export const routes: Routes = [
   { path: 'dashboard/clusters/:id', component: ClusterOverviewComponent },
   { path: 'dashboard/vpcs', component: VpcsComponent },
   { path: 'dashboard/vpcs/create', component: CreateVpcComponent },
+  { path: 'dashboard/vpcs/:id', component: VpcOverviewComponent },
   { path: 'dashboard/ecr', component: EcrComponent },
   { path: 'dashboard/ecs', component: EcsComponent },
   { path: 'dashboard/subnets', component: SubnetsComponent },
