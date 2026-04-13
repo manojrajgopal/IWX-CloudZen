@@ -29,6 +29,15 @@ export interface CreateClusterRequest {
   clusterName: string;
 }
 
+export interface UpdateClusterRequest {
+  enableContainerInsights?: boolean;
+}
+
+export interface DeleteClusterResponse {
+  clusterArn: string;
+  status: string;
+}
+
 export interface Vpc {
   id: number;
   name: string;

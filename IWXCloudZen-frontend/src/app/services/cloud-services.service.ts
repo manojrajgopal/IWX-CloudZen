@@ -20,7 +20,9 @@ import {
   Cluster,
   CloudFileResponse,
   CreateBucketRequest,
-  CreateClusterRequest
+  CreateClusterRequest,
+  UpdateClusterRequest,
+  DeleteClusterResponse
 } from '../models/cloud-services.model';
 
 @Injectable({
@@ -48,6 +50,19 @@ export class CloudServicesService {
     return this.http.post<ClusterSyncResponse>(
       `${this.apiUrl}/api/cloud/services/cluster/aws/sync?accountId=${accountId}`,
       null
+    );
+  }
+
+  updateCluster(clusterId: number, accountId: number, request: UpdateClusterRequest): Observable<Cluster> {
+    return this.http.put<Cluster>(
+      `${this.apiUrl}/api/cloud/services/cluster/aws/update/${clusterId}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deleteCluster(clusterId: number, accountId: number): Observable<DeleteClusterResponse> {
+    return this.http.delete<DeleteClusterResponse>(
+      `${this.apiUrl}/api/cloud/services/cluster/aws/delete/${clusterId}?accountId=${accountId}`
     );
   }
 

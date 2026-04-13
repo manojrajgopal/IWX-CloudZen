@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../../services/cloud-services.service';
 import { CloudAccount } from '../../../../models/cloud-account.model';
-import { Cluster } from '../../../../models/cloud-services.model';
+import { Cluster, UpdateClusterRequest } from '../../../../models/cloud-services.model';
 
 interface InfoItem {
   label: string;
@@ -18,7 +19,7 @@ interface InfoItem {
 @Component({
   selector: 'app-cluster-overview',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './cluster-overview.component.html',
   styleUrls: ['./cluster-overview.component.css']
 })
@@ -37,6 +38,20 @@ export class ClusterOverviewComponent implements OnInit, OnDestroy {
   // Copied tooltip
   copiedField: string | null = null;
   private copiedTimeout: any;
+
+  // Update state
+  showUpdatePanel = false;
+  updating = false;
+  updateError: string | null = null;
+  updateSuccess: string | null = null;
+  updateFields: { enableContainerInsights: boolean | null } = {
+    enableContainerInsights: null
+  };
+
+  // Delete state
+  showDeleteConfirm = false;
+  deleting = false;
+  deleteError: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -229,5 +244,93 @@ export class ClusterOverviewComponent implements OnInit, OnDestroy {
     if (days > 0) return `${days}d ${hours}h ${minutes}m`;
     if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
+  }
+
+  // ── Update ──
+
+  openUpdatePanel(): void {
+    this.showUpdatePanel = true;
+    this.updateError = null;
+    this.updateSuccess = null;
+    this.updateFields = {
+      enableContainerInsights: this.cluster?.containerInsightsEnabled ?? null
+    };
+    setTimeout(() => {
+      document.getElementById('updatePanel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }
+
+  closeUpdatePanel(): void {
+    this.showUpdatePanel = false;
+    this.updateError = null;
+    this.updateSuccess = null;
+  }
+
+  updateCluster(): void {
+    if (!this.cluster || this.updating) return;
+
+    const body: Record<string, any> = {};
+    if (this.updateFields.enableContainerInsights !== null) {
+      body['enableContainerInsights'] = this.updateFields.enableContainerInsights;
+    }
+
+    if (Object.keys(body).length === 0) {
+      this.updateError = 'No fields to update. Please modify at least one field.';
+      return;
+    }
+
+    this.updating = true;
+    this.updateError = null;
+    this.updateSuccess = null;
+
+    this.cloudServicesService.updateCluster(
+      this.cluster.id,
+      this.cluster.cloudAccountId,
+      body as UpdateClusterRequest
+    ).subscribe({
+      next: (updated) => {
+        this.cluster = updated;
+        this.updating = false;
+        this.updateSuccess = 'Cluster updated successfully.';
+        setTimeout(() => this.updateSuccess = null, 4000);
+      },
+      error: (err) => {
+        this.updating = false;
+        this.updateError = err?.error?.message || err?.error?.title || 'Failed to update cluster. Please try again.';
+      }
+    });
+  }
+
+  // ── Delete ──
+
+  openDeleteConfirm(): void {
+    this.showDeleteConfirm = true;
+    this.deleteError = null;
+  }
+
+  closeDeleteConfirm(): void {
+    this.showDeleteConfirm = false;
+    this.deleteError = null;
+  }
+
+  deleteCluster(): void {
+    if (!this.cluster || this.deleting) return;
+
+    this.deleting = true;
+    this.deleteError = null;
+
+    this.cloudServicesService.deleteCluster(
+      this.cluster.id,
+      this.cluster.cloudAccountId
+    ).subscribe({
+      next: () => {
+        this.deleting = false;
+        this.router.navigate(['/dashboard/clusters']);
+      },
+      error: (err) => {
+        this.deleting = false;
+        this.deleteError = err?.error?.message || err?.error?.title || 'Failed to delete cluster. Please try again.';
+      }
+    });
   }
 }

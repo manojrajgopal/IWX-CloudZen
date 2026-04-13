@@ -101,6 +101,18 @@
           </svg>
           All Clusters
         </a>
+        <button (click)="openUpdatePanel()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-blue-600 hover:bg-blue-600 hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+          </svg>
+          Update
+        </button>
+        <button (click)="openDeleteConfirm()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-red-600 hover:bg-red-600 hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+          </svg>
+          Delete
+        </button>
       </div>
     </div>
 
@@ -675,36 +687,190 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════ -->
-    <!-- RAW DATA / JSON SECTION -->
+    <!-- UPDATE CLUSTER PANEL -->
     <!-- ═══════════════════════════════════════════════════ -->
-    <div class="overview-section mb-10">
-      <button class="overview-section-header" (click)="toggleSection('raw')">
+    <div *ngIf="showUpdatePanel" id="updatePanel" class="overview-section mb-10 border-blue-200 animate-fadeIn">
+      <div class="px-6 py-5 border-b border-blue-100 bg-blue-50/30 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+          <div class="w-8 h-8 rounded-md bg-blue-600 text-white flex items-center justify-center">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
             </svg>
           </div>
-          <h3 class="text-base font-serif font-bold">Raw Data (JSON)</h3>
+          <div>
+            <h3 class="text-base font-serif font-bold">Update Cluster</h3>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Modify cluster settings</p>
+          </div>
         </div>
-        <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
-             [class.rotate-180]="!isSectionCollapsed('raw')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-        </svg>
-      </button>
-      <div class="overview-section-body" *ngIf="!isSectionCollapsed('raw')">
-        <div class="relative">
-          <button (click)="copyToClipboard(JSON.stringify(cluster, null, 2), 'json')"
-                  class="absolute top-3 right-3 px-3 py-1.5 bg-white border border-gray-200 text-xs uppercase tracking-wider hover:bg-black hover:text-white hover:border-black transition flex items-center gap-1.5 z-10">
-            <svg *ngIf="copiedField !== 'json'" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+        <button (click)="closeUpdatePanel()" class="text-gray-400 hover:text-gray-600 transition p-1">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        <!-- Success Message -->
+        <div *ngIf="updateSuccess" class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-sm text-sm text-green-800 animate-fadeIn">
+          <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+          {{ updateSuccess }}
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="updateError" class="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-sm text-sm text-red-800 animate-fadeIn">
+          <svg class="w-5 h-5 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+          {{ updateError }}
+        </div>
+
+        <!-- Container Insights Toggle -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Container Insights</label>
+          <div class="flex gap-3">
+            <button (click)="updateFields.enableContainerInsights = true"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.enableContainerInsights === true ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.enableContainerInsights === true ? 'bg-blue-100' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.enableContainerInsights === true ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.enableContainerInsights === true ? 'text-blue-700' : 'text-gray-600'">Enable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">Monitoring On</p>
+            </button>
+            <button (click)="updateFields.enableContainerInsights = false"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.enableContainerInsights === false ? 'border-gray-500 bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.enableContainerInsights === false ? 'bg-gray-200' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.enableContainerInsights === false ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.enableContainerInsights === false ? 'text-gray-700' : 'text-gray-600'">Disable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">Monitoring Off</p>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">
+            Currently: <span class="font-medium" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-600' : 'text-gray-500'">{{ cluster.containerInsightsEnabled ? 'Enabled' : 'Disabled' }}</span>
+          </p>
+        </div>
+
+        <!-- Preview of changes -->
+        <div *ngIf="updateFields.enableContainerInsights !== null && updateFields.enableContainerInsights !== cluster.containerInsightsEnabled"
+             class="p-4 bg-yellow-50 border border-yellow-200 rounded-sm animate-fadeIn">
+          <p class="text-[10px] text-yellow-600 uppercase tracking-wider mb-2 font-medium">Pending Changes</p>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gray-600">Container Insights</span>
+            <div class="flex items-center gap-2">
+              <span class="text-gray-400 line-through">{{ cluster.containerInsightsEnabled ? 'Enabled' : 'Disabled' }}</span>
+              <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+              <span class="font-medium" [ngClass]="updateFields.enableContainerInsights ? 'text-blue-600' : 'text-gray-600'">{{ updateFields.enableContainerInsights ? 'Enabled' : 'Disabled' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Update Actions -->
+      <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <button (click)="closeUpdatePanel()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition">
+          Cancel
+        </button>
+        <button (click)="updateCluster()"
+                [disabled]="updating"
+                class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-all duration-200"
+                [ngClass]="updating ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98]'">
+          <svg *ngIf="updating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a10 10 0 100 10h-4a8 8 0 01-8-8z"/>
+          </svg>
+          {{ updating ? 'Updating...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- DELETE CONFIRMATION MODAL -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div *ngIf="showDeleteConfirm"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="animation: fadeIn 0.2s ease-out forwards">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeDeleteConfirm()"></div>
+
+      <!-- Dialog -->
+      <div class="relative bg-white w-full max-w-md border border-gray-200 shadow-2xl" style="animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards">
+        <!-- Header -->
+        <div class="px-6 py-5 border-b border-red-100 bg-red-50/50">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-serif font-bold text-gray-900">Delete Cluster</h3>
+              <p class="text-xs text-gray-500 mt-0.5">This action cannot be undone</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 py-5">
+          <p class="text-sm text-gray-600 mb-4">
+            Are you sure you want to delete the cluster
+            <span class="font-semibold text-gray-900 font-mono">{{ cluster.name }}</span>?
+            This will permanently remove the cluster and all associated resources.
+          </p>
+
+          <!-- Cluster Info -->
+          <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Name</span>
+              <span class="font-medium text-gray-900 font-mono">{{ cluster.name }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Provider</span>
+              <span class="font-medium text-gray-900">{{ getProviderLabel(cluster.provider) }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Status</span>
+              <span class="font-medium capitalize" [ngClass]="getStatusTextClass(cluster.status)">{{ cluster.status }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs" *ngIf="account">
+              <span class="text-gray-500">Account</span>
+              <span class="font-medium text-gray-900">{{ account.accountName }}</span>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="deleteError" class="mt-4 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-sm text-xs text-red-700 animate-fadeIn">
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
             </svg>
-            <svg *ngIf="copiedField === 'json'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-            </svg>
-            {{ copiedField === 'json' ? 'Copied' : 'Copy' }}
+            {{ deleteError }}
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <button (click)="closeDeleteConfirm()" class="px-5 py-2.5 text-sm border border-gray-200 text-gray-700 hover:border-black hover:text-black transition">
+            Cancel
           </button>
-          <pre class="p-5 bg-gray-900 text-green-400 text-xs font-mono overflow-x-auto rounded-sm leading-relaxed">{{ cluster | json }}</pre>
+          <button (click)="deleteCluster()"
+                  [disabled]="deleting"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-all duration-200"
+                  [ngClass]="deleting ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700 active:scale-[0.98]'">
+            <svg *ngIf="deleting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a10 10 0 100 10h-4a8 8 0 01-8-8z"/>
+            </svg>
+            {{ deleting ? 'Deleting...' : 'Delete Cluster' }}
+          </button>
         </div>
       </div>
     </div>
