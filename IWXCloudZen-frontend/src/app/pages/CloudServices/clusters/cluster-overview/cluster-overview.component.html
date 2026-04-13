@@ -1,0 +1,735 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="loading" class="space-y-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-gray-100 rounded-lg animate-pulse"></div>
+      <div>
+        <div class="h-8 w-64 bg-gray-100 rounded animate-pulse mb-2"></div>
+        <div class="h-4 w-40 bg-gray-100 rounded animate-pulse"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div *ngFor="let i of [1,2,3,4]" class="border border-gray-200 p-6 animate-pulse">
+        <div class="h-4 w-20 bg-gray-100 rounded mb-3"></div>
+        <div class="h-8 w-16 bg-gray-100 rounded"></div>
+      </div>
+    </div>
+    <div class="border border-gray-200 p-8 animate-pulse">
+      <div class="h-5 w-48 bg-gray-100 rounded mb-6"></div>
+      <div class="space-y-4">
+        <div class="h-4 w-full bg-gray-100 rounded"></div>
+        <div class="h-4 w-3/4 bg-gray-100 rounded"></div>
+        <div class="h-4 w-1/2 bg-gray-100 rounded"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && error" class="text-center py-20">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">{{ error }}</h2>
+    <p class="text-gray-500 mb-6">The requested cluster could not be loaded.</p>
+    <a routerLink="/dashboard/clusters" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to Clusters
+    </a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && !error && cluster">
+
+    <!-- ─── Breadcrumb & Header ─── -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-10 gap-6">
+      <div class="flex-1 min-w-0">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+          <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <a routerLink="/dashboard/clusters" class="hover:text-black transition">Clusters</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span class="text-black font-medium truncate max-w-[200px]">{{ cluster.name }}</span>
+        </nav>
+
+        <!-- Title Row -->
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-lg bg-black text-white flex items-center justify-center flex-shrink-0">
+            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-serif font-bold tracking-tight truncate">{{ cluster.name }}</h1>
+            <div class="flex items-center gap-3 mt-2 flex-wrap">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getProviderBgClass(cluster.provider)">
+                {{ getProviderShort(cluster.provider) }}
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getStatusBgClass(cluster.status)">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStatusDotClass(cluster.status)"></span>
+                {{ cluster.status }}
+              </span>
+              <span class="text-xs text-gray-400">ID: {{ cluster.id }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <button (click)="refreshData()" class="btn-overview-icon" title="Refresh">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+        <a routerLink="/dashboard/clusters" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-black hover:bg-black hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          All Clusters
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- KEY METRICS CARDS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      <!-- Status -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <span class="w-3 h-3 rounded-full" [ngClass]="getStatusDotClass(cluster.status)"></span>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Status</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold capitalize">{{ cluster.status || '—' }}</p>
+        <p class="text-xs text-gray-400 mt-1">Current state</p>
+      </div>
+
+      <!-- Provider -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Provider</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold">{{ getProviderShort(cluster.provider) }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ getProviderLabel(cluster.provider) }}</p>
+      </div>
+
+      <!-- Insights -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+               [ngClass]="cluster.containerInsightsEnabled ? 'bg-blue-50' : 'bg-gray-50'">
+            <svg class="w-5 h-5" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Insights</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-700' : 'text-gray-400'">
+          {{ cluster.containerInsightsEnabled ? 'On' : 'Off' }}
+        </p>
+        <p class="text-xs text-gray-400 mt-1">Container Insights</p>
+      </div>
+
+      <!-- Uptime -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Uptime</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold">{{ getUptime(cluster.createdAt) }}</p>
+        <p class="text-xs text-gray-400 mt-1">Since creation</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- STATUS OVERVIEW BANNER -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="mb-10 p-6 border rounded-sm flex flex-col sm:flex-row sm:items-center gap-4"
+         [ngClass]="getStatusBgClass(cluster.status)">
+      <div class="flex items-center gap-3 flex-1">
+        <div class="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center flex-shrink-0">
+          <span class="w-4 h-4 rounded-full" [ngClass]="getStatusDotClass(cluster.status)"></span>
+        </div>
+        <div>
+          <p class="text-lg font-serif font-bold capitalize" [ngClass]="getStatusTextClass(cluster.status)">
+            Cluster is {{ cluster.status }}
+          </p>
+          <p class="text-xs mt-0.5" [ngClass]="getStatusTextClass(cluster.status)" style="opacity: 0.7">
+            Last checked {{ formatRelativeTime(cluster.updatedAt || cluster.createdAt) }}
+          </p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-xs uppercase tracking-widest mb-1" [ngClass]="getStatusTextClass(cluster.status)" style="opacity: 0.6">Created</p>
+        <p class="text-sm font-medium" [ngClass]="getStatusTextClass(cluster.status)">{{ formatDate(cluster.createdAt) }}</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MAIN TWO-COLUMN LAYOUT -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10">
+
+      <!-- ─── LEFT COLUMN (2/3) ─── -->
+      <div class="xl:col-span-2 space-y-8">
+
+        <!-- ▸ General Information Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('general')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">General Information</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('general')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('general')">
+            <div class="overview-grid">
+              <div class="overview-field">
+                <span class="overview-field-label">Cluster Name</span>
+                <span class="overview-field-value font-semibold">{{ cluster.name }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Internal ID</span>
+                <span class="overview-field-value font-mono text-sm">{{ cluster.id }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Cloud Provider</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="getProviderBgClass(cluster.provider)">
+                    {{ getProviderLabel(cluster.provider) }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Current Status</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium capitalize border rounded-sm"
+                        [ngClass]="getStatusBgClass(cluster.status)">
+                    <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStatusDotClass(cluster.status)"></span>
+                    {{ cluster.status }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Cloud Account</span>
+                <span class="overview-field-value">{{ account?.accountName || ('Account #' + cluster.cloudAccountId) }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Account ID</span>
+                <span class="overview-field-value font-mono text-sm">{{ cluster.cloudAccountId }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Cluster ARN Section -->
+        <div class="overview-section" *ngIf="cluster.clusterArn">
+          <button class="overview-section-header" (click)="toggleSection('arn')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Resource Identifier (ARN)</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('arn')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('arn')">
+            <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+              <div class="flex items-start justify-between gap-4">
+                <p class="font-mono text-sm text-gray-700 break-all select-all flex-1 leading-relaxed">{{ cluster.clusterArn }}</p>
+                <button (click)="copyToClipboard(cluster.clusterArn!, 'arn')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition"
+                        title="Copy ARN">
+                  <svg *ngIf="copiedField !== 'arn'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'arn'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- ARN Breakdown -->
+            <div class="mt-4">
+              <p class="text-xs uppercase tracking-widest text-gray-400 mb-3">ARN Breakdown</p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Service</p>
+                  <p class="text-sm font-medium">ECS / EKS</p>
+                </div>
+                <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Region</p>
+                  <p class="text-sm font-medium font-mono">{{ account?.region || '—' }}</p>
+                </div>
+                <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Resource Name</p>
+                  <p class="text-sm font-medium">{{ cluster.name }}</p>
+                </div>
+                <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Full ARN Length</p>
+                  <p class="text-sm font-medium">{{ cluster.clusterArn!.length }} characters</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Container Insights Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('insights')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md flex items-center justify-center"
+                   [ngClass]="cluster.containerInsightsEnabled ? 'bg-blue-600 text-white' : 'bg-black text-white'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Container Insights</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('insights')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('insights')">
+            <!-- Insights Status Card -->
+            <div class="p-5 border rounded-sm flex items-center gap-4"
+                 [ngClass]="cluster.containerInsightsEnabled ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                   [ngClass]="cluster.containerInsightsEnabled ? 'bg-blue-100' : 'bg-gray-200'">
+                <svg class="w-6 h-6" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path *ngIf="cluster.containerInsightsEnabled" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  <path *ngIf="!cluster.containerInsightsEnabled" stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-lg font-serif font-bold" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-700' : 'text-gray-600'">
+                  {{ cluster.containerInsightsEnabled ? 'Enabled' : 'Disabled' }}
+                </p>
+                <p class="text-xs mt-0.5" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-500' : 'text-gray-400'">
+                  {{ cluster.containerInsightsEnabled ? 'Performance metrics and logs are being collected' : 'No monitoring data is being collected' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Insights Feature Grid -->
+            <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div class="p-4 border border-gray-100 rounded-sm text-center">
+                <div class="w-10 h-10 mx-auto mb-3 rounded-lg flex items-center justify-center"
+                     [ngClass]="cluster.containerInsightsEnabled ? 'bg-blue-50' : 'bg-gray-50'">
+                  <svg class="w-5 h-5" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold mb-1">CPU & Memory</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">Performance Metrics</p>
+              </div>
+              <div class="p-4 border border-gray-100 rounded-sm text-center">
+                <div class="w-10 h-10 mx-auto mb-3 rounded-lg flex items-center justify-center"
+                     [ngClass]="cluster.containerInsightsEnabled ? 'bg-blue-50' : 'bg-gray-50'">
+                  <svg class="w-5 h-5" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold mb-1">Network I/O</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">Traffic Monitoring</p>
+              </div>
+              <div class="p-4 border border-gray-100 rounded-sm text-center">
+                <div class="w-10 h-10 mx-auto mb-3 rounded-lg flex items-center justify-center"
+                     [ngClass]="cluster.containerInsightsEnabled ? 'bg-blue-50' : 'bg-gray-50'">
+                  <svg class="w-5 h-5" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                  </svg>
+                </div>
+                <p class="text-sm font-semibold mb-1">Diagnostics</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">Error Tracking</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Timestamps & Lifecycle Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('timeline')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Timestamps & Lifecycle</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('timeline')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('timeline')">
+            <!-- Timeline -->
+            <div class="relative pl-8 border-l-2 border-gray-200 space-y-8">
+              <!-- Created -->
+              <div class="relative">
+                <div class="absolute -left-[calc(2rem+5px)] w-3 h-3 rounded-full bg-black border-2 border-white"></div>
+                <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Created</p>
+                    <p class="text-xs text-gray-400">{{ formatRelativeTime(cluster.createdAt) }}</p>
+                  </div>
+                  <p class="text-sm font-semibold">{{ formatDateTime(cluster.createdAt) }}</p>
+                </div>
+              </div>
+
+              <!-- Updated -->
+              <div class="relative">
+                <div class="absolute -left-[calc(2rem+5px)] w-3 h-3 rounded-full border-2 border-white"
+                     [ngClass]="cluster.updatedAt ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Last Updated</p>
+                    <p class="text-xs text-gray-400">{{ cluster.updatedAt ? formatRelativeTime(cluster.updatedAt) : '—' }}</p>
+                  </div>
+                  <p class="text-sm font-semibold">{{ cluster.updatedAt ? formatDateTime(cluster.updatedAt) : 'Never updated' }}</p>
+                </div>
+              </div>
+
+              <!-- Uptime -->
+              <div class="relative">
+                <div class="absolute -left-[calc(2rem+5px)] w-3 h-3 rounded-full bg-green-500 border-2 border-white"></div>
+                <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Total Uptime</p>
+                    <p class="text-xs text-green-600 font-medium">Running</p>
+                  </div>
+                  <p class="text-sm font-semibold">{{ getUptime(cluster.createdAt) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Date Comparison -->
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="p-4 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Date Created (Short)</p>
+                <p class="text-lg font-serif font-bold">{{ formatDate(cluster.createdAt) }}</p>
+              </div>
+              <div class="p-4 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Date Updated (Short)</p>
+                <p class="text-lg font-serif font-bold">{{ cluster.updatedAt ? formatDate(cluster.updatedAt) : '—' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── RIGHT COLUMN (1/3) ─── -->
+      <div class="space-y-8">
+
+        <!-- ▸ Quick Summary Card -->
+        <div class="overview-section">
+          <div class="p-6">
+            <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-5">Quick Summary</h4>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Name</span>
+                <span class="text-sm font-medium truncate ml-4 max-w-[180px]">{{ cluster.name }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Provider</span>
+                <span class="text-sm font-medium">{{ getProviderShort(cluster.provider) }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Status</span>
+                <span class="inline-flex items-center gap-1.5 text-sm font-medium capitalize">
+                  <span class="w-2 h-2 rounded-full" [ngClass]="getStatusDotClass(cluster.status)"></span>
+                  {{ cluster.status }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Insights</span>
+                <span class="text-sm font-medium" [ngClass]="cluster.containerInsightsEnabled ? 'text-blue-600' : 'text-gray-400'">
+                  {{ cluster.containerInsightsEnabled ? 'Enabled' : 'Disabled' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Account</span>
+                <span class="text-sm font-medium">{{ account?.accountName || '—' }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Region</span>
+                <span class="text-sm font-mono font-medium">{{ account?.region || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Cloud Account Details Card -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('account')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Cloud Account</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('account')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('account')">
+            <div *ngIf="account" class="space-y-3">
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Account Name</span>
+                <span class="text-sm font-medium">{{ account.accountName }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Provider</span>
+                <span class="text-sm font-medium">{{ account.provider }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Region</span>
+                <span class="text-sm font-mono font-medium">{{ account.region }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Default</span>
+                <span class="text-sm font-medium" [ngClass]="account.isDefault ? 'text-green-600' : 'text-gray-400'">
+                  {{ account.isDefault ? 'Yes' : 'No' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Last Validated</span>
+                <span class="text-sm font-medium">{{ formatDate(account.lastValidatedAt) }}</span>
+              </div>
+            </div>
+            <div *ngIf="!account" class="text-center py-4 text-gray-400 text-sm">
+              Account details unavailable
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Resource Identifiers Card -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('identifiers')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Identifiers</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('identifiers')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('identifiers')">
+            <div class="space-y-3">
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Cluster ID</p>
+                  <button (click)="copyToClipboard(cluster.id.toString(), 'id')"
+                          class="p-1 hover:bg-gray-200 rounded transition"
+                          title="Copy ID">
+                    <svg *ngIf="copiedField !== 'id'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'id'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ cluster.id }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Cloud Account ID</p>
+                  <button (click)="copyToClipboard(cluster.cloudAccountId.toString(), 'accountId')"
+                          class="p-1 hover:bg-gray-200 rounded transition"
+                          title="Copy Account ID">
+                    <svg *ngIf="copiedField !== 'accountId'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'accountId'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ cluster.cloudAccountId }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm" *ngIf="cluster.clusterArn">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Cluster ARN</p>
+                  <button (click)="copyToClipboard(cluster.clusterArn!, 'arn2')"
+                          class="p-1 hover:bg-gray-200 rounded transition"
+                          title="Copy ARN">
+                    <svg *ngIf="copiedField !== 'arn2'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'arn2'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-xs break-all leading-relaxed">{{ cluster.clusterArn }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Configuration Tags Card -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('config')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Configuration</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('config')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('config')">
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Container Orchestration</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">{{ getProviderLabel(cluster.provider) }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Monitoring</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">
+                    Insights {{ cluster.containerInsightsEnabled ? 'Enabled' : 'Disabled' }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Region</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 font-mono">{{ account?.region || '—' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- RAW DATA / JSON SECTION -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="overview-section mb-10">
+      <button class="overview-section-header" (click)="toggleSection('raw')">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/>
+            </svg>
+          </div>
+          <h3 class="text-base font-serif font-bold">Raw Data (JSON)</h3>
+        </div>
+        <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+             [class.rotate-180]="!isSectionCollapsed('raw')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+        </svg>
+      </button>
+      <div class="overview-section-body" *ngIf="!isSectionCollapsed('raw')">
+        <div class="relative">
+          <button (click)="copyToClipboard(JSON.stringify(cluster, null, 2), 'json')"
+                  class="absolute top-3 right-3 px-3 py-1.5 bg-white border border-gray-200 text-xs uppercase tracking-wider hover:bg-black hover:text-white hover:border-black transition flex items-center gap-1.5 z-10">
+            <svg *ngIf="copiedField !== 'json'" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <svg *ngIf="copiedField === 'json'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+            {{ copiedField === 'json' ? 'Copied' : 'Copy' }}
+          </button>
+          <pre class="p-5 bg-gray-900 text-green-400 text-xs font-mono overflow-x-auto rounded-sm leading-relaxed">{{ cluster | json }}</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- FOOTER -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="border-t border-gray-200 pt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-serif font-bold">{{ cluster.name }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-widest">Cluster Dashboard &middot; {{ getProviderLabel(cluster.provider) }}</p>
+        </div>
+      </div>
+      <a routerLink="/dashboard/clusters" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to All Clusters
+      </a>
+    </div>
+  </div>
+</div>

@@ -16,6 +16,7 @@ import { Ec2InstancesComponent } from './pages/CloudServices/ec2-instances/ec2-i
 import { CreateBucketComponent } from './pages/CloudServices/cloud-storage/create-bucket/create-bucket.component';
 import { BucketOverviewComponent } from './pages/CloudServices/cloud-storage/bucket-overview/bucket-overview.component';
 import { SearchResultsComponent } from './global-search/search-results.component';
+import { ClusterOverviewComponent } from './pages/CloudServices/clusters/cluster-overview/cluster-overview.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -27,6 +28,7 @@ export const routes: Routes = [
   { path: 'dashboard/cloud-storage/create', component: CreateBucketComponent },
   { path: 'dashboard/cloud-storage/:id', component: BucketOverviewComponent },
   { path: 'dashboard/clusters', component: ClustersComponent },
+  { path: 'dashboard/clusters/:id', component: ClusterOverviewComponent },
   { path: 'dashboard/vpcs', component: VpcsComponent },
   { path: 'dashboard/ecr', component: EcrComponent },
   { path: 'dashboard/ecs', component: EcsComponent },

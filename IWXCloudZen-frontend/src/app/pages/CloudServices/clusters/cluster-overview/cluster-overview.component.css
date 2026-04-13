@@ -1,0 +1,168 @@
+/* ── Metric Card ── */
+.overview-metric-card {
+  border: 1px solid #e5e5e5;
+  padding: 1.25rem 1.5rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.overview-metric-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #000;
+  transition: width 0.4s ease, left 0.4s ease;
+}
+
+.overview-metric-card:hover::after {
+  width: 100%;
+  left: 0;
+}
+
+.overview-metric-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+/* ── Section Container ── */
+.overview-section {
+  border: 1px solid #e5e5e5;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.overview-section:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Section Header ── */
+.overview-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1.25rem 1.5rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.overview-section-header:hover {
+  background-color: #fafafa;
+}
+
+/* ── Section Body ── */
+.overview-section-body {
+  padding: 0 1.5rem 1.5rem;
+  animation: sectionFadeIn 0.2s ease-out forwards;
+}
+
+@keyframes sectionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Info Grid ── */
+.overview-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+@media (max-width: 640px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Info Field ── */
+.overview-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f7f7f7;
+  border-right: 1px solid #f7f7f7;
+}
+
+.overview-field:nth-child(even) {
+  border-right: none;
+}
+
+@media (max-width: 640px) {
+  .overview-field {
+    border-right: none;
+  }
+}
+
+.overview-field-label {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9e9e9e;
+}
+
+.overview-field-value {
+  font-size: 0.875rem;
+  color: #212121;
+}
+
+/* ── Button Icon ── */
+.btn-overview-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e5e5e5;
+  background: transparent;
+  color: #9e9e9e;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-overview-icon:hover {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+
+/* ── Status Badges ── */
+.status-active {
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+
+.status-pending {
+  background-color: #fffbeb;
+  color: #92400e;
+}
+
+.status-error {
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+.status-unknown {
+  background-color: #f7f7f7;
+  color: #9e9e9e;
+}
+
+/* ── Skeleton pulse ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse {
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
