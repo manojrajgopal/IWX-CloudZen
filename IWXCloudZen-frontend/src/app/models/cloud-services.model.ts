@@ -110,6 +110,58 @@ export interface EcsService {
   updatedAt: string | null;
 }
 
+export interface EcsTaskDefinition {
+  id: number;
+  family: string;
+  taskDefinitionArn: string;
+  revision: number;
+  status: string;
+  cpu: string;
+  memory: string;
+  networkMode: string;
+  executionRoleArn: string;
+  taskRoleArn: string | null;
+  requiresCompatibilities: string;
+  osFamily: string;
+  containerCount: number;
+  containerDefinitionsJson: string;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface EcsSyncTaskDefinitionsResult {
+  added: number;
+  updated: number;
+  removed: number;
+  taskDefinitions: EcsTaskDefinition[];
+}
+
+export interface EcsSyncClusterServicesResult {
+  clusterName: string;
+  added: number;
+  updated: number;
+  removed: number;
+  services: EcsService[];
+}
+
+export interface EcsSyncClusterTasksResult {
+  clusterName: string;
+  added: number;
+  updated: number;
+  removed: number;
+  tasks: any[];
+}
+
+export interface EcsSyncResponse {
+  taskDefinitions: EcsSyncTaskDefinitionsResult;
+  servicesByCluster: EcsSyncClusterServicesResult[];
+  tasksByCluster: EcsSyncClusterTasksResult[];
+  clustersSynced: string[];
+  syncedAt: string;
+}
+
 export interface Subnet {
   id: number;
   subnetId: string;

@@ -10,6 +10,7 @@ import {
   VpcSyncResponse,
   EcrRepositoriesResponse,
   EcsServicesResponse,
+  EcsSyncResponse,
   SubnetsResponse,
   SecurityGroupsResponse,
   LogGroupsResponse,
@@ -119,6 +120,13 @@ export class CloudServicesService {
   getEcsServices(accountId: number): Observable<EcsServicesResponse> {
     return this.http.get<EcsServicesResponse>(
       `${this.apiUrl}/api/cloud/services/ecs/aws/services?accountId=${accountId}`
+    );
+  }
+
+  syncEcs(accountId: number): Observable<EcsSyncResponse> {
+    return this.http.post<EcsSyncResponse>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/sync?accountId=${accountId}`,
+      null
     );
   }
 

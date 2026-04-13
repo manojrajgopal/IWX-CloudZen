@@ -7,7 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../services/cloud-services.service';
 import { CloudAccount } from '../../../models/cloud-account.model';
-import { EcsService } from '../../../models/cloud-services.model';
+import { EcsService, EcsSyncResponse } from '../../../models/cloud-services.model';
 import { EcsFilterByProviderPipe, EcsFilterByStatusPipe, EcsFilterByLaunchTypePipe } from './ecs.pipes';
 
 type ViewMode = 'grid' | 'list';
@@ -49,6 +49,13 @@ export class EcsComponent implements OnInit, OnDestroy {
   // Detail panel
   selectedService: EcsService | null = null;
   showDetailPanel = false;
+
+  // Sync state
+  syncing = false;
+  lastSyncResults: EcsSyncResponse[] = [];
+  showSyncReport = false;
+  syncMessage: string | null = null;
+  syncMessageType: 'success' | 'error' | null = null;
 
   // Metrics
   metrics: EcsMetric[] = [
@@ -222,6 +229,100 @@ export class EcsComponent implements OnInit, OnDestroy {
 
   refreshData(): void {
     this.loadData();
+  }
+
+  // ── Sync ──
+
+  syncData(): void {
+    if (this.syncing) return;
+    this.syncing = true;
+    this.syncMessage = null;
+    this.syncMessageType = null;
+    this.showSyncReport = false;
+    this.lastSyncResults = [];
+
+    const awsAccounts = this.accounts.filter(a => a.provider?.toUpperCase() === 'AWS');
+    if (awsAccounts.length === 0) {
+      this.syncing = false;
+      this.syncMessage = 'No AWS accounts available to sync.';
+      this.syncMessageType = 'error';
+      setTimeout(() => this.syncMessage = null, 4000);
+      return;
+    }
+
+    const requests = awsAccounts.map(a =>
+      this.cloudServicesService.syncEcs(a.id).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin(requests).subscribe({
+      next: (results) => {
+        this.lastSyncResults = results.filter((r): r is EcsSyncResponse => r !== null);
+        this.syncing = false;
+
+        const totalServicesAdded = this.getTotalServicesAdded();
+        const totalServicesUpdated = this.getTotalServicesUpdated();
+        const totalTdAdded = this.getTotalTaskDefsAdded();
+        const totalTdUpdated = this.getTotalTaskDefsUpdated();
+        const clustersSynced = this.getTotalClustersSynced();
+
+        this.syncMessage = `Sync complete — Services: ${totalServicesAdded} added, ${totalServicesUpdated} updated · Task Definitions: ${totalTdAdded} added, ${totalTdUpdated} updated · ${clustersSynced} cluster(s) synced`;
+        this.syncMessageType = 'success';
+        this.showSyncReport = true;
+
+        setTimeout(() => this.syncMessage = null, 6000);
+        this.loadData();
+      },
+      error: () => {
+        this.syncing = false;
+        this.syncMessage = 'Sync failed. Please try again.';
+        this.syncMessageType = 'error';
+        setTimeout(() => this.syncMessage = null, 4000);
+      }
+    });
+  }
+
+  closeSyncReport(): void {
+    this.showSyncReport = false;
+  }
+
+  getTotalTaskDefsAdded(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.taskDefinitions?.added || 0), 0);
+  }
+
+  getTotalTaskDefsUpdated(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.taskDefinitions?.updated || 0), 0);
+  }
+
+  getTotalTaskDefsRemoved(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.taskDefinitions?.removed || 0), 0);
+  }
+
+  getTotalTaskDefs(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.taskDefinitions?.taskDefinitions?.length || 0), 0);
+  }
+
+  getTotalServicesAdded(): number {
+    return this.lastSyncResults.reduce((sum, r) =>
+      sum + (r.servicesByCluster || []).reduce((s, c) => s + (c.added || 0), 0), 0);
+  }
+
+  getTotalServicesUpdated(): number {
+    return this.lastSyncResults.reduce((sum, r) =>
+      sum + (r.servicesByCluster || []).reduce((s, c) => s + (c.updated || 0), 0), 0);
+  }
+
+  getTotalServicesRemoved(): number {
+    return this.lastSyncResults.reduce((sum, r) =>
+      sum + (r.servicesByCluster || []).reduce((s, c) => s + (c.removed || 0), 0), 0);
+  }
+
+  getTotalServices(): number {
+    return this.lastSyncResults.reduce((sum, r) =>
+      sum + (r.servicesByCluster || []).reduce((s, c) => s + (c.services?.length || 0), 0), 0);
+  }
+
+  getTotalClustersSynced(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.clustersSynced?.length || 0), 0);
   }
 
   getAccountName(accountId: number): string {
