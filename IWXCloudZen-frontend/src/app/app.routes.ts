@@ -20,6 +20,7 @@ import { ClusterOverviewComponent } from './pages/CloudServices/clusters/cluster
 import { CreateClusterComponent } from './pages/CloudServices/clusters/create-cluster/create-cluster.component';
 import { CreateVpcComponent } from './pages/CloudServices/vpcs/create-vpc/create-vpc.component';
 import { VpcOverviewComponent } from './pages/CloudServices/vpcs/vpc-overview/vpc-overview.component';
+import { EcsOverviewComponent } from './pages/CloudServices/ecs/ecs-overview/ecs-overview.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -38,6 +39,7 @@ export const routes: Routes = [
   { path: 'dashboard/vpcs/:id', component: VpcOverviewComponent },
   { path: 'dashboard/ecr', component: EcrComponent },
   { path: 'dashboard/ecs', component: EcsComponent },
+  { path: 'dashboard/ecs/:id', component: EcsOverviewComponent },
   { path: 'dashboard/subnets', component: SubnetsComponent },
   { path: 'dashboard/security-groups', component: SecurityGroupsComponent },
   { path: 'dashboard/cloudwatch-logs', component: CloudWatchLogsComponent },

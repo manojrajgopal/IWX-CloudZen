@@ -131,6 +131,43 @@ export interface EcsTaskDefinition {
   updatedAt: string | null;
 }
 
+export interface EcsTask {
+  id: number;
+  taskArn: string;
+  clusterName: string;
+  clusterArn: string;
+  taskDefinitionArn: string;
+  group: string;
+  lastStatus: string;
+  desiredStatus: string;
+  cpu: string;
+  memory: string;
+  launchType: string;
+  connectivity: string | null;
+  stopCode: string | null;
+  stoppedReason: string | null;
+  startedAt: string | null;
+  stoppedAt: string | null;
+  pullStartedAt: string | null;
+  pullStoppedAt: string | null;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface EcsTaskDefinitionsResponse {
+  totalCount: number;
+  familyFilter: string | null;
+  taskDefinitions: EcsTaskDefinition[];
+}
+
+export interface EcsTasksResponse {
+  clusterName: string;
+  totalCount: number;
+  tasks: EcsTask[];
+}
+
 export interface EcsSyncTaskDefinitionsResult {
   added: number;
   updated: number;

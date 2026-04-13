@@ -10,6 +10,11 @@ import {
   VpcSyncResponse,
   EcrRepositoriesResponse,
   EcsServicesResponse,
+  EcsService,
+  EcsTaskDefinition,
+  EcsTaskDefinitionsResponse,
+  EcsTask,
+  EcsTasksResponse,
   EcsSyncResponse,
   SubnetsResponse,
   SecurityGroupsResponse,
@@ -120,6 +125,36 @@ export class CloudServicesService {
   getEcsServices(accountId: number): Observable<EcsServicesResponse> {
     return this.http.get<EcsServicesResponse>(
       `${this.apiUrl}/api/cloud/services/ecs/aws/services?accountId=${accountId}`
+    );
+  }
+
+  getEcsServiceById(serviceId: number, accountId: number): Observable<EcsService> {
+    return this.http.get<EcsService>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/services/${serviceId}?accountId=${accountId}`
+    );
+  }
+
+  getEcsTaskDefinitions(accountId: number): Observable<EcsTaskDefinitionsResponse> {
+    return this.http.get<EcsTaskDefinitionsResponse>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/task-definitions?accountId=${accountId}`
+    );
+  }
+
+  getEcsTaskDefinitionById(id: number, accountId: number): Observable<EcsTaskDefinition> {
+    return this.http.get<EcsTaskDefinition>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/task-definitions/${id}?accountId=${accountId}`
+    );
+  }
+
+  getEcsTasks(accountId: number): Observable<EcsTasksResponse> {
+    return this.http.get<EcsTasksResponse>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/tasks?accountId=${accountId}`
+    );
+  }
+
+  getEcsTaskById(id: number, accountId: number): Observable<EcsTask> {
+    return this.http.get<EcsTask>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/tasks/${id}?accountId=${accountId}`
     );
   }
 

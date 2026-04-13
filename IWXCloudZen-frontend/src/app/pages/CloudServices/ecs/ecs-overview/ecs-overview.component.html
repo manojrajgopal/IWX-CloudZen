@@ -1,0 +1,1053 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="loading" class="space-y-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-gray-100 rounded-lg animate-pulse"></div>
+      <div>
+        <div class="h-8 w-64 bg-gray-100 rounded animate-pulse mb-2"></div>
+        <div class="h-4 w-40 bg-gray-100 rounded animate-pulse"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div *ngFor="let i of [1,2,3,4]" class="border border-gray-200 p-6 animate-pulse">
+        <div class="h-4 w-20 bg-gray-100 rounded mb-3"></div>
+        <div class="h-8 w-16 bg-gray-100 rounded"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div class="xl:col-span-2 space-y-8">
+        <div *ngFor="let i of [1,2,3]" class="border border-gray-200 p-8 animate-pulse">
+          <div class="h-5 w-48 bg-gray-100 rounded mb-6"></div>
+          <div class="space-y-4">
+            <div class="h-4 w-full bg-gray-100 rounded"></div>
+            <div class="h-4 w-3/4 bg-gray-100 rounded"></div>
+            <div class="h-4 w-1/2 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-8">
+        <div *ngFor="let i of [1,2]" class="border border-gray-200 p-8 animate-pulse">
+          <div class="h-4 w-32 bg-gray-100 rounded mb-4"></div>
+          <div class="space-y-3">
+            <div class="h-4 w-full bg-gray-100 rounded"></div>
+            <div class="h-4 w-2/3 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && error" class="text-center py-20">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">{{ error }}</h2>
+    <p class="text-gray-500 mb-6">The requested ECS service could not be loaded.</p>
+    <a routerLink="/dashboard/ecs" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to ECS Services
+    </a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && !error && service">
+
+    <!-- ─── Breadcrumb & Header ─── -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-10 gap-6">
+      <div class="flex-1 min-w-0">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4 flex-wrap">
+          <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+          <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <a routerLink="/dashboard/ecs" class="hover:text-black transition">ECS Services</a>
+          <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span class="text-black font-medium truncate max-w-[200px]">{{ service.serviceName }}</span>
+        </nav>
+
+        <!-- Title Row -->
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-lg bg-black text-white flex items-center justify-center flex-shrink-0">
+            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-serif font-bold tracking-tight truncate">{{ service.serviceName }}</h1>
+            <div class="flex items-center gap-3 mt-2 flex-wrap">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getProviderBgClass(service.provider)">
+                {{ getProviderShort(service.provider) }}
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getStatusBgClass(service.status)">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStatusDotClass(service.status)"></span>
+                {{ service.status }}
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getLaunchTypeClass(service.launchType)">
+                {{ service.launchType || '—' }}
+              </span>
+              <span class="text-xs text-gray-400 font-mono hidden sm:inline">ID: {{ service.id }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <button (click)="refreshData()" class="btn-overview-icon" title="Refresh">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+        <a routerLink="/dashboard/ecs" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-black hover:bg-black hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          All Services
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- KEY METRICS CARDS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      <!-- Status -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <span class="w-3 h-3 rounded-full" [ngClass]="getStatusDotClass(service.status)"></span>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Status</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold capitalize">{{ service.status || '—' }}</p>
+        <p class="text-xs text-gray-400 mt-1">Current status</p>
+      </div>
+
+      <!-- Task Health -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+               [ngClass]="getTaskHealth() >= 100 ? 'bg-green-50' : getTaskHealth() > 0 ? 'bg-yellow-50' : 'bg-red-50'">
+            <svg class="w-5 h-5" [ngClass]="getTaskHealth() >= 100 ? 'text-green-600' : getTaskHealth() > 0 ? 'text-yellow-600' : 'text-red-600'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Health</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold" [ngClass]="getTaskHealth() >= 100 ? 'text-green-600' : getTaskHealth() > 0 ? 'text-yellow-600' : 'text-red-600'">{{ getTaskHealth() }}%</p>
+        <p class="text-xs text-gray-400 mt-1">{{ service.runningCount }} / {{ service.desiredCount }} running</p>
+      </div>
+
+      <!-- Tasks -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Tasks</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold">{{ tasks.length }}</p>
+        <p class="text-xs text-gray-400 mt-1">Total tasks tracked</p>
+      </div>
+
+      <!-- Uptime -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Uptime</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold">{{ getUptime(service.serviceCreatedAt) }}</p>
+        <p class="text-xs text-gray-400 mt-1">Since creation</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- STATUS OVERVIEW BANNER -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="mb-10 p-6 border rounded-sm flex flex-col sm:flex-row sm:items-center gap-4"
+         [ngClass]="getStatusBgClass(service.status)">
+      <div class="flex items-center gap-3 flex-1">
+        <div class="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center flex-shrink-0">
+          <span class="w-4 h-4 rounded-full" [ngClass]="getStatusDotClass(service.status)"></span>
+        </div>
+        <div>
+          <p class="text-lg font-serif font-bold capitalize" [ngClass]="getStatusTextClass(service.status)">
+            Service is {{ service.status }}
+          </p>
+          <p class="text-xs mt-0.5" [ngClass]="getStatusTextClass(service.status)" style="opacity: 0.7">
+            Last checked {{ formatRelativeTime(service.updatedAt || service.createdAt) }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="text-right">
+          <p class="text-xs uppercase tracking-widest mb-1" [ngClass]="getStatusTextClass(service.status)" style="opacity: 0.6">Desired</p>
+          <p class="text-lg font-serif font-bold" [ngClass]="getStatusTextClass(service.status)">{{ service.desiredCount }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs uppercase tracking-widest mb-1" [ngClass]="getStatusTextClass(service.status)" style="opacity: 0.6">Running</p>
+          <p class="text-lg font-serif font-bold" [ngClass]="getStatusTextClass(service.status)">{{ service.runningCount }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs uppercase tracking-widest mb-1" [ngClass]="getStatusTextClass(service.status)" style="opacity: 0.6">Pending</p>
+          <p class="text-lg font-serif font-bold" [ngClass]="getStatusTextClass(service.status)">{{ service.pendingCount }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- TASK HEALTH BAR -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="mb-10 p-6 border border-gray-200 rounded-sm">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          <span class="text-sm font-serif font-bold">Task Health</span>
+        </div>
+        <span class="text-2xl font-serif font-bold"
+              [ngClass]="getTaskHealth() >= 100 ? 'text-green-600' : getTaskHealth() > 0 ? 'text-yellow-600' : 'text-red-600'">
+          {{ getTaskHealth() }}%
+        </span>
+      </div>
+      <div class="health-bar-track">
+        <div class="health-bar-fill"
+             [style.width.%]="getTaskHealth()"
+             [style.background]="getTaskHealth() >= 100 ? '#22c55e' : getTaskHealth() > 0 ? '#eab308' : '#ef4444'">
+        </div>
+      </div>
+      <div class="flex items-center justify-between mt-3 text-xs text-gray-400">
+        <span>{{ service.runningCount }} running of {{ service.desiredCount }} desired</span>
+        <span *ngIf="service.pendingCount > 0" class="text-yellow-600">{{ service.pendingCount }} pending</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MAIN TWO-COLUMN LAYOUT -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10">
+
+      <!-- ─── LEFT COLUMN (2/3) ─── -->
+      <div class="xl:col-span-2 space-y-8">
+
+        <!-- ▸ General Information Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('general')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">General Information</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('general')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('general')">
+            <div class="overview-grid">
+              <div class="overview-field">
+                <span class="overview-field-label">Service Name</span>
+                <span class="overview-field-value font-semibold">{{ service.serviceName }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Status</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium capitalize border rounded-sm"
+                        [ngClass]="getStatusBgClass(service.status)">
+                    <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStatusDotClass(service.status)"></span>
+                    {{ service.status }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Cloud Provider</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="getProviderBgClass(service.provider)">
+                    {{ getProviderLabel(service.provider) }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Cloud Account</span>
+                <span class="overview-field-value">{{ account?.accountName || ('Account #' + service.cloudAccountId) }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Launch Type</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="getLaunchTypeClass(service.launchType)">
+                    {{ service.launchType || '—' }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Scheduling Strategy</span>
+                <span class="overview-field-value font-medium">{{ service.schedulingStrategy || '—' }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Internal ID</span>
+                <span class="overview-field-value font-mono text-sm">{{ service.id }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Account ID</span>
+                <span class="overview-field-value font-mono text-sm">{{ service.cloudAccountId }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Task Configuration Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('taskconfig')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Task Configuration</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('taskconfig')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('taskconfig')">
+            <!-- Task Count Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+              <div class="p-5 border rounded-sm bg-green-50 border-green-200 text-center">
+                <p class="text-3xl font-serif font-bold text-green-700">{{ service.runningCount }}</p>
+                <p class="text-xs uppercase tracking-widest text-green-600 mt-1">Running</p>
+              </div>
+              <div class="p-5 border rounded-sm text-center"
+                   [ngClass]="service.pendingCount > 0 ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'">
+                <p class="text-3xl font-serif font-bold" [ngClass]="service.pendingCount > 0 ? 'text-yellow-700' : 'text-gray-400'">{{ service.pendingCount }}</p>
+                <p class="text-xs uppercase tracking-widest mt-1" [ngClass]="service.pendingCount > 0 ? 'text-yellow-600' : 'text-gray-400'">Pending</p>
+              </div>
+              <div class="p-5 border rounded-sm bg-blue-50 border-blue-200 text-center">
+                <p class="text-3xl font-serif font-bold text-blue-700">{{ service.desiredCount }}</p>
+                <p class="text-xs uppercase tracking-widest text-blue-600 mt-1">Desired</p>
+              </div>
+            </div>
+
+            <div class="overview-grid">
+              <div class="overview-field">
+                <span class="overview-field-label">Scheduling Strategy</span>
+                <span class="overview-field-value font-medium">{{ service.schedulingStrategy || '—' }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Launch Type</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="getLaunchTypeClass(service.launchType)">
+                    {{ service.launchType || '—' }}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Task Definition Section -->
+        <div class="overview-section" *ngIf="taskDefinition">
+          <button class="overview-section-header" (click)="toggleSection('taskdef')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Task Definition</h3>
+              <span class="text-xs text-gray-400 font-mono">rev {{ taskDefinition.revision }}</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('taskdef')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('taskdef')">
+            <div class="overview-grid">
+              <div class="overview-field">
+                <span class="overview-field-label">Family</span>
+                <span class="overview-field-value font-semibold">{{ taskDefinition.family }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Revision</span>
+                <span class="overview-field-value font-mono">{{ taskDefinition.revision }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Status</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium capitalize border rounded-sm"
+                        [ngClass]="getStatusBgClass(taskDefinition.status)">
+                    <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStatusDotClass(taskDefinition.status)"></span>
+                    {{ taskDefinition.status }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Network Mode</span>
+                <span class="overview-field-value font-medium">{{ taskDefinition.networkMode || '—' }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">CPU</span>
+                <span class="overview-field-value font-mono font-semibold">{{ taskDefinition.cpu }} units</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Memory</span>
+                <span class="overview-field-value font-mono font-semibold">{{ taskDefinition.memory }} MiB</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Requires Compatibility</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="getLaunchTypeClass(taskDefinition.requiresCompatibilities)">
+                    {{ taskDefinition.requiresCompatibilities || '—' }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">OS Family</span>
+                <span class="overview-field-value font-medium">{{ taskDefinition.osFamily || '—' }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Container Count</span>
+                <span class="overview-field-value font-semibold">{{ taskDefinition.containerCount }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Created At</span>
+                <span class="overview-field-value">{{ formatDateTime(taskDefinition.createdAt) }}</span>
+              </div>
+            </div>
+
+            <!-- Task Definition ARN -->
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-100 rounded-sm">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Task Definition ARN</p>
+                  <p class="text-xs font-mono text-gray-700 break-all select-all leading-relaxed">{{ taskDefinition.taskDefinitionArn }}</p>
+                </div>
+                <button (click)="copyToClipboard(taskDefinition.taskDefinitionArn, 'tdArn')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition" title="Copy ARN">
+                  <svg *ngIf="copiedField !== 'tdArn'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'tdArn'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Execution Role ARN -->
+            <div class="mt-3 p-4 bg-gray-50 border border-gray-100 rounded-sm" *ngIf="taskDefinition.executionRoleArn">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Execution Role ARN</p>
+                  <p class="text-xs font-mono text-gray-700 break-all select-all leading-relaxed">{{ taskDefinition.executionRoleArn }}</p>
+                </div>
+                <button (click)="copyToClipboard(taskDefinition.executionRoleArn, 'execRole')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition" title="Copy">
+                  <svg *ngIf="copiedField !== 'execRole'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'execRole'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Task Role ARN -->
+            <div class="mt-3 p-4 bg-gray-50 border border-gray-100 rounded-sm" *ngIf="taskDefinition.taskRoleArn">
+              <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Task Role ARN</p>
+              <p class="text-xs font-mono text-gray-700 break-all select-all leading-relaxed">{{ taskDefinition.taskRoleArn }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Container Definitions Section -->
+        <div class="overview-section" *ngIf="containerDefinitions.length > 0">
+          <button class="overview-section-header" (click)="toggleSection('containers')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Container Definitions</h3>
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-600">{{ containerDefinitions.length }}</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('containers')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('containers')">
+            <div class="space-y-5">
+              <div *ngFor="let container of containerDefinitions; let idx = index" class="container-card rounded-sm">
+                <!-- Container Header -->
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-gray-900 text-white flex items-center justify-center text-sm font-bold">
+                      {{ idx + 1 }}
+                    </div>
+                    <div>
+                      <h5 class="font-serif font-bold text-sm">{{ container.Name }}</h5>
+                      <p class="text-[10px] text-gray-400 uppercase tracking-wider">Container</p>
+                    </div>
+                  </div>
+                  <span *ngIf="container.Essential" class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-green-50 text-green-700 border border-green-200 rounded-sm">
+                    <span class="w-1 h-1 rounded-full bg-green-500"></span>
+                    Essential
+                  </span>
+                </div>
+
+                <!-- Container Details Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-0 border border-gray-100 rounded-sm overflow-hidden">
+                  <div class="p-3 border-b sm:border-r border-gray-100">
+                    <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Image</p>
+                    <p class="text-sm font-mono font-medium break-all">{{ container.Image }}</p>
+                  </div>
+                  <div class="p-3 border-b border-gray-100">
+                    <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">CPU</p>
+                    <p class="text-sm font-mono font-semibold">{{ container.Cpu }} units</p>
+                  </div>
+                  <div class="p-3 sm:border-r border-gray-100" [class.border-b]="(container.PortMappings.length || 0) > 0 || (container.Environment.length || 0) > 0">
+                    <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Memory</p>
+                    <p class="text-sm font-mono font-semibold">{{ container.Memory }} MiB</p>
+                  </div>
+                  <div class="p-3" [class.border-b]="(container.PortMappings.length || 0) > 0 || (container.Environment.length || 0) > 0">
+                    <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-0.5">Essential</p>
+                    <p class="text-sm font-medium" [ngClass]="container.Essential ? 'text-green-600' : 'text-gray-500'">{{ container.Essential ? 'Yes' : 'No' }}</p>
+                  </div>
+                </div>
+
+                <!-- Port Mappings -->
+                <div *ngIf="container.PortMappings && container.PortMappings.length > 0" class="mt-4">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Port Mappings</p>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span *ngFor="let pm of container.PortMappings" class="port-badge">
+                      <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                      </svg>
+                      {{ pm.ContainerPort }}:{{ pm.HostPort }}/{{ pm.Protocol }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Environment Variables -->
+                <div *ngIf="container.Environment && container.Environment.length > 0" class="mt-4">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Environment Variables</p>
+                  <div class="border border-gray-100 rounded-sm overflow-hidden">
+                    <div *ngFor="let env of container.Environment" class="env-row">
+                      <span class="env-key">{{ env.Name }}</span>
+                      <span class="env-value">{{ env.Value }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Network Configuration Section -->
+        <div class="overview-section" *ngIf="networkConfig">
+          <button class="overview-section-header" (click)="toggleSection('network')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Network Configuration</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('network')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('network')">
+            <!-- Public IP Status -->
+            <div class="p-5 border rounded-sm flex items-center gap-4 mb-5"
+                 [ngClass]="networkConfig.AssignPublicIp === 'ENABLED' ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                   [ngClass]="networkConfig.AssignPublicIp === 'ENABLED' ? 'bg-blue-100' : 'bg-gray-200'">
+                <svg class="w-6 h-6" [ngClass]="networkConfig.AssignPublicIp === 'ENABLED' ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path *ngIf="networkConfig.AssignPublicIp === 'ENABLED'" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  <path *ngIf="networkConfig.AssignPublicIp !== 'ENABLED'" stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="text-lg font-serif font-bold" [ngClass]="networkConfig.AssignPublicIp === 'ENABLED' ? 'text-blue-700' : 'text-gray-600'">
+                  {{ networkConfig.AssignPublicIp === 'ENABLED' ? 'Public IP Enabled' : 'Private Only' }}
+                </p>
+                <p class="text-xs mt-0.5" [ngClass]="networkConfig.AssignPublicIp === 'ENABLED' ? 'text-blue-500' : 'text-gray-400'">
+                  Assign Public IP
+                </p>
+              </div>
+            </div>
+
+            <!-- Subnets -->
+            <div class="mb-5" *ngIf="networkConfig.Subnets && networkConfig.Subnets.length > 0">
+              <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Subnets ({{ networkConfig.Subnets.length }})</p>
+              <div class="space-y-2">
+                <div *ngFor="let subnet of networkConfig.Subnets" class="p-3 bg-gray-50 border border-gray-100 rounded-sm flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/>
+                    </svg>
+                    <span class="font-mono text-sm text-gray-700 break-all select-all">{{ subnet }}</span>
+                  </div>
+                  <button (click)="copyToClipboard(subnet, 'subnet-' + subnet)" class="flex-shrink-0 p-1.5 hover:bg-gray-200 rounded transition" title="Copy">
+                    <svg *ngIf="copiedField !== 'subnet-' + subnet" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'subnet-' + subnet" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security Groups -->
+            <div *ngIf="networkConfig.SecurityGroups && networkConfig.SecurityGroups.length > 0">
+              <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Security Groups ({{ networkConfig.SecurityGroups.length }})</p>
+              <div class="space-y-2">
+                <div *ngFor="let sg of networkConfig.SecurityGroups" class="p-3 bg-gray-50 border border-gray-100 rounded-sm flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                    </svg>
+                    <span class="font-mono text-sm text-gray-700 break-all select-all">{{ sg }}</span>
+                  </div>
+                  <button (click)="copyToClipboard(sg, 'sg-' + sg)" class="flex-shrink-0 p-1.5 hover:bg-gray-200 rounded transition" title="Copy">
+                    <svg *ngIf="copiedField !== 'sg-' + sg" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'sg-' + sg" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Tasks Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('tasks')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Tasks</h3>
+              <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-xs font-medium text-gray-600">{{ tasks.length }}</span>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('tasks')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('tasks')">
+            <!-- Task Summary Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+              <div class="p-4 bg-green-50 border border-green-200 rounded-sm text-center">
+                <p class="text-2xl font-serif font-bold text-green-700">{{ runningTasks.length }}</p>
+                <p class="text-[10px] uppercase tracking-widest text-green-600 mt-1">Running / Desired Running</p>
+              </div>
+              <div class="p-4 border rounded-sm text-center" [ngClass]="pendingTasks.length > 0 ? 'bg-yellow-50 border-yellow-200' : 'bg-gray-50 border-gray-200'">
+                <p class="text-2xl font-serif font-bold" [ngClass]="pendingTasks.length > 0 ? 'text-yellow-700' : 'text-gray-400'">{{ pendingTasks.length }}</p>
+                <p class="text-[10px] uppercase tracking-widest mt-1" [ngClass]="pendingTasks.length > 0 ? 'text-yellow-600' : 'text-gray-400'">Pending</p>
+              </div>
+              <div class="p-4 border rounded-sm text-center" [ngClass]="stoppedTasks.length > 0 ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'">
+                <p class="text-2xl font-serif font-bold" [ngClass]="stoppedTasks.length > 0 ? 'text-red-700' : 'text-gray-400'">{{ stoppedTasks.length }}</p>
+                <p class="text-[10px] uppercase tracking-widest mt-1" [ngClass]="stoppedTasks.length > 0 ? 'text-red-600' : 'text-gray-400'">Stopped</p>
+              </div>
+            </div>
+
+            <!-- Tasks List -->
+            <div *ngIf="tasks.length > 0" class="border border-gray-100 rounded-sm overflow-hidden">
+              <!-- Header -->
+              <div class="hidden sm:grid grid-cols-12 gap-2 px-4 py-2.5 bg-gray-50 border-b border-gray-100 text-[10px] uppercase tracking-widest text-gray-400">
+                <div class="col-span-3">Task ID</div>
+                <div class="col-span-2">Last Status</div>
+                <div class="col-span-2">Desired Status</div>
+                <div class="col-span-2">Launch Type</div>
+                <div class="col-span-3">Stopped At</div>
+              </div>
+
+              <!-- Task Rows -->
+              <div *ngFor="let task of displayedTasks; trackBy: trackByTaskId">
+                <div class="task-row" [class.active]="selectedTask?.id === task.id" (click)="selectTask(task)">
+                  <div class="grid grid-cols-12 gap-2 items-center w-full">
+                    <div class="col-span-12 sm:col-span-3">
+                      <span class="font-mono text-xs text-gray-700">{{ getShortTaskId(task.taskArn) }}...</span>
+                    </div>
+                    <div class="col-span-6 sm:col-span-2">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium uppercase"
+                            [ngClass]="getTaskStatusBgClass(task.lastStatus)">
+                        <span class="w-1 h-1 rounded-full" [ngClass]="getStatusDotClass(task.lastStatus)"></span>
+                        {{ task.lastStatus }}
+                      </span>
+                    </div>
+                    <div class="col-span-6 sm:col-span-2">
+                      <span class="text-xs text-gray-500">{{ task.desiredStatus }}</span>
+                    </div>
+                    <div class="hidden sm:block sm:col-span-2">
+                      <span class="text-xs text-gray-500">{{ task.launchType }}</span>
+                    </div>
+                    <div class="hidden sm:block sm:col-span-3">
+                      <span class="text-xs text-gray-500">{{ task.stoppedAt ? formatDateTime(task.stoppedAt) : '—' }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Task Expanded Detail -->
+                <div *ngIf="selectedTask?.id === task.id" class="task-detail-panel px-5 py-4 bg-gray-50 border-b border-gray-200">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Task ARN</p>
+                      <p class="text-xs font-mono text-gray-700 break-all select-all">{{ task.taskArn }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Cluster</p>
+                      <p class="text-xs font-medium text-gray-700">{{ task.clusterName }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">CPU / Memory</p>
+                      <p class="text-xs font-mono font-medium text-gray-700">{{ task.cpu }} vCPU / {{ task.memory }} MiB</p>
+                    </div>
+                    <div>
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Connectivity</p>
+                      <p class="text-xs font-medium" [ngClass]="task.connectivity === 'CONNECTED' ? 'text-green-600' : 'text-gray-500'">{{ task.connectivity || '—' }}</p>
+                    </div>
+                    <div *ngIf="task.stopCode">
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Stop Code</p>
+                      <p class="text-xs font-medium text-red-600">{{ task.stopCode }}</p>
+                    </div>
+                    <div *ngIf="task.stoppedReason">
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Stopped Reason</p>
+                      <p class="text-xs text-red-600 leading-relaxed">{{ task.stoppedReason }}</p>
+                    </div>
+                    <div *ngIf="task.startedAt">
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Started At</p>
+                      <p class="text-xs text-gray-700">{{ formatDateTime(task.startedAt) }}</p>
+                    </div>
+                    <div *ngIf="task.pullStartedAt">
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Image Pull Started</p>
+                      <p class="text-xs text-gray-700">{{ formatDateTime(task.pullStartedAt) }}</p>
+                    </div>
+                    <div *ngIf="task.pullStoppedAt">
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Image Pull Completed</p>
+                      <p class="text-xs text-gray-700">{{ formatDateTime(task.pullStoppedAt) }}</p>
+                    </div>
+                    <div>
+                      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Group</p>
+                      <p class="text-xs font-mono text-gray-700">{{ task.group }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Show More -->
+              <div *ngIf="tasks.length > 5" class="px-4 py-3 bg-gray-50 border-t border-gray-100 text-center">
+                <button (click)="showAllTasks = !showAllTasks" class="text-xs uppercase tracking-wider text-gray-500 hover:text-black transition">
+                  {{ showAllTasks ? 'Show Less' : 'Show All ' + tasks.length + ' Tasks' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Empty state -->
+            <div *ngIf="tasks.length === 0" class="text-center py-10">
+              <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+              </svg>
+              <p class="text-sm text-gray-400">No tasks found for this service</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Cluster Information Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('cluster')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Cluster</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('cluster')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('cluster')">
+            <div class="overview-grid">
+              <div class="overview-field">
+                <span class="overview-field-label">Cluster Name</span>
+                <span class="overview-field-value font-semibold">{{ service.clusterName || '—' }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Provider</span>
+                <span class="overview-field-value">{{ getProviderLabel(service.provider) }}</span>
+              </div>
+            </div>
+
+            <!-- Cluster ARN -->
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-100 rounded-sm" *ngIf="service.clusterArn">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Cluster ARN</p>
+                  <p class="text-xs font-mono text-gray-700 break-all select-all leading-relaxed">{{ service.clusterArn }}</p>
+                </div>
+                <button (click)="copyToClipboard(service.clusterArn, 'clusterArn')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition" title="Copy">
+                  <svg *ngIf="copiedField !== 'clusterArn'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'clusterArn'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── RIGHT COLUMN (1/3) ─── -->
+      <div class="space-y-8">
+
+        <!-- ▸ Service ARN -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('serviceArn')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Service ARN</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('serviceArn')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('serviceArn')">
+            <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Full ARN</p>
+                  <p class="font-mono text-sm text-gray-700 break-all select-all leading-relaxed">{{ service.serviceArn }}</p>
+                </div>
+                <button (click)="copyToClipboard(service.serviceArn, 'svcArn')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition" title="Copy">
+                  <svg *ngIf="copiedField !== 'svcArn'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'svcArn'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Resource Summary -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('resources')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Resource Summary</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('resources')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('resources')">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21"/>
+                  </svg>
+                  <span class="text-xs font-medium">CPU</span>
+                </div>
+                <span class="font-mono text-sm font-bold">{{ taskDefinition?.cpu || '—' }} <span class="text-xs text-gray-400 font-normal">units</span></span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"/>
+                  </svg>
+                  <span class="text-xs font-medium">Memory</span>
+                </div>
+                <span class="font-mono text-sm font-bold">{{ taskDefinition?.memory || '—' }} <span class="text-xs text-gray-400 font-normal">MiB</span></span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                  </svg>
+                  <span class="text-xs font-medium">Containers</span>
+                </div>
+                <span class="font-mono text-sm font-bold">{{ taskDefinition?.containerCount || containerDefinitions.length || '—' }}</span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3"/>
+                  </svg>
+                  <span class="text-xs font-medium">Subnets</span>
+                </div>
+                <span class="font-mono text-sm font-bold">{{ networkConfig?.Subnets?.length || '—' }}</span>
+              </div>
+              <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                  </svg>
+                  <span class="text-xs font-medium">Security Groups</span>
+                </div>
+                <span class="font-mono text-sm font-bold">{{ networkConfig?.SecurityGroups?.length || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Timestamps & Lifecycle -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('timeline')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Timeline</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('timeline')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('timeline')">
+            <div class="space-y-0">
+              <!-- Timeline entries -->
+              <div class="relative pl-8 pb-6 border-l-2 border-gray-200 last:pb-0" *ngIf="service.serviceCreatedAt">
+                <div class="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-black border-2 border-white"></div>
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-0.5">Service Created (AWS)</p>
+                <p class="text-sm font-medium">{{ formatDateTime(service.serviceCreatedAt) }}</p>
+                <p class="text-xs text-gray-400">{{ formatRelativeTime(service.serviceCreatedAt) }}</p>
+              </div>
+              <div class="relative pl-8 pb-6 border-l-2 border-gray-200 last:pb-0">
+                <div class="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-gray-300 border-2 border-white"></div>
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-0.5">Synced to CloudZen</p>
+                <p class="text-sm font-medium">{{ formatDateTime(service.createdAt) }}</p>
+                <p class="text-xs text-gray-400">{{ formatRelativeTime(service.createdAt) }}</p>
+              </div>
+              <div class="relative pl-8 pb-0" *ngIf="service.updatedAt">
+                <div class="absolute left-[-9px] top-0 w-4 h-4 rounded-full bg-blue-500 border-2 border-white"></div>
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-0.5">Last Updated</p>
+                <p class="text-sm font-medium">{{ formatDateTime(service.updatedAt) }}</p>
+                <p class="text-xs text-gray-400">{{ formatRelativeTime(service.updatedAt) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Cloud Provider Info -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('provider')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Cloud Provider</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('provider')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('provider')">
+            <div class="flex items-center gap-4 p-4 bg-gray-50 border border-gray-100 rounded-sm mb-3">
+              <div class="w-14 h-14 rounded-lg bg-black text-white flex items-center justify-center flex-shrink-0">
+                <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                </svg>
+              </div>
+              <div>
+                <p class="font-serif font-bold text-lg">{{ getProviderLabel(service.provider) }}</p>
+                <p class="text-xs text-gray-400 uppercase tracking-wider">Elastic Container Service</p>
+              </div>
+            </div>
+
+            <div class="space-y-0">
+              <div class="flex justify-between items-center p-3 border-b border-gray-100">
+                <span class="text-[10px] uppercase tracking-widest text-gray-400">Provider</span>
+                <span class="text-sm font-medium">{{ getProviderShort(service.provider) }}</span>
+              </div>
+              <div class="flex justify-between items-center p-3 border-b border-gray-100">
+                <span class="text-[10px] uppercase tracking-widest text-gray-400">Account</span>
+                <span class="text-sm font-medium">{{ account?.accountName || ('Account #' + service.cloudAccountId) }}</span>
+              </div>
+              <div class="flex justify-between items-center p-3 border-b border-gray-100" *ngIf="account?.region">
+                <span class="text-[10px] uppercase tracking-widest text-gray-400">Region</span>
+                <span class="text-sm font-mono font-medium">{{ account?.region }}</span>
+              </div>
+              <div class="flex justify-between items-center p-3">
+                <span class="text-[10px] uppercase tracking-widest text-gray-400">Service</span>
+                <span class="text-sm font-medium">ECS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
