@@ -144,7 +144,7 @@
               <div class="flex items-center gap-2 min-w-0 flex-1">
                 <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="getStatusDotClass(svc.status)"></div>
                 <span class="font-medium text-gray-800 truncate">{{ svc.serviceName }}</span>
-                <span class="text-gray-400 capitalize">{{ svc.status?.toLowerCase() }}</span>
+                <span class="text-gray-400 capitalize">{{ svc.status.toLowerCase() }}</span>
               </div>
               <div class="flex items-center gap-4 flex-shrink-0">
                 <span class="text-gray-500">{{ clusterResult.clusterName }}</span>
@@ -152,12 +152,12 @@
               </div>
             </div>
           </ng-container>
-          <ng-container *ngFor="let td of syncResult.taskDefinitions?.taskDefinitions || []">
+          <ng-container *ngFor="let td of syncResult.taskDefinitions.taskDefinitions || []">
             <div class="flex items-center justify-between text-xs py-2 px-3 bg-gray-50 border border-gray-100 rounded-lg">
               <div class="flex items-center gap-2 min-w-0 flex-1">
                 <div class="w-2 h-2 rounded-full flex-shrink-0" [ngClass]="getStatusDotClass(td.status)"></div>
                 <span class="font-medium text-gray-800 truncate">{{ td.family }} (rev {{ td.revision }})</span>
-                <span class="text-gray-400 capitalize">{{ td.status?.toLowerCase() }}</span>
+                <span class="text-gray-400 capitalize">{{ td.status.toLowerCase() }}</span>
               </div>
               <div class="flex items-center gap-4 flex-shrink-0">
                 <span class="text-gray-500">Task Def</span>
