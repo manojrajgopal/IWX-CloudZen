@@ -62,7 +62,7 @@ export class SubnetsComponent implements OnInit, OnDestroy {
 
   providers = [
     { value: 'all', label: 'All Providers' },
-    { value: 'AWS', label: 'AWS VPC' },
+    { value: 'AWS', label: 'AWS Subnet' },
     { value: 'Azure', label: 'Azure VNet' },
     { value: 'GCP', label: 'GCP Subnet' }
   ];
@@ -260,7 +260,7 @@ export class SubnetsComponent implements OnInit, OnDestroy {
 
   getProviderLabel(provider: string): string {
     switch (provider?.toUpperCase()) {
-      case 'AWS': return 'AWS VPC';
+      case 'AWS': return 'AWS Subnet';
       case 'AZURE': return 'Azure VNet';
       case 'GCP': return 'GCP Subnet';
       default: return provider || 'Unknown';
