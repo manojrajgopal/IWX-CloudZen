@@ -315,6 +315,85 @@ namespace IWX_CloudZen.CloudServices.SecurityGroups.Providers
         {
             var client = GetClient(account);
 
+            // AWS does not allow deleting the default security group.
+            var describeResponse = await client.DescribeSecurityGroupsAsync(
+                new DescribeSecurityGroupsRequest
+                {
+                    GroupIds = new List<string> { securityGroupId }
+                });
+
+            var sg = describeResponse.SecurityGroups?.FirstOrDefault();
+            if (sg is not null && string.Equals(sg.GroupName, "default", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException(
+                    $"The default security group '{securityGroupId}' cannot be deleted. AWS does not allow deletion of default security groups.");
+
+            // Check for network interfaces still using this security group.
+            var eniResponse = await client.DescribeNetworkInterfacesAsync(
+                new DescribeNetworkInterfacesRequest
+                {
+                    Filters = new List<Filter>
+                    {
+                        new Filter { Name = "group-id", Values = new List<string> { securityGroupId } }
+                    }
+                });
+
+            var dependentEnis = eniResponse.NetworkInterfaces ?? new();
+            if (dependentEnis.Count > 0)
+            {
+                var details = dependentEnis.Select(eni =>
+                {
+                    var attachment = eni.Attachment;
+                    var owner = attachment?.InstanceId ?? attachment?.InstanceOwnerId ?? eni.Description ?? "unknown";
+                    return $"{eni.NetworkInterfaceId} (used by: {owner})";
+                });
+
+                throw new InvalidOperationException(
+                    $"Security group '{securityGroupId}' cannot be deleted because it is still associated with the following network interfaces: {string.Join(", ", details)}. " +
+                    $"Please remove the security group from these resources first.");
+            }
+
+            // Remove inbound/outbound rules from OTHER security groups that reference this one.
+            var rulesResponse = await client.DescribeSecurityGroupRulesAsync(
+                new DescribeSecurityGroupRulesRequest
+                {
+                    Filters = new List<Filter>
+                    {
+                        new Filter { Name = "group-id", Values = new List<string> { securityGroupId } }
+                    }
+                });
+
+            var ingressRuleIds = (rulesResponse.SecurityGroupRules ?? new())
+                .Where(r => r.IsEgress == false)
+                .Select(r => r.SecurityGroupRuleId)
+                .Where(id => id is not null)
+                .ToList();
+
+            var egressRuleIds = (rulesResponse.SecurityGroupRules ?? new())
+                .Where(r => r.IsEgress == true)
+                .Select(r => r.SecurityGroupRuleId)
+                .Where(id => id is not null)
+                .ToList();
+
+            if (ingressRuleIds.Count > 0)
+            {
+                await client.RevokeSecurityGroupIngressAsync(
+                    new RevokeSecurityGroupIngressRequest
+                    {
+                        GroupId = securityGroupId,
+                        SecurityGroupRuleIds = ingressRuleIds
+                    });
+            }
+
+            if (egressRuleIds.Count > 0)
+            {
+                await client.RevokeSecurityGroupEgressAsync(
+                    new RevokeSecurityGroupEgressRequest
+                    {
+                        GroupId = securityGroupId,
+                        SecurityGroupRuleIds = egressRuleIds
+                    });
+            }
+
             await client.DeleteSecurityGroupAsync(new DeleteSecurityGroupRequest
             {
                 GroupId = securityGroupId
