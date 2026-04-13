@@ -22,6 +22,7 @@ import { CreateVpcComponent } from './pages/CloudServices/vpcs/create-vpc/create
 import { VpcOverviewComponent } from './pages/CloudServices/vpcs/vpc-overview/vpc-overview.component';
 import { EcsOverviewComponent } from './pages/CloudServices/ecs/ecs-overview/ecs-overview.component';
 import { CreateSecurityGroupComponent } from './pages/CloudServices/security-groups/create-security-group/create-security-group.component';
+import { CreateSubnetComponent } from './pages/CloudServices/subnets/create-subnet/create-subnet.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -41,6 +42,7 @@ export const routes: Routes = [
   { path: 'dashboard/ecr', component: EcrComponent },
   { path: 'dashboard/ecs', component: EcsComponent },
   { path: 'dashboard/ecs/:id', component: EcsOverviewComponent },
+  { path: 'dashboard/subnets/create', component: CreateSubnetComponent },
   { path: 'dashboard/subnets', component: SubnetsComponent },
   { path: 'dashboard/security-groups/create', component: CreateSecurityGroupComponent },
   { path: 'dashboard/security-groups', component: SecurityGroupsComponent },

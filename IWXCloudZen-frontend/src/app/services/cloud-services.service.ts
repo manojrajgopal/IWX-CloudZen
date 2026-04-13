@@ -17,6 +17,9 @@ import {
   EcsTasksResponse,
   EcsSyncResponse,
   SubnetsResponse,
+  SubnetSyncResponse,
+  CreateSubnetRequest,
+  Subnet,
   SecurityGroupsResponse,
   SecurityGroupSyncResponse,
   SecurityGroup,
@@ -171,6 +174,20 @@ export class CloudServicesService {
   getSubnets(accountId: number): Observable<SubnetsResponse> {
     return this.http.get<SubnetsResponse>(
       `${this.apiUrl}/api/cloud/services/subnet/aws/list?accountId=${accountId}`
+    );
+  }
+
+  syncSubnets(accountId: number): Observable<SubnetSyncResponse> {
+    return this.http.post<SubnetSyncResponse>(
+      `${this.apiUrl}/api/cloud/services/subnet/aws/sync?accountId=${accountId}`,
+      null
+    );
+  }
+
+  createSubnet(accountId: number, request: CreateSubnetRequest): Observable<Subnet> {
+    return this.http.post<Subnet>(
+      `${this.apiUrl}/api/cloud/services/subnet/aws/create?accountId=${accountId}`,
+      request
     );
   }
 

@@ -7,7 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../services/cloud-services.service';
 import { CloudAccount } from '../../../models/cloud-account.model';
-import { Subnet } from '../../../models/cloud-services.model';
+import { Subnet, SubnetSyncResponse } from '../../../models/cloud-services.model';
 import { SubnetFilterByProviderPipe, SubnetFilterByStatePipe, SubnetFilterByAzPipe } from './subnets.pipes';
 
 type ViewMode = 'grid' | 'list';
@@ -51,6 +51,13 @@ export class SubnetsComponent implements OnInit, OnDestroy {
   // Detail panel
   selectedSubnet: Subnet | null = null;
   showDetailPanel = false;
+
+  // Sync state
+  syncing = false;
+  lastSyncResults: SubnetSyncResponse[] = [];
+  showSyncReport = false;
+  syncMessage: string | null = null;
+  syncMessageType: 'success' | 'error' | null = null;
 
   // Metrics
   metrics: SubnetMetric[] = [
@@ -237,6 +244,67 @@ export class SubnetsComponent implements OnInit, OnDestroy {
 
   refreshData(): void {
     this.loadData();
+  }
+
+  syncData(): void {
+    if (this.syncing) return;
+    this.syncing = true;
+    this.syncMessage = null;
+    this.lastSyncResults = [];
+    this.showSyncReport = false;
+
+    const awsAccounts = this.accounts.filter(a => a.provider?.toUpperCase() === 'AWS');
+    if (awsAccounts.length === 0) {
+      this.syncing = false;
+      this.syncMessage = 'No AWS accounts found to sync.';
+      this.syncMessageType = 'error';
+      setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      return;
+    }
+
+    const syncRequests = awsAccounts.map(a =>
+      this.cloudServicesService.syncSubnets(a.id).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin(syncRequests).subscribe({
+      next: (results) => {
+        this.syncing = false;
+        this.lastSyncResults = results.filter((r): r is SubnetSyncResponse => r !== null);
+        const totalAdded = this.getTotalSyncAdded();
+        const totalSubnets = this.getTotalSyncSubnets();
+        this.syncMessage = `Sync completed — ${awsAccounts.length} account${awsAccounts.length !== 1 ? 's' : ''} · ${totalSubnets} subnet${totalSubnets !== 1 ? 's' : ''} · +${totalAdded} added`;
+        this.syncMessageType = 'success';
+        this.showSyncReport = true;
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 6000);
+        this.loadData();
+      },
+      error: () => {
+        this.syncing = false;
+        this.syncMessage = 'Sync failed. Please try again.';
+        this.syncMessageType = 'error';
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      }
+    });
+  }
+
+  closeSyncReport(): void {
+    this.showSyncReport = false;
+  }
+
+  getTotalSyncAdded(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.added || 0), 0);
+  }
+
+  getTotalSyncUpdated(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.updated || 0), 0);
+  }
+
+  getTotalSyncRemoved(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.removed || 0), 0);
+  }
+
+  getTotalSyncSubnets(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.subnets?.length || 0), 0);
   }
 
   getAccountName(accountId: number): string {

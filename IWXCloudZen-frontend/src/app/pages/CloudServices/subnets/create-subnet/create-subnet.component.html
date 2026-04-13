@@ -1,0 +1,437 @@
+<div class="container-lux py-12 md:py-20">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- HEADER -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="flex items-center gap-3 mb-12">
+    <button (click)="goBack()" class="text-gray-400 hover:text-black transition">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-3xl md:text-5xl font-serif font-bold tracking-tight">Create Subnet</h1>
+      <p class="text-sm text-gray-400 uppercase tracking-widest mt-1">AWS EC2 &middot; New Subnet</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'loading'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <rect x="15" y="15" width="30" height="30" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+        <rect x="55" y="15" width="30" height="30" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+        <rect x="15" y="55" width="30" height="30" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+        <rect x="55" y="55" width="30" height="30" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="w-48 h-1 bg-gray-200 mx-auto mb-4">
+      <div class="h-full bg-black animate-loading-bar"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Loading accounts...</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- CREATING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'creating'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <rect x="15" y="15" width="30" height="30" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-draw"/>
+        <rect x="55" y="55" width="30" height="30" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-draw"/>
+        <line x1="50" y1="62" x2="50" y2="78" stroke="#000" stroke-width="2" stroke-linecap="round" class="animate-wave"/>
+        <line x1="42" y1="70" x2="58" y2="70" stroke="#000" stroke-width="2" stroke-linecap="round" class="animate-wave"/>
+      </svg>
+    </div>
+    <div class="w-64 h-1.5 bg-gray-200 mx-auto mb-4 overflow-hidden">
+      <div class="h-full bg-black transition-all duration-200 ease-out" [style.width.%]="progress"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Creating subnet...</p>
+    <p class="text-xs text-gray-400 mt-2">{{ subnetName }}</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FORM -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'form'" class="max-w-3xl mx-auto animate-fadeIn">
+    <div class="border border-gray-200 bg-white">
+
+      <!-- Form Header -->
+      <div class="px-8 py-6 border-b border-gray-100">
+        <h2 class="text-lg font-serif font-bold">Subnet Configuration</h2>
+        <p class="text-sm text-gray-400 mt-1">Configure and create a new subnet within a VPC on your AWS account.</p>
+      </div>
+
+      <!-- Form Body -->
+      <div class="px-8 py-8 space-y-10">
+
+        <!-- ── Cloud Account ── -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Cloud Account</label>
+          <div *ngIf="accounts.length === 0" class="p-6 border border-dashed border-gray-200 text-center">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+            </svg>
+            <p class="text-sm text-gray-500 mb-2">No AWS accounts connected</p>
+            <a routerLink="/profile" class="text-xs text-black underline hover:no-underline">Connect an account</a>
+          </div>
+          <div *ngIf="accounts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div *ngFor="let acc of accounts"
+                 (click)="selectAccount(acc.id)"
+                 class="account-card flex items-center gap-3 p-4 border cursor-pointer transition-all duration-200"
+                 [ngClass]="selectedAccountId === acc.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="selectedAccountId === acc.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ acc.accountName }}</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ acc.provider }} &middot; {{ acc.region }}</p>
+              </div>
+              <div *ngIf="selectedAccountId === acc.id" class="flex-shrink-0">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── VPC ── -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="block text-xs uppercase tracking-widest text-gray-400">VPC</label>
+            <button type="button" (click)="navigateToCreateVpc()"
+                    class="text-xs text-black border border-black px-3 py-1 hover:bg-black hover:text-white transition-all duration-200 flex items-center gap-1.5">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
+              Create VPC
+            </button>
+          </div>
+
+          <div *ngIf="!selectedAccountId" class="p-5 border border-dashed border-gray-200 text-center">
+            <p class="text-sm text-gray-400">Select a cloud account above to load VPCs.</p>
+          </div>
+
+          <div *ngIf="selectedAccountId && vpcsLoading" class="p-5 border border-gray-100 flex items-center gap-3">
+            <div class="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin flex-shrink-0"></div>
+            <p class="text-sm text-gray-400">Loading VPCs...</p>
+          </div>
+
+          <div *ngIf="selectedAccountId && !vpcsLoading && vpcsError" class="p-5 border border-red-100 bg-red-50/30 flex items-center justify-between gap-3">
+            <p class="text-sm text-red-500">{{ vpcsError }}</p>
+            <button type="button" (click)="loadVpcs(selectedAccountId!)"
+                    class="text-xs text-red-600 underline hover:no-underline flex-shrink-0">Retry</button>
+          </div>
+
+          <div *ngIf="selectedAccountId && !vpcsLoading && !vpcsError && vpcs.length === 0"
+               class="p-6 border border-dashed border-gray-200 text-center">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+            </svg>
+            <p class="text-sm text-gray-500 mb-2">No VPCs found in this account.</p>
+            <button type="button" (click)="navigateToCreateVpc()" class="text-xs text-black underline hover:no-underline">Create a VPC</button>
+          </div>
+
+          <div *ngIf="selectedAccountId && !vpcsLoading && !vpcsError && vpcs.length > 0"
+               class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div *ngFor="let vpc of vpcs"
+                 (click)="selectVpc(vpc)"
+                 class="vpc-card flex items-start gap-3 p-4 border cursor-pointer transition-all duration-200"
+                 [ngClass]="selectedVpc?.id === vpc.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                   [ngClass]="selectedVpc?.id === vpc.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ getVpcDisplayName(vpc) }}</p>
+                  <span *ngIf="vpc.isDefault"
+                        class="text-[9px] uppercase tracking-widest px-1.5 py-0.5 bg-blue-50 text-blue-600 border border-blue-200 rounded flex-shrink-0">
+                    Default
+                  </span>
+                </div>
+                <p class="text-xs text-gray-500 font-mono mt-0.5">{{ vpc.cidrBlock }}</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-1 flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                        [ngClass]="vpc.state === 'available' ? 'bg-green-400' : 'bg-gray-300'"></span>
+                  {{ vpc.state }}
+                </p>
+              </div>
+              <div *ngIf="selectedVpc?.id === vpc.id" class="flex-shrink-0 mt-0.5">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Subnet Name ── -->
+        <div>
+          <label for="subnetName" class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Subnet Name</label>
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+            </svg>
+            <input id="subnetName" type="text" [(ngModel)]="subnetName" (blur)="subnetNameTouched = true"
+                   placeholder="my-public-subnet" autocomplete="off"
+                   class="w-full pl-11 pr-4 py-3.5 border text-sm transition-all duration-200 focus:outline-none"
+                   [ngClass]="subnetNameError ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'">
+          </div>
+          <p *ngIf="subnetNameError" class="mt-2 text-xs text-red-500 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            {{ subnetNameError }}
+          </p>
+        </div>
+
+        <!-- ── CIDR Block ── -->
+        <div>
+          <label for="cidrBlock" class="block text-xs uppercase tracking-widest text-gray-400 mb-3">IPv4 CIDR Block</label>
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/>
+            </svg>
+            <input id="cidrBlock" type="text" [(ngModel)]="cidrBlock" (blur)="cidrBlockTouched = true"
+                   placeholder="10.0.1.0/24" autocomplete="off"
+                   class="w-full pl-11 pr-4 py-3.5 border text-sm font-mono transition-all duration-200 focus:outline-none"
+                   [ngClass]="cidrBlockError ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'">
+          </div>
+          <p *ngIf="cidrBlockError" class="mt-2 text-xs text-red-500 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            {{ cidrBlockError }}
+          </p>
+          <p class="mt-1.5 text-xs text-gray-400">Must be within the VPC CIDR range. Common subnet: <span class="font-mono">10.0.1.0/24</span> (251 IPs)</p>
+        </div>
+
+        <!-- ── Availability Zone ── -->
+        <div>
+          <label for="az" class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Availability Zone</label>
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+            </svg>
+            <input id="az" type="text" [(ngModel)]="availabilityZone" (blur)="azTouched = true"
+                   placeholder="us-east-1a" autocomplete="off"
+                   class="w-full pl-11 pr-4 py-3.5 border text-sm font-mono transition-all duration-200 focus:outline-none"
+                   [ngClass]="azError ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'">
+          </div>
+          <p *ngIf="azError" class="mt-2 text-xs text-red-500 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            {{ azError }}
+          </p>
+          <!-- Quick-pick AZs -->
+          <div *ngIf="suggestedAzs.length > 0" class="flex flex-wrap gap-2 mt-2">
+            <button *ngFor="let az of suggestedAzs" type="button" (click)="availabilityZone = az"
+                    class="text-[10px] uppercase tracking-wider px-2.5 py-1 border transition-all duration-150"
+                    [ngClass]="availabilityZone === az ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-500 hover:border-gray-400 hover:text-black'">
+              {{ az }}
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Options ── -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Options</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Auto-assign Public IP -->
+            <button type="button" (click)="mapPublicIpOnLaunch = !mapPublicIpOnLaunch"
+                    class="flex items-center gap-3 p-4 border transition-all duration-200"
+                    [ngClass]="mapPublicIpOnLaunch ? 'border-green-500 bg-green-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="mapPublicIpOnLaunch ? 'bg-green-100' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="mapPublicIpOnLaunch ? 'text-green-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="text-sm font-semibold" [ngClass]="mapPublicIpOnLaunch ? 'text-green-700' : 'text-gray-600'">Auto-assign Public IP</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ mapPublicIpOnLaunch ? 'Enabled — Public Subnet' : 'Disabled — Private Subnet' }}</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- ── IPv6 CIDR (optional) ── -->
+        <div>
+          <label for="ipv6" class="block text-xs uppercase tracking-widest text-gray-400 mb-3">
+            IPv6 CIDR Block <span class="normal-case text-gray-300">(optional)</span>
+          </label>
+          <input id="ipv6" type="text" [(ngModel)]="ipv6CidrBlock"
+                 placeholder="2001:db8:1234:1a00::/64 or leave empty"
+                 class="w-full px-4 py-3.5 border border-gray-200 text-sm font-mono focus:outline-none focus:border-black transition-all duration-200">
+        </div>
+
+        <!-- ── Preview ── -->
+        <div *ngIf="selectedAccount && selectedVpc && subnetName.trim() && cidrBlock.trim() && availabilityZone.trim()"
+             class="p-5 bg-gray-50 border border-gray-100">
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-3">Preview</p>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Subnet Name</span>
+              <span class="text-gray-900 font-medium font-mono">{{ subnetName.trim() }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">CIDR Block</span>
+              <span class="text-gray-900 font-medium font-mono">{{ cidrBlock.trim() }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">VPC</span>
+              <span class="text-gray-900 font-medium">{{ getVpcDisplayName(selectedVpc) }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Availability Zone</span>
+              <span class="text-gray-900 font-medium font-mono">{{ availabilityZone.trim() }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Type</span>
+              <span class="font-medium" [ngClass]="mapPublicIpOnLaunch ? 'text-green-600' : 'text-gray-700'">
+                {{ mapPublicIpOnLaunch ? 'Public Subnet' : 'Private Subnet' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Account</span>
+              <span class="text-gray-900 font-medium">{{ selectedAccount.accountName }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Form Footer -->
+      <div class="px-8 py-5 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <button (click)="goBack()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          {{ backLabel }}
+        </button>
+        <button
+          (click)="create()"
+          [disabled]="!isFormValid"
+          class="px-8 py-3 text-sm font-medium transition-all duration-200"
+          [ngClass]="isFormValid ? 'bg-black text-white hover:bg-gray-800 active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+          Create Subnet
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SUCCESS STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'success' && createdSubnet" class="max-w-3xl mx-auto animate-fadeIn">
+    <div class="border border-green-200 bg-green-50/30">
+      <!-- Success Header -->
+      <div class="px-8 py-8 text-center border-b border-green-100">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+          <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-serif font-bold text-gray-900 mb-1">Subnet Created</h2>
+        <p class="text-sm text-gray-500">Your new subnet has been provisioned successfully.</p>
+      </div>
+
+      <!-- Subnet Details -->
+      <div class="px-8 py-6">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Subnet Name</span>
+            <span class="text-sm font-medium text-gray-900 font-mono">{{ createdSubnet.name || '—' }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">State</span>
+            <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-green-100 text-green-700">{{ createdSubnet.state }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">CIDR Block</span>
+            <span class="text-sm font-mono text-gray-900">{{ createdSubnet.cidrBlock }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Availability Zone</span>
+            <span class="text-sm font-mono text-gray-900">{{ createdSubnet.availabilityZone }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Type</span>
+            <span class="text-sm font-medium" [ngClass]="createdSubnet.mapPublicIpOnLaunch ? 'text-green-600' : 'text-gray-700'">
+              {{ createdSubnet.mapPublicIpOnLaunch ? 'Public' : 'Private' }}
+            </span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Available IPs</span>
+            <span class="text-sm font-medium text-gray-900">{{ createdSubnet.availableIpAddressCount | number }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Account</span>
+            <span class="text-sm font-medium text-gray-900">{{ selectedAccount?.accountName || 'Account #' + createdSubnet.cloudAccountId }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Internal ID</span>
+            <span class="text-sm font-medium text-gray-900 font-mono">{{ createdSubnet.id }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Created At</span>
+            <span class="text-sm font-medium text-gray-900">{{ formatDate(createdSubnet.createdAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-8 py-5 border-t border-green-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-green-50/50">
+        <button (click)="resetForm()" class="text-xs uppercase tracking-wider text-gray-500 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          Create Another
+        </button>
+        <button (click)="goBack()" class="px-8 py-3 text-sm font-medium bg-black text-white hover:bg-gray-800 transition active:scale-[0.98]">
+          {{ backLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'error'" class="max-w-3xl mx-auto animate-fadeIn">
+    <div class="border border-red-200 bg-red-50/30 p-8 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+        <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-serif font-bold text-gray-900 mb-2">Creation Failed</h2>
+      <p class="text-sm text-gray-500 mb-6">{{ errorMessage }}</p>
+      <div class="flex items-center justify-center gap-4">
+        <button (click)="resetForm()" class="px-6 py-2.5 text-sm border border-gray-300 text-gray-700 hover:border-black hover:text-black transition">
+          Try Again
+        </button>
+        <button (click)="goBack()" class="px-6 py-2.5 text-sm bg-black text-white hover:bg-gray-800 transition">
+          {{ backLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

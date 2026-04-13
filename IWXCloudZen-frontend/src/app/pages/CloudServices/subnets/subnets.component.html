@@ -4,25 +4,110 @@
   <!-- Header -->
   <div class="bg-white border-b border-gray-100">
     <div class="container-lux py-8">
-      <div class="flex items-center gap-3 mb-2">
-        <a routerLink="/dashboard" class="text-gray-400 hover:text-black transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
-          </svg>
-        </a>
-        <span class="text-gray-300">|</span>
-        <div class="p-2 bg-gray-50 rounded-xl">
-          <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
-          </svg>
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <a routerLink="/dashboard" class="text-gray-400 hover:text-black transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+              </svg>
+            </a>
+            <span class="text-gray-300">|</span>
+            <div class="p-2 bg-gray-50 rounded-xl">
+              <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+              </svg>
+            </div>
+          </div>
+          <h1 class="font-serif text-3xl font-bold text-black tracking-tight">Subnets</h1>
+          <p class="text-gray-500 mt-1 text-sm">AWS Subnets · Azure VNet Subnets · GCP Subnetworks</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button (click)="syncData()" class="btn-icon" title="Sync Subnets" [disabled]="syncing">
+            <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+          <a routerLink="/dashboard/subnets/create"
+             class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+            </svg>
+            Create
+          </a>
         </div>
       </div>
-      <h1 class="font-serif text-3xl font-bold text-black tracking-tight">Subnets</h1>
-      <p class="text-gray-500 mt-1 text-sm">AWS Subnets · Azure VNet Subnets · GCP Subnetworks</p>
     </div>
   </div>
 
   <div class="container-lux py-8">
+
+    <!-- SYNC MESSAGE TOAST -->
+    <div *ngIf="syncMessage" class="mb-6 px-5 py-3 flex items-center gap-3 text-sm border animate-fadeIn"
+         [ngClass]="syncMessageType === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'">
+      <svg *ngIf="syncMessageType === 'success'" class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+      </svg>
+      <svg *ngIf="syncMessageType === 'error'" class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+      </svg>
+      <span>{{ syncMessage }}</span>
+    </div>
+
+    <!-- SYNC REPORT -->
+    <div *ngIf="showSyncReport && lastSyncResults.length > 0" class="mb-8 border border-green-200 bg-green-50/50 p-6 animate-fadeIn">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">Sync Report</h3>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Last sync results</p>
+          </div>
+        </div>
+        <button (click)="closeSyncReport()" class="text-gray-400 hover:text-gray-600 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+        <div class="text-center p-3 bg-white border border-green-100 rounded">
+          <p class="text-xl font-bold text-green-600">{{ getTotalSyncAdded() }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Subnets Added</p>
+        </div>
+        <div class="text-center p-3 bg-white border border-blue-100 rounded">
+          <p class="text-xl font-bold text-blue-600">{{ getTotalSyncUpdated() }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Subnets Updated</p>
+        </div>
+        <div class="text-center p-3 bg-white border border-red-100 rounded">
+          <p class="text-xl font-bold text-red-500">{{ getTotalSyncRemoved() }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Subnets Removed</p>
+        </div>
+        <div class="text-center p-3 bg-white border border-gray-200 rounded">
+          <p class="text-xl font-bold text-gray-800">{{ getTotalSyncSubnets() }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Total Subnets</p>
+        </div>
+      </div>
+      <div class="space-y-2 max-h-48 overflow-y-auto">
+        <ng-container *ngFor="let syncResult of lastSyncResults">
+          <div *ngFor="let sn of syncResult.subnets" class="flex items-center justify-between text-xs py-2 px-3 bg-white border border-gray-100 rounded">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              <div class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+              <span class="font-medium text-gray-800 truncate">{{ sn.name || sn.subnetId }}</span>
+              <span class="text-gray-400 font-mono text-[10px]">{{ sn.cidrBlock }}</span>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+              <span class="text-gray-500">{{ sn.availabilityZone }}</span>
+              <span class="text-gray-400">{{ getProviderLabel(sn.provider) }}</span>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
 
     <!-- Metrics -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
