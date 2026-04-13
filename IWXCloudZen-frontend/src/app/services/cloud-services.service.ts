@@ -7,6 +7,7 @@ import {
   ClusterSyncResponse,
   BucketsResponse,
   VpcsResponse,
+  VpcSyncResponse,
   EcrRepositoriesResponse,
   EcsServicesResponse,
   SubnetsResponse,
@@ -18,9 +19,11 @@ import {
   BucketFileSyncResponse,
   S3Bucket,
   Cluster,
+  Vpc,
   CloudFileResponse,
   CreateBucketRequest,
   CreateClusterRequest,
+  CreateVpcRequest,
   UpdateClusterRequest,
   DeleteClusterResponse
 } from '../models/cloud-services.model';
@@ -75,6 +78,20 @@ export class CloudServicesService {
   getVpcs(accountId: number): Observable<VpcsResponse> {
     return this.http.get<VpcsResponse>(
       `${this.apiUrl}/api/cloud/services/vpc/aws/list?accountId=${accountId}`
+    );
+  }
+
+  createVpc(accountId: number, request: CreateVpcRequest): Observable<Vpc> {
+    return this.http.post<Vpc>(
+      `${this.apiUrl}/api/cloud/services/vpc/aws/create?accountId=${accountId}`,
+      request
+    );
+  }
+
+  syncVpcs(accountId: number): Observable<VpcSyncResponse> {
+    return this.http.post<VpcSyncResponse>(
+      `${this.apiUrl}/api/cloud/services/vpc/aws/sync?accountId=${accountId}`,
+      null
     );
   }
 

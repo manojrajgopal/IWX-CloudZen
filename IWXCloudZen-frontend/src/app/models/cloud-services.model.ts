@@ -53,6 +53,20 @@ export interface Vpc {
   updatedAt: string | null;
 }
 
+export interface CreateVpcRequest {
+  vpcName: string;
+  cidrBlock: string;
+  enableDnsSupport: boolean;
+  enableDnsHostnames: boolean;
+}
+
+export interface VpcSyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  vpcs: Vpc[];
+}
+
 export interface EcrRepository {
   id: number;
   repositoryName: string;
@@ -224,6 +238,7 @@ export interface ClusterSyncResponse {
 }
 export interface BucketsResponse { buckets: S3Bucket[]; }
 export interface VpcsResponse { vpcs: Vpc[]; }
+export interface VpcSyncResponseWrapper { added: number; updated: number; removed: number; vpcs: Vpc[]; }
 export interface EcrRepositoriesResponse { totalRepositories: number; repositories: EcrRepository[]; }
 export interface EcsServicesResponse { clusterName: string; totalCount: number; services: EcsService[]; }
 export interface SubnetsResponse { totalCount: number; vpcIdFilter: string | null; subnets: Subnet[]; }
