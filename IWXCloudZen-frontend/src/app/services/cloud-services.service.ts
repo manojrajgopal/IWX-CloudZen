@@ -39,7 +39,9 @@ import {
   UpdateClusterRequest,
   DeleteClusterResponse,
   UpdateVpcRequest,
-  DeleteVpcResponse
+  DeleteVpcResponse,
+  CreateEcsServiceRequest,
+  CreateTaskDefinitionRequest
 } from '../models/cloud-services.model';
 
 @Injectable({
@@ -140,6 +142,13 @@ export class CloudServicesService {
     );
   }
 
+  createEcsService(accountId: number, request: CreateEcsServiceRequest): Observable<EcsService> {
+    return this.http.post<EcsService>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/services?accountId=${accountId}`,
+      request
+    );
+  }
+
   getEcsTaskDefinitions(accountId: number): Observable<EcsTaskDefinitionsResponse> {
     return this.http.get<EcsTaskDefinitionsResponse>(
       `${this.apiUrl}/api/cloud/services/ecs/aws/task-definitions?accountId=${accountId}`
@@ -149,6 +158,13 @@ export class CloudServicesService {
   getEcsTaskDefinitionById(id: number, accountId: number): Observable<EcsTaskDefinition> {
     return this.http.get<EcsTaskDefinition>(
       `${this.apiUrl}/api/cloud/services/ecs/aws/task-definitions/${id}?accountId=${accountId}`
+    );
+  }
+
+  createTaskDefinition(accountId: number, request: CreateTaskDefinitionRequest): Observable<EcsTaskDefinition> {
+    return this.http.post<EcsTaskDefinition>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/task-definitions?accountId=${accountId}`,
+      request
     );
   }
 

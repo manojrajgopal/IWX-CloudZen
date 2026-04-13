@@ -350,3 +350,60 @@ export interface CreateSecurityGroupRuleRequest { protocol: string; fromPort: nu
 export interface CreateSecurityGroupRequest { groupName: string; description: string; vpcId: string; inboundRules: CreateSecurityGroupRuleRequest[]; outboundRules: CreateSecurityGroupRuleRequest[]; }
 export interface LogGroupsResponse { logGroups: LogGroup[]; }
 export interface Ec2InstancesResponse { instances: Ec2Instance[]; }
+
+// ECS Create requests
+export interface CreateEcsServiceNetworkConfig {
+  subnets: string[];
+  securityGroups: string[];
+  assignPublicIp: boolean;
+}
+
+export interface CreateEcsServiceRequest {
+  serviceName: string;
+  clusterName: string;
+  taskDefinition: string;
+  desiredCount: number;
+  launchType: string;
+  schedulingStrategy: string;
+  networkConfiguration: CreateEcsServiceNetworkConfig;
+}
+
+export interface ContainerPortMapping {
+  containerPort: number;
+  hostPort: number;
+  protocol: string;
+}
+
+export interface ContainerEnvironment {
+  name: string;
+  value: string;
+}
+
+export interface ContainerLogConfiguration {
+  logDriver: string;
+  options: Record<string, string>;
+}
+
+export interface CreateContainerDefinition {
+  name: string;
+  image: string;
+  cpu: number;
+  memory: number;
+  memoryReservation: number | null;
+  essential: boolean;
+  portMappings: ContainerPortMapping[];
+  environment: ContainerEnvironment[];
+  logConfiguration: ContainerLogConfiguration | null;
+}
+
+export interface CreateTaskDefinitionRequest {
+  family: string;
+  cpu: string;
+  memory: string;
+  networkMode: string;
+  executionRoleArn: string;
+  taskRoleArn: string | null;
+  requiresCompatibilities: string[];
+  osFamily: string;
+  containerDefinitions: CreateContainerDefinition[];
+}

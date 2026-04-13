@@ -38,6 +38,8 @@ export class CreateSecurityGroupComponent implements OnInit {
   progress = 0;
   private progressInterval: any;
 
+  returnTo: string | null = null;
+
   // Touched flags
   groupNameTouched = false;
   descriptionTouched = false;
@@ -51,6 +53,7 @@ export class CreateSecurityGroupComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.returnTo = this.route.snapshot.queryParamMap.get('returnTo');
     this.loadAccounts();
   }
 
@@ -125,7 +128,13 @@ export class CreateSecurityGroupComponent implements OnInit {
   }
 
   navigateToCreateVpc(): void {
-    const params: any = { returnTo: '/dashboard/security-groups/create' };
+    let returnPath = '/dashboard/security-groups/create';
+    const qp: string[] = [];
+    if (this.returnTo) qp.push(`returnTo=${encodeURIComponent(this.returnTo)}`);
+    if (this.selectedAccountId) qp.push(`accountId=${this.selectedAccountId}`);
+    if (qp.length) returnPath += '?' + qp.join('&');
+
+    const params: any = { returnTo: returnPath };
     if (this.selectedAccountId) params['accountId'] = this.selectedAccountId;
     this.router.navigate(['/dashboard/vpcs/create'], { queryParams: params });
   }
@@ -287,8 +296,30 @@ export class CreateSecurityGroupComponent implements OnInit {
     this.formState = 'form';
   }
 
+  goBack(): void {
+    if (this.returnTo) {
+      this.router.navigateByUrl(this.returnTo);
+    } else {
+      this.router.navigate(['/dashboard/security-groups']);
+    }
+  }
+
   goToDashboard(): void {
-    this.router.navigate(['/dashboard/security-groups']);
+    if (this.returnTo) {
+      this.router.navigateByUrl(this.returnTo);
+    } else {
+      this.router.navigate(['/dashboard/security-groups']);
+    }
+  }
+
+  get backLabel(): string {
+    if (!this.returnTo) return 'Back to Security Groups';
+    const segments = this.returnTo.replace(/^\//, '').split('/').filter(s => s && s !== 'dashboard');
+    if (segments.length === 0) return 'Back';
+    const label = segments
+      .map(s => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '))
+      .join(' \u203a ');
+    return `Back to ${label}`;
   }
 
   formatDate(dateStr: string): string {

@@ -21,6 +21,8 @@ import { CreateClusterComponent } from './pages/CloudServices/clusters/create-cl
 import { CreateVpcComponent } from './pages/CloudServices/vpcs/create-vpc/create-vpc.component';
 import { VpcOverviewComponent } from './pages/CloudServices/vpcs/vpc-overview/vpc-overview.component';
 import { EcsOverviewComponent } from './pages/CloudServices/ecs/ecs-overview/ecs-overview.component';
+import { CreateEcsServiceComponent } from './pages/CloudServices/ecs/create-ecs-service/create-ecs-service.component';
+import { CreateTaskDefinitionComponent } from './pages/CloudServices/ecs/create-task-definition/create-task-definition.component';
 import { CreateSecurityGroupComponent } from './pages/CloudServices/security-groups/create-security-group/create-security-group.component';
 import { CreateSubnetComponent } from './pages/CloudServices/subnets/create-subnet/create-subnet.component';
 
@@ -41,6 +43,8 @@ export const routes: Routes = [
   { path: 'dashboard/vpcs/:id', component: VpcOverviewComponent },
   { path: 'dashboard/ecr', component: EcrComponent },
   { path: 'dashboard/ecs', component: EcsComponent },
+  { path: 'dashboard/ecs/create', component: CreateEcsServiceComponent },
+  { path: 'dashboard/ecs/create-task-definition', component: CreateTaskDefinitionComponent },
   { path: 'dashboard/ecs/:id', component: EcsOverviewComponent },
   { path: 'dashboard/subnets/create', component: CreateSubnetComponent },
   { path: 'dashboard/subnets', component: SubnetsComponent },

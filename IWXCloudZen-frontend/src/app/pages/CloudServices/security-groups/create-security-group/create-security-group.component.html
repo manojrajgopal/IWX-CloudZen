@@ -4,11 +4,11 @@
   <!-- HEADER -->
   <!-- ═══════════════════════════════════════════════════ -->
   <div class="flex items-center gap-3 mb-12">
-    <a routerLink="/dashboard/security-groups" class="text-gray-400 hover:text-black transition">
+    <button (click)="goBack()" class="text-gray-400 hover:text-black transition">
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
       </svg>
-    </a>
+    </button>
     <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
       <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
@@ -458,12 +458,12 @@
 
       <!-- Form Footer -->
       <div class="px-8 py-5 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
-        <a routerLink="/dashboard/security-groups" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
+        <button (click)="goBack()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
-          Back
-        </a>
+          {{ backLabel }}
+        </button>
         <button
           (click)="create()"
           [disabled]="!isFormValid"
@@ -538,7 +538,7 @@
           Create Another
         </button>
         <button (click)="goToDashboard()" class="px-8 py-3 text-sm font-medium bg-black text-white hover:bg-gray-800 transition active:scale-[0.98]">
-          Go to Dashboard
+          {{ returnTo ? backLabel : 'Go to Dashboard' }}
         </button>
       </div>
     </div>
@@ -561,7 +561,7 @@
           Try Again
         </button>
         <button (click)="goToDashboard()" class="px-6 py-2.5 text-sm bg-black text-white hover:bg-gray-800 transition">
-          Back to Dashboard
+          {{ returnTo ? backLabel : 'Back to Dashboard' }}
         </button>
       </div>
     </div>
