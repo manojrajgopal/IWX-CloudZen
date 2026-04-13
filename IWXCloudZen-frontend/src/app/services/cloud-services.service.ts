@@ -18,6 +18,9 @@ import {
   EcsSyncResponse,
   SubnetsResponse,
   SecurityGroupsResponse,
+  SecurityGroupSyncResponse,
+  SecurityGroup,
+  CreateSecurityGroupRequest,
   LogGroupsResponse,
   Ec2InstancesResponse,
   FullSyncResult,
@@ -174,6 +177,20 @@ export class CloudServicesService {
   getSecurityGroups(accountId: number): Observable<SecurityGroupsResponse> {
     return this.http.get<SecurityGroupsResponse>(
       `${this.apiUrl}/api/cloud/services/security-groups/aws/list?accountId=${accountId}`
+    );
+  }
+
+  syncSecurityGroups(accountId: number): Observable<SecurityGroupSyncResponse> {
+    return this.http.post<SecurityGroupSyncResponse>(
+      `${this.apiUrl}/api/cloud/services/security-groups/aws/sync?accountId=${accountId}`,
+      null
+    );
+  }
+
+  createSecurityGroup(accountId: number, request: CreateSecurityGroupRequest): Observable<SecurityGroup> {
+    return this.http.post<SecurityGroup>(
+      `${this.apiUrl}/api/cloud/services/security-groups/aws/create?accountId=${accountId}`,
+      request
     );
   }
 

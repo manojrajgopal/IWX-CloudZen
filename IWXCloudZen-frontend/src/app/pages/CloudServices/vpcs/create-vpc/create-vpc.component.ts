@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { CloudAccountService } from '../../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../../services/cloud-services.service';
 import { CloudAccount } from '../../../../models/cloud-account.model';
@@ -31,6 +31,7 @@ export class CreateVpcComponent implements OnInit, AfterViewInit {
   errorMessage = '';
   progress = 0;
   private progressInterval: any;
+  returnTo: string | null = null;
 
   // Validation
   vpcNameTouched = false;
@@ -40,10 +41,12 @@ export class CreateVpcComponent implements OnInit, AfterViewInit {
     private cloudAccountService: CloudAccountService,
     private cloudServicesService: CloudServicesService,
     private router: Router,
+    private route: ActivatedRoute,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.returnTo = this.route.snapshot.queryParamMap.get('returnTo');
     this.loadAccounts();
   }
 
@@ -170,8 +173,30 @@ export class CreateVpcComponent implements OnInit, AfterViewInit {
     setTimeout(() => this.vpcNameInput?.nativeElement?.focus(), 200);
   }
 
+  goBack(): void {
+    if (this.returnTo) {
+      this.router.navigateByUrl(this.returnTo);
+    } else {
+      this.router.navigate(['/dashboard/vpcs']);
+    }
+  }
+
   goToDashboard(): void {
-    this.router.navigate(['/dashboard/vpcs']);
+    if (this.returnTo) {
+      this.router.navigateByUrl(this.returnTo);
+    } else {
+      this.router.navigate(['/dashboard/vpcs']);
+    }
+  }
+
+  get backLabel(): string {
+    if (!this.returnTo) return 'Back to VPCs';
+    const segments = this.returnTo.replace(/^\//, '').split('/').filter(s => s && s !== 'dashboard');
+    if (segments.length === 0) return 'Back';
+    const label = segments
+      .map(s => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '))
+      .join(' › ');
+    return `Back to ${label}`;
   }
 
   formatDate(dateStr: string): string {

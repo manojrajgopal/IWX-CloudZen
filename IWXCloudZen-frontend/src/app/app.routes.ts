@@ -21,6 +21,7 @@ import { CreateClusterComponent } from './pages/CloudServices/clusters/create-cl
 import { CreateVpcComponent } from './pages/CloudServices/vpcs/create-vpc/create-vpc.component';
 import { VpcOverviewComponent } from './pages/CloudServices/vpcs/vpc-overview/vpc-overview.component';
 import { EcsOverviewComponent } from './pages/CloudServices/ecs/ecs-overview/ecs-overview.component';
+import { CreateSecurityGroupComponent } from './pages/CloudServices/security-groups/create-security-group/create-security-group.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -41,6 +42,7 @@ export const routes: Routes = [
   { path: 'dashboard/ecs', component: EcsComponent },
   { path: 'dashboard/ecs/:id', component: EcsOverviewComponent },
   { path: 'dashboard/subnets', component: SubnetsComponent },
+  { path: 'dashboard/security-groups/create', component: CreateSecurityGroupComponent },
   { path: 'dashboard/security-groups', component: SecurityGroupsComponent },
   { path: 'dashboard/cloudwatch-logs', component: CloudWatchLogsComponent },
   { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },

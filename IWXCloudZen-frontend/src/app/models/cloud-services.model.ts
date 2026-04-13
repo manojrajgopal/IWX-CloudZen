@@ -343,5 +343,8 @@ export interface EcrRepositoriesResponse { totalRepositories: number; repositori
 export interface EcsServicesResponse { clusterName: string; totalCount: number; services: EcsService[]; }
 export interface SubnetsResponse { totalCount: number; vpcIdFilter: string | null; subnets: Subnet[]; }
 export interface SecurityGroupsResponse { totalCount: number; vpcIdFilter: string | null; securityGroups: SecurityGroup[]; }
+export interface SecurityGroupSyncResponse { added: number; updated: number; removed: number; securityGroups: SecurityGroup[]; }
+export interface CreateSecurityGroupRuleRequest { protocol: string; fromPort: number; toPort: number; ipv4Ranges: string[]; ipv6Ranges: string[]; referencedGroupIds: string[]; description: string | null; }
+export interface CreateSecurityGroupRequest { groupName: string; description: string; vpcId: string; inboundRules: CreateSecurityGroupRuleRequest[]; outboundRules: CreateSecurityGroupRuleRequest[]; }
 export interface LogGroupsResponse { logGroups: LogGroup[]; }
 export interface Ec2InstancesResponse { instances: Ec2Instance[]; }

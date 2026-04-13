@@ -4,11 +4,11 @@
   <!-- HEADER -->
   <!-- ═══════════════════════════════════════════════════ -->
   <div class="flex items-center gap-3 mb-12">
-    <a routerLink="/dashboard/vpcs" class="text-gray-400 hover:text-black transition">
+    <button (click)="goBack()" class="text-gray-400 hover:text-black transition">
       <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
       </svg>
-    </a>
+    </button>
     <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
       <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
@@ -253,12 +253,12 @@
 
       <!-- Form Footer -->
       <div class="px-8 py-5 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
-        <a routerLink="/dashboard/vpcs" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
+        <button (click)="goBack()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
           </svg>
-          Back to VPCs
-        </a>
+          {{ backLabel }}
+        </button>
         <button
           (click)="createVpc()"
           [disabled]="!isFormValid"
@@ -345,7 +345,7 @@
           Create Another
         </button>
         <button (click)="goToDashboard()" class="px-8 py-3 text-sm font-medium bg-black text-white hover:bg-gray-800 transition active:scale-[0.98]">
-          Go to Dashboard
+          {{ backLabel }}
         </button>
       </div>
     </div>
@@ -367,8 +367,8 @@
         <button (click)="resetForm()" class="px-6 py-2.5 text-sm border border-gray-300 text-gray-700 hover:border-black hover:text-black transition">
           Try Again
         </button>
-        <button (click)="goToDashboard()" class="px-6 py-2.5 text-sm bg-black text-white hover:bg-gray-800 transition">
-          Back to Dashboard
+        <button (click)="goBack()" class="px-6 py-2.5 text-sm bg-black text-white hover:bg-gray-800 transition">
+          {{ backLabel }}
         </button>
       </div>
     </div>
