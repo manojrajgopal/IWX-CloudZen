@@ -1,0 +1,875 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="loading" class="space-y-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-gray-100 rounded-lg animate-pulse"></div>
+      <div>
+        <div class="h-8 w-64 bg-gray-100 rounded animate-pulse mb-2"></div>
+        <div class="h-4 w-40 bg-gray-100 rounded animate-pulse"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div *ngFor="let i of [1,2,3,4]" class="border border-gray-200 p-6 animate-pulse">
+        <div class="h-4 w-20 bg-gray-100 rounded mb-3"></div>
+        <div class="h-8 w-16 bg-gray-100 rounded"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div class="xl:col-span-2 space-y-8">
+        <div *ngFor="let i of [1,2,3]" class="border border-gray-200 p-8 animate-pulse">
+          <div class="h-5 w-48 bg-gray-100 rounded mb-6"></div>
+          <div class="space-y-4">
+            <div class="h-4 w-full bg-gray-100 rounded"></div>
+            <div class="h-4 w-3/4 bg-gray-100 rounded"></div>
+            <div class="h-4 w-1/2 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-8">
+        <div *ngFor="let i of [1,2]" class="border border-gray-200 p-8 animate-pulse">
+          <div class="h-4 w-32 bg-gray-100 rounded mb-4"></div>
+          <div class="space-y-3">
+            <div class="h-4 w-full bg-gray-100 rounded"></div>
+            <div class="h-4 w-2/3 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && error" class="text-center py-20">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">{{ error }}</h2>
+    <p class="text-gray-500 mb-6">The requested security group could not be loaded.</p>
+    <a routerLink="/dashboard/security-groups" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to Security Groups
+    </a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && !error && sg">
+
+    <!-- ─── Breadcrumb & Header ─── -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-10 gap-6">
+      <div class="flex-1 min-w-0">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+          <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <a routerLink="/dashboard/security-groups" class="hover:text-black transition">Security Groups</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span class="text-black font-medium truncate max-w-[200px]">{{ getDisplayName(sg) }}</span>
+        </nav>
+
+        <!-- Title Row -->
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-lg bg-black text-white flex items-center justify-center flex-shrink-0">
+            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-serif font-bold tracking-tight truncate">{{ getDisplayName(sg) }}</h1>
+            <div class="flex items-center gap-3 mt-2 flex-wrap">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getProviderBgClass(sg.provider)">
+                {{ getProviderShort(sg.provider) }}
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm bg-indigo-50 border-indigo-200 text-indigo-700">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                </svg>
+                Security Group
+              </span>
+              <span class="text-xs text-gray-400 font-mono">{{ sg.securityGroupId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <button (click)="refreshData()" class="btn-overview-icon" title="Refresh">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+        <a routerLink="/dashboard/security-groups" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-black hover:bg-black hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          All Groups
+        </a>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- KEY METRICS CARDS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      <!-- Total Rules -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Total Rules</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold">{{ totalRules }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ totalInboundRules }} inbound · {{ totalOutboundRules }} outbound</p>
+      </div>
+
+      <!-- Security Score -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center" [ngClass]="getScoreBgClass()">
+            <svg class="w-5 h-5" [ngClass]="getScoreClass()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Security</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold" [ngClass]="getScoreClass()">{{ securityScore }}%</p>
+        <p class="text-xs text-gray-400 mt-1">{{ getScoreLabel() }} · {{ highRiskRuleCount }} high-risk</p>
+      </div>
+
+      <!-- Protocols -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Protocols</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold">{{ uniqueProtocols.length }}</p>
+        <p class="text-xs text-gray-400 mt-1 truncate">{{ uniqueProtocols.join(', ') || '—' }}</p>
+      </div>
+
+      <!-- Uptime -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Age</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold">{{ getUptime(sg.createdAt) }}</p>
+        <p class="text-xs text-gray-400 mt-1">Since creation</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- STATUS BANNER -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="p-6 border mb-10 flex flex-col sm:flex-row sm:items-center gap-4"
+         [ngClass]="highRiskRuleCount > 0 ? 'border-red-200 bg-red-50/30' : 'border-green-200 bg-green-50/30'">
+      <div class="flex items-center gap-3 flex-1">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+             [ngClass]="highRiskRuleCount > 0 ? 'bg-red-100' : 'bg-green-100'">
+          <svg *ngIf="highRiskRuleCount > 0" class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+          </svg>
+          <svg *ngIf="highRiskRuleCount === 0" class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-semibold" [ngClass]="highRiskRuleCount > 0 ? 'text-red-800' : 'text-green-800'">
+            {{ highRiskRuleCount > 0 ? 'Security Warnings Detected' : 'No Security Issues Found' }}
+          </p>
+          <p class="text-xs" [ngClass]="highRiskRuleCount > 0 ? 'text-red-600' : 'text-green-600'">
+            {{ highRiskRuleCount > 0 ? highRiskRuleCount + ' rule(s) with high-risk configurations (open to 0.0.0.0/0 on sensitive ports)' : 'All inbound rules have restricted source ranges' }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+              [ngClass]="highRiskRuleCount > 0 ? 'bg-red-100 border-red-200 text-red-700' : 'bg-green-100 border-green-200 text-green-700'">
+          Score: {{ securityScore }}%
+        </span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- TWO-COLUMN LAYOUT -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+
+      <!-- ─── LEFT COL (2/3) ─── -->
+      <div class="xl:col-span-2 space-y-8">
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- GENERAL INFORMATION -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('general')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <h3 class="text-sm font-serif font-bold">General Information</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Core security group details</p>
+              </div>
+            </div>
+            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('general')"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div *ngIf="!isSectionCollapsed('general')" class="overview-section-body">
+            <div class="overview-grid">
+              <div class="overview-field">
+                <span class="overview-field-label">Group Name</span>
+                <div class="flex items-center gap-2">
+                  <span class="overview-field-value font-semibold">{{ sg.groupName }}</span>
+                  <button (click)="copyToClipboard(sg.groupName, 'groupName')" class="text-gray-300 hover:text-black transition" title="Copy">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+                    </svg>
+                  </button>
+                  <span *ngIf="copiedField === 'groupName'" class="text-[10px] text-green-600 animate-fadeIn">Copied!</span>
+                </div>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Security Group ID</span>
+                <div class="flex items-center gap-2">
+                  <span class="overview-field-value font-mono text-xs">{{ sg.securityGroupId }}</span>
+                  <button (click)="copyToClipboard(sg.securityGroupId, 'sgId')" class="text-gray-300 hover:text-black transition" title="Copy">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+                    </svg>
+                  </button>
+                  <span *ngIf="copiedField === 'sgId'" class="text-[10px] text-green-600 animate-fadeIn">Copied!</span>
+                </div>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Description</span>
+                <span class="overview-field-value">{{ sg.description || '—' }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">VPC ID</span>
+                <div class="flex items-center gap-2">
+                  <span class="overview-field-value font-mono text-xs">{{ sg.vpcId }}</span>
+                  <button (click)="copyToClipboard(sg.vpcId, 'vpcId')" class="text-gray-300 hover:text-black transition" title="Copy">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+                    </svg>
+                  </button>
+                  <span *ngIf="copiedField === 'vpcId'" class="text-[10px] text-green-600 animate-fadeIn">Copied!</span>
+                </div>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Owner ID</span>
+                <div class="flex items-center gap-2">
+                  <span class="overview-field-value font-mono text-xs">{{ sg.ownerId }}</span>
+                  <button (click)="copyToClipboard(sg.ownerId, 'ownerId')" class="text-gray-300 hover:text-black transition" title="Copy">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+                    </svg>
+                  </button>
+                  <span *ngIf="copiedField === 'ownerId'" class="text-[10px] text-green-600 animate-fadeIn">Copied!</span>
+                </div>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Provider</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm" [ngClass]="getProviderBgClass(sg.provider)">
+                    {{ getProviderLabel(sg.provider) }}
+                  </span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- INBOUND RULES -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('inbound')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-blue-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5L12 21m0 0l-7.5-7.5M12 21V3"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <h3 class="text-sm font-serif font-bold">Inbound Rules</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ totalInboundRules }} rule{{ totalInboundRules !== 1 ? 's' : '' }} controlling incoming traffic</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-sm">{{ totalInboundRules }}</span>
+              <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                   [class.rotate-180]="!isSectionCollapsed('inbound')"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </button>
+          <div *ngIf="!isSectionCollapsed('inbound')" class="overview-section-body">
+            <!-- No rules -->
+            <div *ngIf="sg.inboundRules.length === 0" class="text-center py-8 text-gray-400">
+              <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+              </svg>
+              <p class="text-xs uppercase tracking-wider">No inbound rules configured</p>
+            </div>
+            <!-- Rules List -->
+            <div *ngIf="sg.inboundRules.length > 0" class="space-y-3">
+              <div *ngFor="let rule of sg.inboundRules; let i = index"
+                   class="rule-row border border-gray-100 rounded-sm p-4">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-gray-400 font-mono w-6">#{{ i + 1 }}</span>
+                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider border rounded-sm"
+                          [ngClass]="getProtocolBgClass(rule.protocol)">
+                      {{ getProtocolLabel(rule.protocol) }}
+                    </span>
+                    <span *ngIf="getPortLabel(rule)" class="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-gray-50 border border-gray-200 text-gray-600 rounded-sm">
+                      {{ getPortLabel(rule) }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-2 ml-auto">
+                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider border rounded-sm"
+                          [ngClass]="getRiskBadgeClass(getRuleRiskLevel(rule))">
+                      {{ getRiskLabel(getRuleRiskLevel(rule)) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block mb-1">Port Range</span>
+                    <span class="font-mono font-medium">{{ getPortRange(rule) }}</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block mb-1">Source</span>
+                    <div class="space-y-1">
+                      <span *ngFor="let src of getSourceDisplay(rule)"
+                            class="inline-flex items-center gap-1 font-mono text-xs"
+                            [ngClass]="src === '0.0.0.0/0' || src === '::/0' ? 'text-red-600 font-semibold' : 'text-gray-700'">
+                        <svg *ngIf="src === '0.0.0.0/0' || src === '::/0'" class="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+                        </svg>
+                        {{ src }}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block mb-1">Description</span>
+                    <span class="text-gray-600">{{ rule.description || '—' }}</span>
+                  </div>
+                </div>
+                <!-- Rule ID -->
+                <div class="mt-3 pt-3 border-t border-gray-50 flex items-center gap-2">
+                  <span class="text-[10px] text-gray-400 uppercase tracking-wider">Rule ID:</span>
+                  <span class="text-[10px] font-mono text-gray-500">{{ rule.ruleId }}</span>
+                  <button (click)="copyToClipboard(rule.ruleId, 'rule-' + rule.ruleId)" class="text-gray-300 hover:text-black transition" title="Copy">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+                    </svg>
+                  </button>
+                  <span *ngIf="copiedField === 'rule-' + rule.ruleId" class="text-[10px] text-green-600 animate-fadeIn">Copied!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- OUTBOUND RULES -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('outbound')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-emerald-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <h3 class="text-sm font-serif font-bold">Outbound Rules</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ totalOutboundRules }} rule{{ totalOutboundRules !== 1 ? 's' : '' }} controlling outgoing traffic</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-sm">{{ totalOutboundRules }}</span>
+              <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                   [class.rotate-180]="!isSectionCollapsed('outbound')"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </button>
+          <div *ngIf="!isSectionCollapsed('outbound')" class="overview-section-body">
+            <!-- No rules -->
+            <div *ngIf="sg.outboundRules.length === 0" class="text-center py-8 text-gray-400">
+              <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+              </svg>
+              <p class="text-xs uppercase tracking-wider">No outbound rules configured</p>
+            </div>
+            <!-- Rules List -->
+            <div *ngIf="sg.outboundRules.length > 0" class="space-y-3">
+              <div *ngFor="let rule of sg.outboundRules; let i = index"
+                   class="rule-row border border-gray-100 rounded-sm p-4">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] text-gray-400 font-mono w-6">#{{ i + 1 }}</span>
+                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider border rounded-sm"
+                          [ngClass]="getProtocolBgClass(rule.protocol)">
+                      {{ getProtocolLabel(rule.protocol) }}
+                    </span>
+                    <span *ngIf="getPortLabel(rule)" class="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider bg-gray-50 border border-gray-200 text-gray-600 rounded-sm">
+                      {{ getPortLabel(rule) }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-2 ml-auto">
+                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider border rounded-sm"
+                          [ngClass]="getRiskBadgeClass(getRuleRiskLevel(rule))">
+                      {{ getRiskLabel(getRuleRiskLevel(rule)) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block mb-1">Port Range</span>
+                    <span class="font-mono font-medium">{{ getPortRange(rule) }}</span>
+                  </div>
+                  <div>
+                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block mb-1">Destination</span>
+                    <div class="space-y-1">
+                      <span *ngFor="let src of getSourceDisplay(rule)"
+                            class="inline-flex items-center gap-1 font-mono text-xs text-gray-700">
+                        {{ src }}
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="text-gray-400 text-[10px] uppercase tracking-wider block mb-1">Description</span>
+                    <span class="text-gray-600">{{ rule.description || '—' }}</span>
+                  </div>
+                </div>
+                <!-- Rule ID -->
+                <div class="mt-3 pt-3 border-t border-gray-50 flex items-center gap-2">
+                  <span class="text-[10px] text-gray-400 uppercase tracking-wider">Rule ID:</span>
+                  <span class="text-[10px] font-mono text-gray-500">{{ rule.ruleId }}</span>
+                  <button (click)="copyToClipboard(rule.ruleId, 'rule-out-' + rule.ruleId)" class="text-gray-300 hover:text-black transition" title="Copy">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+                    </svg>
+                  </button>
+                  <span *ngIf="copiedField === 'rule-out-' + rule.ruleId" class="text-[10px] text-green-600 animate-fadeIn">Copied!</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- SECURITY ANALYSIS -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('analysis')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-amber-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <h3 class="text-sm font-serif font-bold">Security Analysis</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Port & source breakdown</p>
+              </div>
+            </div>
+            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('analysis')"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div *ngIf="!isSectionCollapsed('analysis')" class="overview-section-body">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <!-- Open Ports -->
+              <div>
+                <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Exposed Ports</h4>
+                <div *ngIf="uniquePorts.length === 0" class="text-xs text-gray-400 italic">All traffic or no specific ports</div>
+                <div *ngIf="uniquePorts.length > 0" class="flex flex-wrap gap-2">
+                  <span *ngFor="let port of uniquePorts"
+                        class="inline-flex items-center px-2.5 py-1 text-xs font-mono border border-gray-200 bg-gray-50 rounded-sm">
+                    {{ port }}
+                  </span>
+                </div>
+              </div>
+              <!-- Source Ranges -->
+              <div>
+                <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Source / Destination Ranges</h4>
+                <div *ngIf="allOpenSources.length === 0" class="text-xs text-gray-400 italic">No CIDR ranges configured</div>
+                <div *ngIf="allOpenSources.length > 0" class="space-y-1.5">
+                  <div *ngFor="let src of allOpenSources" class="flex items-center gap-2 text-xs">
+                    <span class="w-2 h-2 rounded-full flex-shrink-0"
+                          [ngClass]="src === '0.0.0.0/0' || src === '::/0' ? 'bg-red-500' : 'bg-green-500'"></span>
+                    <span class="font-mono" [ngClass]="src === '0.0.0.0/0' || src === '::/0' ? 'text-red-600 font-semibold' : 'text-gray-700'">{{ src }}</span>
+                    <span *ngIf="src === '0.0.0.0/0'" class="text-[10px] text-red-400 uppercase">(All IPv4)</span>
+                    <span *ngIf="src === '::/0'" class="text-[10px] text-red-400 uppercase">(All IPv6)</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Protocol Summary -->
+              <div>
+                <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Protocols Used</h4>
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let proto of uniqueProtocols"
+                        class="inline-flex items-center px-2.5 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                        [ngClass]="getProtocolBgClass(proto === 'All Traffic' ? '-1' : proto.toLowerCase())">
+                    {{ proto }}
+                  </span>
+                </div>
+              </div>
+              <!-- Rules Distribution -->
+              <div>
+                <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Rules Distribution</h4>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-600">Inbound</span>
+                    <span class="font-bold">{{ totalInboundRules }}</span>
+                  </div>
+                  <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-500 rounded-full transition-all duration-500"
+                         [style.width.%]="totalRules > 0 ? (totalInboundRules / totalRules * 100) : 0"></div>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-600">Outbound</span>
+                    <span class="font-bold">{{ totalOutboundRules }}</span>
+                  </div>
+                  <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                         [style.width.%]="totalRules > 0 ? (totalOutboundRules / totalRules * 100) : 0"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- RELATED SECURITY GROUPS -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('related')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-violet-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <h3 class="text-sm font-serif font-bold">Related Security Groups</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Other groups in VPC {{ sg.vpcId }}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-bold bg-violet-50 text-violet-700 border border-violet-200 rounded-sm">{{ relatedGroups.length }}</span>
+              <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                   [class.rotate-180]="!isSectionCollapsed('related')"
+                   fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </button>
+          <div *ngIf="!isSectionCollapsed('related')" class="overview-section-body">
+            <!-- Loading -->
+            <div *ngIf="loadingRelated" class="space-y-3">
+              <div *ngFor="let i of [1,2,3]" class="border border-gray-100 p-4 animate-pulse">
+                <div class="h-4 w-40 bg-gray-100 rounded mb-2"></div>
+                <div class="h-3 w-32 bg-gray-100 rounded"></div>
+              </div>
+            </div>
+            <!-- Empty -->
+            <div *ngIf="!loadingRelated && relatedGroups.length === 0" class="text-center py-8 text-gray-400">
+              <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+              </svg>
+              <p class="text-xs uppercase tracking-wider">No other security groups in this VPC</p>
+            </div>
+            <!-- Groups List -->
+            <div *ngIf="!loadingRelated && relatedGroups.length > 0" class="space-y-2">
+              <button *ngFor="let rg of relatedGroups"
+                      (click)="navigateToGroup(rg.id)"
+                      class="w-full text-left p-4 border border-gray-100 hover:border-gray-300 hover:bg-gray-50/50 transition-all rounded-sm group">
+                <div class="flex items-center justify-between">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-sm font-semibold text-gray-900 truncate">{{ rg.groupName }}</span>
+                      <span class="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium bg-gray-50 border border-gray-200 text-gray-500 rounded-sm">
+                        {{ rg.inboundRules.length + rg.outboundRules.length }} rules
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-gray-400">
+                      <span class="font-mono">{{ rg.securityGroupId }}</span>
+                      <span>&middot;</span>
+                      <span>{{ rg.description || 'No description' }}</span>
+                    </div>
+                  </div>
+                  <svg class="w-4 h-4 text-gray-300 group-hover:text-black transition flex-shrink-0 ml-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+                  </svg>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── RIGHT COL (1/3) ─── -->
+      <div class="space-y-8">
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- SECURITY SCORE CARD -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section">
+          <div class="p-6 text-center">
+            <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-4">Security Score</h4>
+            <div class="relative w-32 h-32 mx-auto mb-4">
+              <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="#f3f4f6" stroke-width="8"/>
+                <circle cx="60" cy="60" r="52" fill="none"
+                        [attr.stroke]="securityScore >= 80 ? '#22c55e' : securityScore >= 50 ? '#eab308' : '#ef4444'"
+                        stroke-width="8"
+                        stroke-linecap="round"
+                        class="score-ring"
+                        [attr.stroke-dasharray]="2 * 3.14159 * 52"
+                        [attr.stroke-dashoffset]="2 * 3.14159 * 52 * (1 - securityScore / 100)"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="text-3xl font-serif font-bold" [ngClass]="getScoreClass()">{{ securityScore }}</span>
+                <span class="text-[10px] text-gray-400 uppercase tracking-wider">/ 100</span>
+              </div>
+            </div>
+            <p class="text-sm font-semibold" [ngClass]="getScoreClass()">{{ getScoreLabel() }}</p>
+            <p class="text-xs text-gray-400 mt-1">Based on inbound rule analysis</p>
+          </div>
+        </div>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- CLOUD ACCOUNT -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section" *ngIf="account">
+          <button class="overview-section-header" (click)="toggleSection('account')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <h3 class="text-sm font-serif font-bold">Cloud Account</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Associated account</p>
+              </div>
+            </div>
+            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('account')"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div *ngIf="!isSectionCollapsed('account')" class="overview-section-body">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between py-2 border-b border-gray-50">
+                <span class="text-[10px] uppercase tracking-widest text-gray-400">Account Name</span>
+                <span class="text-sm font-medium">{{ account.accountName }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-50">
+                <span class="text-[10px] uppercase tracking-widest text-gray-400">Provider</span>
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm" [ngClass]="getProviderBgClass(account.provider)">
+                  {{ getProviderShort(account.provider) }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-50">
+                <span class="text-[10px] uppercase tracking-widest text-gray-400">Account ID</span>
+                <span class="text-sm font-mono">{{ account.id }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <span class="text-[10px] uppercase tracking-widest text-gray-400">Region</span>
+                <span class="text-sm font-mono">{{ account.region || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- TIMESTAMPS -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('timestamps')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <h3 class="text-sm font-serif font-bold">Timestamps</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Creation & modification dates</p>
+              </div>
+            </div>
+            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('timestamps')"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div *ngIf="!isSectionCollapsed('timestamps')" class="overview-section-body">
+            <div class="space-y-4">
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Created At</p>
+                <p class="text-sm font-medium">{{ formatDateTime(sg.createdAt) }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ formatRelativeTime(sg.createdAt) }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Last Updated</p>
+                <p class="text-sm font-medium">{{ formatDateTime(sg.updatedAt) }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ formatRelativeTime(sg.updatedAt) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- QUICK REFERENCE -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('quickref')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-gray-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <h3 class="text-sm font-serif font-bold">Quick Reference</h3>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">Copy-ready identifiers</p>
+              </div>
+            </div>
+            <svg class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('quickref')"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div *ngIf="!isSectionCollapsed('quickref')" class="overview-section-body">
+            <div class="space-y-2">
+              <div *ngFor="let item of [
+                { label: 'Security Group ID', value: sg.securityGroupId, key: 'qr-sgid' },
+                { label: 'Group Name', value: sg.groupName, key: 'qr-name' },
+                { label: 'VPC ID', value: sg.vpcId, key: 'qr-vpc' },
+                { label: 'Owner ID', value: sg.ownerId, key: 'qr-owner' }
+              ]" class="flex items-center justify-between p-3 bg-gray-50 border border-gray-100 rounded-sm group hover:border-gray-200 transition">
+                <div class="min-w-0 flex-1">
+                  <p class="text-[10px] uppercase tracking-widest text-gray-400">{{ item.label }}</p>
+                  <p class="text-xs font-mono text-gray-700 truncate">{{ item.value }}</p>
+                </div>
+                <button (click)="copyToClipboard(item.value, item.key)" class="ml-2 text-gray-300 hover:text-black transition flex-shrink-0" title="Copy">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/>
+                  </svg>
+                </button>
+                <span *ngIf="copiedField === item.key" class="text-[10px] text-green-600 ml-1 animate-fadeIn">Copied!</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <!-- RULES SUMMARY CARD -->
+        <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+        <div class="overview-section">
+          <div class="p-6">
+            <h4 class="text-[10px] uppercase tracking-widest text-gray-400 mb-4">Rules Summary</h4>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                  <span class="text-xs text-gray-600">Inbound Rules</span>
+                </div>
+                <span class="text-sm font-bold">{{ totalInboundRules }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                  <span class="text-xs text-gray-600">Outbound Rules</span>
+                </div>
+                <span class="text-sm font-bold">{{ totalOutboundRules }}</span>
+              </div>
+              <div class="border-t border-gray-100 pt-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                  <span class="text-xs text-gray-600">High Risk</span>
+                </div>
+                <span class="text-sm font-bold" [ngClass]="highRiskRuleCount > 0 ? 'text-red-600' : 'text-gray-400'">{{ highRiskRuleCount }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full bg-gray-400"></span>
+                  <span class="text-xs text-gray-600">Total Rules</span>
+                </div>
+                <span class="text-sm font-bold">{{ totalRules }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- FOOTER -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="border-t border-gray-200 pt-8 mt-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-serif font-bold">{{ getDisplayName(sg) }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-widest">Security Group Dashboard &middot; {{ getProviderLabel(sg.provider) }}</p>
+        </div>
+      </div>
+      <a routerLink="/dashboard/security-groups" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to All Security Groups
+      </a>
+    </div>
+
+  </div>
+</div>

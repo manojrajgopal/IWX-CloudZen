@@ -26,6 +26,7 @@ import { CreateTaskDefinitionComponent } from './pages/CloudServices/ecs/create-
 import { CreateSecurityGroupComponent } from './pages/CloudServices/security-groups/create-security-group/create-security-group.component';
 import { CreateSubnetComponent } from './pages/CloudServices/subnets/create-subnet/create-subnet.component';
 import { SubnetOverviewComponent } from './pages/CloudServices/subnets/subnet-overview/subnet-overview.component';
+import { SecurityGroupOverviewComponent } from './pages/CloudServices/security-groups/security-group-overview/security-group-overview.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -51,6 +52,7 @@ export const routes: Routes = [
   { path: 'dashboard/subnets/:id', component: SubnetOverviewComponent },
   { path: 'dashboard/subnets', component: SubnetsComponent },
   { path: 'dashboard/security-groups/create', component: CreateSecurityGroupComponent },
+  { path: 'dashboard/security-groups/:id', component: SecurityGroupOverviewComponent },
   { path: 'dashboard/security-groups', component: SecurityGroupsComponent },
   { path: 'dashboard/cloudwatch-logs', component: CloudWatchLogsComponent },
   { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },

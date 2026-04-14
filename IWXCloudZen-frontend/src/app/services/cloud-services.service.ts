@@ -262,6 +262,12 @@ export class CloudServicesService {
     );
   }
 
+  getSecurityGroupById(id: number, accountId: number): Observable<SecurityGroup> {
+    return this.http.get<SecurityGroup>(
+      `${this.apiUrl}/api/cloud/services/security-groups/aws/${id}?accountId=${accountId}`
+    );
+  }
+
   getLogGroups(accountId: number): Observable<LogGroupsResponse> {
     return this.http.get<LogGroupsResponse>(
       `${this.apiUrl}/api/cloud/services/cloudwatch-logs/aws/log-groups/list?accountId=${accountId}`
