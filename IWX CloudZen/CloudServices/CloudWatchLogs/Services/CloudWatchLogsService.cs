@@ -3,6 +3,7 @@ using IWX_CloudZen.CloudServices.CloudWatchLogs.DTOs;
 using IWX_CloudZen.CloudServices.CloudWatchLogs.Entities;
 using IWX_CloudZen.CloudServices.CloudWatchLogs.Factory;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace IWX_CloudZen.CloudServices.CloudWatchLogs.Services
@@ -78,6 +79,8 @@ namespace IWX_CloudZen.CloudServices.CloudWatchLogs.Services
 
         public async Task<LogGroupResponse> CreateLogGroup(string user, int accountId, CreateLogGroupRequest request)
         {
+            var normalizedLogGroupName = CloudResourceNameNormalizer.NormalizeLogGroupName(request.LogGroupName);
+
             var account = await _accounts.ResolveCredentialsAsync(user, accountId)
                 ?? throw new InvalidOperationException("Cloud account not found.");
 
@@ -86,7 +89,7 @@ namespace IWX_CloudZen.CloudServices.CloudWatchLogs.Services
 
             var info = await provider.CreateLogGroup(
                 account,
-                request.LogGroupName,
+                normalizedLogGroupName,
                 request.RetentionInDays,
                 request.KmsKeyId,
                 request.LogGroupClass);
@@ -286,13 +289,15 @@ namespace IWX_CloudZen.CloudServices.CloudWatchLogs.Services
                 .FirstOrDefaultAsync(x => x.Id == logGroupDbId && x.CloudAccountId == accountId && x.CreatedBy == user)
                 ?? throw new KeyNotFoundException("Log group not found.");
 
+            var normalizedStreamName = CloudResourceNameNormalizer.NormalizeLogGroupName(request.LogStreamName);
+
             var account = await _accounts.ResolveCredentialsAsync(user, accountId)
                 ?? throw new InvalidOperationException("Cloud account not found.");
 
             var provider = CloudWatchLogsProviderFactory.Get(account.Provider
                 ?? throw new InvalidOperationException("Cloud provider is not set."));
 
-            var info = await provider.CreateLogStream(account, logGroup.LogGroupName, request.LogStreamName);
+            var info = await provider.CreateLogStream(account, logGroup.LogGroupName, normalizedStreamName);
 
             var record = new LogStreamRecord
             {

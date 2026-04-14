@@ -3,6 +3,7 @@ using IWX_CloudZen.CloudServices.CloudStorage.DTOs;
 using IWX_CloudZen.CloudServices.CloudStorage.Entities;
 using IWX_CloudZen.CloudServices.CloudStorage.Providers;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace IWX_CloudZen.CloudServices.CloudStorage.Services
@@ -101,7 +102,7 @@ namespace IWX_CloudZen.CloudServices.CloudStorage.Services
 
         public async Task<BucketResponse> CreateBucket(string user, int accountId, string bucketName)
         {
-            var normalizedName = NormalizeBucketName(bucketName);
+            var normalizedName = CloudResourceNameNormalizer.NormalizeBucketName(bucketName);
 
             var account = await _accounts.ResolveCredentialsAsync(user, accountId)
                 ?? throw new InvalidOperationException("Cloud account not found.");

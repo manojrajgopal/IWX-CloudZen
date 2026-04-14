@@ -4,6 +4,7 @@ using IWX_CloudZen.CloudServices.Subnet.Entities;
 using IWX_CloudZen.CloudServices.Subnet.Factory;
 using IWX_CloudZen.CloudServices.Subnet.Interfaces;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace IWX_CloudZen.CloudServices.Subnet.Services
@@ -108,6 +109,8 @@ namespace IWX_CloudZen.CloudServices.Subnet.Services
         public async Task<SubnetResponse> CreateSubnet(
             string user, int accountId, CreateSubnetRequest request)
         {
+            request.Name = CloudResourceNameNormalizer.NormalizeGeneralName(request.Name);
+
             var (account, provider) = await Resolve(user, accountId);
 
             var cloudInfo = await provider.CreateSubnet(account, request);

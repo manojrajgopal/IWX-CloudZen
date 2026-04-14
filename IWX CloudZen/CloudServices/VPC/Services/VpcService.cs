@@ -3,6 +3,7 @@ using IWX_CloudZen.CloudServices.VPC.DTOs;
 using IWX_CloudZen.CloudServices.VPC.Entities;
 using IWX_CloudZen.CloudServices.VPC.Factory;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace IWX_CloudZen.CloudServices.VPC.Services
@@ -45,6 +46,8 @@ namespace IWX_CloudZen.CloudServices.VPC.Services
 
         public async Task<VpcResponse> CreateVpc(string user, int accountId, CreateVpcRequest request)
         {
+            var normalizedVpcName = CloudResourceNameNormalizer.NormalizeGeneralName(request.VpcName);
+
             var account = await _accounts.ResolveCredentialsAsync(user, accountId)
                 ?? throw new InvalidOperationException("Cloud account not found.");
 
@@ -53,14 +56,14 @@ namespace IWX_CloudZen.CloudServices.VPC.Services
 
             var info = await provider.CreateVpc(
                 account,
-                request.VpcName,
+                normalizedVpcName,
                 request.CidrBlock,
                 request.EnableDnsSupport,
                 request.EnableDnsHostnames);
 
             var record = new VpcRecord
             {
-                Name = request.VpcName,
+                Name = normalizedVpcName,
                 VpcId = info.VpcId,
                 CidrBlock = info.CidrBlock,
                 State = info.State,

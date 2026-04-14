@@ -4,6 +4,7 @@ using IWX_CloudZen.CloudServices.EC2.DTOs;
 using IWX_CloudZen.CloudServices.EC2.Entities;
 using IWX_CloudZen.CloudServices.EC2.Factory;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace IWX_CloudZen.CloudServices.EC2.Services
@@ -147,6 +148,8 @@ namespace IWX_CloudZen.CloudServices.EC2.Services
 
         public async Task<List<Ec2InstanceResponse>> LaunchInstances(string user, int accountId, LaunchEc2InstanceRequest request)
         {
+            var normalizedInstanceName = CloudResourceNameNormalizer.NormalizeGeneralName(request.InstanceName);
+
             var account = await _accounts.ResolveCredentialsAsync(user, accountId)
                 ?? throw new InvalidOperationException("Cloud account not found.");
 
@@ -155,7 +158,7 @@ namespace IWX_CloudZen.CloudServices.EC2.Services
 
             var instances = await provider.LaunchInstances(
                 account,
-                request.InstanceName,
+                normalizedInstanceName,
                 request.ImageId,
                 request.InstanceType,
                 request.KeyName,

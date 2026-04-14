@@ -4,6 +4,7 @@ using IWX_CloudZen.CloudServices.KeyPair.DTOs;
 using IWX_CloudZen.CloudServices.KeyPair.Entities;
 using IWX_CloudZen.CloudServices.KeyPair.Factory;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace IWX_CloudZen.CloudServices.KeyPair.Services
@@ -109,6 +110,8 @@ namespace IWX_CloudZen.CloudServices.KeyPair.Services
         public async Task<KeyPairCreatedResponse> CreateKeyPair(string user, int accountId, CreateKeyPairRequest request)
         {
             var (account, provider) = await ResolveAsync(user, accountId);
+
+            request.KeyName = CloudResourceNameNormalizer.NormalizeGeneralName(request.KeyName);
 
             // Prevent duplicate names within the same account
             bool exists = await _db.KeyPairRecords

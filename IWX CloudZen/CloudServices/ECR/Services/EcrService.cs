@@ -3,6 +3,7 @@ using IWX_CloudZen.CloudServices.ECR.DTOs;
 using IWX_CloudZen.CloudServices.ECR.Entities;
 using IWX_CloudZen.CloudServices.ECR.Factory;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 
@@ -152,7 +153,7 @@ namespace IWX_CloudZen.CloudServices.ECR.Services
         {
             var (account, provider) = await Resolve(user, accountId);
 
-            var repositoryName = NormalizeRepositoryName(request.RepositoryName);
+            var repositoryName = CloudResourceNameNormalizer.NormalizeRepositoryName(request.RepositoryName);
 
             var info = await provider.CreateRepository(
                 account,
