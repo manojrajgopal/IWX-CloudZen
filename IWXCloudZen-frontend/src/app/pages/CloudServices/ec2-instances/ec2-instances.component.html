@@ -373,166 +373,219 @@
 </div>
 
 <!-- ════ DETAIL SLIDE-OVER ════ -->
-<div *ngIf="selectedInstance" class="fixed inset-0 z-50 flex justify-end">
-  <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" (click)="closeDetail()"></div>
-  <div class="relative w-full max-w-lg bg-white shadow-2xl" [class]="showDetailPanel ? 'detail-panel-enter' : 'detail-panel-exit'">
-    <!-- Header -->
-    <div class="flex items-center justify-between p-6 border-b border-gray-100">
-      <div class="flex items-center gap-3">
-        <div class="p-2 bg-gray-50 rounded-xl">
-          <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+<div *ngIf="selectedInstance"
+     class="fixed inset-0 z-50 flex justify-end"
+     [class.modal-backdrop-enter]="showDetailPanel"
+     [class.modal-backdrop-exit]="!showDetailPanel">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeDetail()"></div>
+
+  <!-- Panel -->
+  <div class="relative bg-white w-full max-w-xl h-full flex flex-col shadow-2xl border-l border-gray-200 overflow-hidden"
+       [class.panel-enter]="showDetailPanel"
+       [class.panel-exit]="!showDetailPanel">
+
+    <!-- Panel Header -->
+    <div class="flex items-center justify-between px-8 py-6 border-b border-gray-200 flex-shrink-0">
+      <div class="flex items-center gap-4">
+        <div class="w-11 h-11 rounded-lg bg-black text-white flex items-center justify-center">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7"/>
           </svg>
         </div>
-        <div>
-          <h2 class="font-serif text-lg font-bold text-black">{{ selectedInstance.name || selectedInstance.instanceId }}</h2>
-          <span class="text-xs text-gray-400 font-mono">{{ selectedInstance.instanceId }}</span>
+        <div class="min-w-0">
+          <h3 class="text-lg font-serif font-bold truncate">{{ selectedInstance.name || selectedInstance.instanceId }}</h3>
+          <p class="text-xs text-gray-400 uppercase tracking-wider">Instance Details</p>
         </div>
       </div>
-      <button (click)="closeDetail()" class="p-2 text-gray-400 hover:text-black transition-colors rounded-lg hover:bg-gray-50">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+      <button (click)="closeDetail()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition flex-shrink-0">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
     </div>
 
-    <!-- Body -->
-    <div class="detail-panel-body overflow-y-auto p-6" style="height: calc(100vh - 80px);">
-      <div class="space-y-6">
+    <!-- Panel Body -->
+    <div class="flex-1 overflow-y-auto px-8 py-6">
 
-        <!-- General -->
-        <div>
-          <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">General Information</h3>
-          <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Name</span>
-              <span class="text-sm font-medium text-black">{{ selectedInstance.name || '—' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Instance ID</span>
-              <span class="text-sm font-mono text-black">{{ selectedInstance.instanceId }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">State</span>
-              <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium" [class]="getStateClass(selectedInstance.state)">
-                <span class="w-1.5 h-1.5 rounded-full" [class]="getStateDotClass(selectedInstance.state)"></span>
-                {{ selectedInstance.state | titlecase }}
-              </span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Instance Type</span>
-              <span class="text-sm font-mono text-black">{{ selectedInstance.instanceType }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Platform</span>
-              <span class="text-sm text-black">{{ selectedInstance.platform || 'Linux/UNIX' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Architecture</span>
-              <span class="text-sm text-black">{{ selectedInstance.architecture || '—' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Provider</span>
-              <span class="text-sm text-black">{{ getProviderLabel(selectedInstance.provider) }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Account</span>
-              <span class="text-sm text-black">{{ getAccountName(selectedInstance.cloudAccountId) }}</span>
-            </div>
+      <!-- Status Banner -->
+      <div class="grid grid-cols-2 gap-4 mb-6">
+        <div class="flex items-center gap-3 p-4 border border-gray-100 rounded-sm">
+          <div class="w-3 h-3 rounded-full" [class]="getStateDotClass(selectedInstance.state)"></div>
+          <div>
+            <p class="text-sm font-semibold capitalize">{{ selectedInstance.state }}</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Current State</p>
           </div>
         </div>
-
-        <!-- Networking -->
-        <div>
-          <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Networking</h3>
-          <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Public IP</span>
-              <span class="text-sm font-mono" [class]="selectedInstance.publicIpAddress ? 'text-black font-medium' : 'text-gray-400'">{{ selectedInstance.publicIpAddress || 'None' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Private IP</span>
-              <span class="text-sm font-mono text-black">{{ selectedInstance.privateIpAddress || '—' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">VPC ID</span>
-              <span class="text-sm font-mono text-black">{{ selectedInstance.vpcId || '—' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Subnet ID</span>
-              <span class="text-sm font-mono text-black">{{ selectedInstance.subnetId || '—' }}</span>
-            </div>
+        <div class="flex items-center gap-3 p-4 border border-gray-100 rounded-sm">
+          <div>
+            <p class="text-sm font-semibold font-mono">{{ selectedInstance.instanceType }}</p>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Instance Type</p>
           </div>
         </div>
+      </div>
 
-        <!-- Security Groups -->
-        <div *ngIf="selectedInstance.securityGroups && selectedInstance.securityGroups.length > 0">
-          <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Security Groups ({{ selectedInstance.securityGroups.length }})</h3>
-          <div class="space-y-2">
-            <div *ngFor="let sg of selectedInstance.securityGroups" class="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
-              <span class="text-sm text-black">{{ sg.groupName }}</span>
-              <span class="text-xs font-mono text-gray-400">{{ sg.groupId }}</span>
-            </div>
+      <!-- General Info -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">General Information</h4>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">Name</span>
+            <span class="detail-value">{{ selectedInstance.name || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Instance ID</span>
+            <span class="detail-value font-mono text-xs">{{ selectedInstance.instanceId }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">State</span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium" [class]="getStateClass(selectedInstance.state)">
+              <span class="w-1.5 h-1.5 rounded-full" [class]="getStateDotClass(selectedInstance.state)"></span>
+              {{ selectedInstance.state | titlecase }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Instance Type</span>
+            <span class="detail-value font-mono">{{ selectedInstance.instanceType }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Platform</span>
+            <span class="detail-value">{{ selectedInstance.platform || 'Linux/UNIX' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Architecture</span>
+            <span class="detail-value">{{ selectedInstance.architecture || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Provider</span>
+            <span class="detail-value">{{ getProviderLabel(selectedInstance.provider) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Cloud Account</span>
+            <span class="detail-value">{{ getAccountName(selectedInstance.cloudAccountId) }}</span>
           </div>
         </div>
+      </div>
 
-        <!-- Instance Details -->
-        <div>
-          <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Instance Details</h3>
-          <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">AMI / Image ID</span>
-              <span class="text-sm font-mono text-black">{{ selectedInstance.imageId || '—' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Key Pair</span>
-              <span class="text-sm text-black">{{ selectedInstance.keyName || '—' }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Monitoring</span>
-              <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium" [class]="getMonitoringClass(selectedInstance.monitoring)">
-                {{ selectedInstance.monitoring | titlecase }}
-              </span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">EBS Optimized</span>
-              <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium" [class]="selectedInstance.ebsOptimized ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'">
-                {{ selectedInstance.ebsOptimized ? 'Yes' : 'No' }}
-              </span>
-            </div>
+      <!-- Networking -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Networking</h4>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">Public IP</span>
+            <span class="detail-value font-mono" [class]="selectedInstance.publicIpAddress ? '' : '!text-gray-400'">{{ selectedInstance.publicIpAddress || 'None' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Private IP</span>
+            <span class="detail-value font-mono">{{ selectedInstance.privateIpAddress || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">VPC ID</span>
+            <span class="detail-value font-mono text-xs">{{ selectedInstance.vpcId || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Subnet ID</span>
+            <span class="detail-value font-mono text-xs">{{ selectedInstance.subnetId || '—' }}</span>
           </div>
         </div>
+      </div>
 
-        <!-- Tags -->
-        <div *ngIf="selectedInstance.tags && (selectedInstance.tags | keyvalue).length > 0">
-          <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Tags ({{ (selectedInstance.tags | keyvalue).length }})</h3>
-          <div class="bg-gray-50 rounded-xl p-4 space-y-2">
-            <div *ngFor="let tag of selectedInstance.tags | keyvalue" class="flex justify-between items-start gap-4">
-              <span class="text-sm text-gray-500 flex-shrink-0">{{ tag.key }}</span>
-              <span class="text-sm text-black text-right break-all">{{ tag.value }}</span>
-            </div>
+      <!-- Security Groups -->
+      <div *ngIf="selectedInstance.securityGroups && selectedInstance.securityGroups.length > 0" class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Security Groups ({{ selectedInstance.securityGroups.length }})</h4>
+        <div class="space-y-2">
+          <div *ngFor="let sg of selectedInstance.securityGroups" class="flex items-center justify-between py-2 px-3 text-xs border border-gray-50 hover:bg-gray-50 rounded transition">
+            <span class="text-sm text-gray-700">{{ sg.groupName }}</span>
+            <span class="text-xs font-mono text-gray-400">{{ sg.groupId }}</span>
           </div>
         </div>
+      </div>
 
-        <!-- Timestamps -->
-        <div>
-          <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Timestamps</h3>
-          <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-            <div class="flex justify-between" *ngIf="selectedInstance.launchTime">
-              <span class="text-sm text-gray-500">Launched</span>
-              <span class="text-sm text-black">{{ formatDateTime(selectedInstance.launchTime) }}</span>
-            </div>
-            <div class="flex justify-between">
-              <span class="text-sm text-gray-500">Synced</span>
-              <span class="text-sm text-black">{{ formatDateTime(selectedInstance.createdAt) }}</span>
-            </div>
-            <div class="flex justify-between" *ngIf="selectedInstance.updatedAt">
-              <span class="text-sm text-gray-500">Updated</span>
-              <span class="text-sm text-black">{{ formatDateTime(selectedInstance.updatedAt) }}</span>
-            </div>
+      <!-- Instance Details -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Instance Details</h4>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">AMI / Image ID</span>
+            <span class="detail-value font-mono text-xs break-all text-right max-w-[60%]">{{ selectedInstance.imageId || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Key Pair</span>
+            <span class="detail-value">{{ selectedInstance.keyName || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Monitoring</span>
+            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium" [class]="getMonitoringClass(selectedInstance.monitoring)">
+              {{ selectedInstance.monitoring | titlecase }}
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">EBS Optimized</span>
+            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium" [class]="selectedInstance.ebsOptimized ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'">
+              {{ selectedInstance.ebsOptimized ? 'Yes' : 'No' }}
+            </span>
           </div>
         </div>
+      </div>
 
+      <!-- Tags -->
+      <div *ngIf="selectedInstance.tags && (selectedInstance.tags | keyvalue).length > 0" class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Tags ({{ (selectedInstance.tags | keyvalue).length }})</h4>
+        <div class="space-y-3">
+          <div *ngFor="let tag of selectedInstance.tags | keyvalue" class="detail-row">
+            <span class="detail-label">{{ tag.key }}</span>
+            <span class="detail-value break-all text-right max-w-[60%]">{{ tag.value }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timestamps -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Timestamps</h4>
+        <div class="space-y-3">
+          <div class="detail-row" *ngIf="selectedInstance.launchTime">
+            <span class="detail-label">Launched</span>
+            <span class="detail-value">{{ formatDateTime(selectedInstance.launchTime) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Synced</span>
+            <span class="detail-value">{{ formatDateTime(selectedInstance.createdAt) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedInstance.updatedAt">
+            <span class="detail-label">Last Updated</span>
+            <span class="detail-value">{{ formatDateTime(selectedInstance.updatedAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resource IDs -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Resource Identifiers</h4>
+        <div class="space-y-3">
+          <div class="detail-row">
+            <span class="detail-label">Internal ID</span>
+            <span class="detail-value font-mono text-xs">{{ selectedInstance.id }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Account ID</span>
+            <span class="detail-value font-mono text-xs">{{ selectedInstance.cloudAccountId }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Panel Footer -->
+    <div class="px-8 py-4 border-t border-gray-200 flex-shrink-0 flex items-center justify-between bg-gray-50">
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-gray-400">{{ getProviderLabel(selectedInstance.provider) }}</span>
+        <span class="text-xs text-gray-300">&middot;</span>
+        <span class="text-xs text-gray-400 capitalize">{{ selectedInstance.state }}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button (click)="closeDetail()" class="px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">
+          Close
+        </button>
       </div>
     </div>
   </div>
