@@ -7,7 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../../services/cloud-services.service';
 import { CloudAccount } from '../../../../models/cloud-account.model';
-import { EcsService, EcsTaskDefinition, EcsTask } from '../../../../models/cloud-services.model';
+import { EcsService, EcsTaskDefinition, EcsTask, UpdateEcsServiceRequest } from '../../../../models/cloud-services.model';
 
 interface ContainerDefinition {
   Name: string;
@@ -56,6 +56,34 @@ export class EcsOverviewComponent implements OnInit, OnDestroy {
   // Tasks view
   showAllTasks = false;
   selectedTask: EcsTask | null = null;
+
+  // Service update
+  showUpdatePanel = false;
+  updateForm = { desiredCount: 0, taskDefinition: '' };
+  updating = false;
+  updateMessage: string | null = null;
+  updateMessageType: 'success' | 'error' | null = null;
+
+  // Delete service
+  showDeleteConfirm = false;
+  deleting = false;
+
+  // Sync
+  syncing = false;
+  syncMessage: string | null = null;
+
+  // Stop task
+  showStopTaskDialog = false;
+  stopTaskTarget: EcsTask | null = null;
+  stopReason = '';
+  stoppingTask = false;
+
+  // All task definitions for update dropdown
+  allTaskDefinitions: EcsTaskDefinition[] = [];
+
+  // Toast
+  toastMessage: string | null = null;
+  toastType: 'success' | 'error' | null = null;
 
   Math = Math;
 
@@ -139,6 +167,9 @@ export class EcsOverviewComponent implements OnInit, OnDestroy {
       tasks: this.cloudServicesService.getEcsTasks(accountId).pipe(catchError(() => of({ tasks: [] })))
     }).subscribe({
       next: ({ taskDefs, tasks }: any) => {
+        // Store all task definitions for the update dropdown
+        this.allTaskDefinitions = (taskDefs.taskDefinitions || []).filter((td: EcsTaskDefinition) => td.status?.toLowerCase() === 'active');
+
         // Find matching task definition by ARN
         const allTaskDefs: EcsTaskDefinition[] = taskDefs.taskDefinitions || [];
         this.taskDefinition = allTaskDefs.find(td =>
@@ -155,6 +186,12 @@ export class EcsOverviewComponent implements OnInit, OnDestroy {
           t.group === `service:${this.service!.serviceName}` &&
           t.clusterName === this.service!.clusterName
         );
+
+        // Init update form
+        this.updateForm = {
+          desiredCount: this.service!.desiredCount,
+          taskDefinition: this.taskDefinition?.family || ''
+        };
 
         this.loading = false;
       },
@@ -356,5 +393,151 @@ export class EcsOverviewComponent implements OnInit, OnDestroy {
 
   trackByTaskId(index: number, task: EcsTask): number {
     return task.id;
+  }
+
+  // ── Service Update ──
+
+  openUpdatePanel(): void {
+    if (!this.service) return;
+    this.updateForm = {
+      desiredCount: this.service.desiredCount,
+      taskDefinition: this.taskDefinition?.family || ''
+    };
+    this.showUpdatePanel = true;
+    this.updateMessage = null;
+  }
+
+  closeUpdatePanel(): void {
+    this.showUpdatePanel = false;
+    this.updateMessage = null;
+  }
+
+  submitUpdate(): void {
+    if (!this.service || this.updating) return;
+    this.updating = true;
+    this.updateMessage = null;
+
+    const request: UpdateEcsServiceRequest = {
+      desiredCount: this.updateForm.desiredCount,
+      taskDefinition: this.updateForm.taskDefinition
+    };
+
+    this.cloudServicesService.updateEcsService(this.service.id, this.service.cloudAccountId, request).subscribe({
+      next: (updated) => {
+        this.service = updated;
+        this.parseNetworkConfig();
+        this.updating = false;
+        this.showUpdatePanel = false;
+        this.showToast('Service updated successfully.', 'success');
+        this.loadRelatedData();
+      },
+      error: (err) => {
+        this.updating = false;
+        this.updateMessage = err?.error?.message || 'Failed to update service.';
+        this.updateMessageType = 'error';
+      }
+    });
+  }
+
+  // ── Delete Service ──
+
+  openDeleteConfirm(): void {
+    this.showDeleteConfirm = true;
+  }
+
+  closeDeleteConfirm(): void {
+    this.showDeleteConfirm = false;
+  }
+
+  confirmDelete(): void {
+    if (!this.service || this.deleting) return;
+    this.deleting = true;
+
+    this.cloudServicesService.deleteEcsService(this.service.id, this.service.cloudAccountId).subscribe({
+      next: () => {
+        this.deleting = false;
+        this.router.navigate(['/dashboard/ecs']);
+      },
+      error: (err) => {
+        this.deleting = false;
+        this.showDeleteConfirm = false;
+        this.showToast(err?.error?.message || 'Failed to delete service.', 'error');
+      }
+    });
+  }
+
+  // ── Sync ──
+
+  syncService(): void {
+    if (!this.service || this.syncing) return;
+    this.syncing = true;
+
+    this.cloudServicesService.syncEcsServices(this.service.cloudAccountId, this.service.clusterName).subscribe({
+      next: (result) => {
+        this.syncing = false;
+        this.showToast(`Sync complete — ${result.added} added, ${result.updated} updated, ${result.removed} removed`, 'success');
+        this.refreshData();
+      },
+      error: () => {
+        this.syncing = false;
+        this.showToast('Sync failed.', 'error');
+      }
+    });
+  }
+
+  syncTasks(): void {
+    if (!this.service || this.syncing) return;
+    this.syncing = true;
+
+    this.cloudServicesService.syncTasks(this.service.cloudAccountId, this.service.clusterName).subscribe({
+      next: (result) => {
+        this.syncing = false;
+        this.showToast(`Tasks synced — ${result.added} added, ${result.updated} updated, ${result.removed} removed`, 'success');
+        this.refreshData();
+      },
+      error: () => {
+        this.syncing = false;
+        this.showToast('Task sync failed.', 'error');
+      }
+    });
+  }
+
+  // ── Stop Task ──
+
+  openStopTask(task: EcsTask): void {
+    this.stopTaskTarget = task;
+    this.stopReason = '';
+    this.showStopTaskDialog = true;
+  }
+
+  closeStopTask(): void {
+    this.showStopTaskDialog = false;
+    this.stopTaskTarget = null;
+  }
+
+  confirmStopTask(): void {
+    if (!this.stopTaskTarget || !this.service || this.stoppingTask) return;
+    this.stoppingTask = true;
+
+    this.cloudServicesService.stopTask(this.stopTaskTarget.id, this.service.cloudAccountId, { reason: this.stopReason || 'Stopped via CloudZen' }).subscribe({
+      next: () => {
+        this.stoppingTask = false;
+        this.showStopTaskDialog = false;
+        this.showToast('Stop signal sent. Task will transition to STOPPED shortly.', 'success');
+        this.refreshData();
+      },
+      error: (err) => {
+        this.stoppingTask = false;
+        this.showToast(err?.error?.message || 'Failed to stop task.', 'error');
+      }
+    });
+  }
+
+  // ── Toast ──
+
+  private showToast(message: string, type: 'success' | 'error'): void {
+    this.toastMessage = message;
+    this.toastType = type;
+    setTimeout(() => this.toastMessage = null, 5000);
   }
 }

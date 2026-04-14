@@ -1,7 +1,7 @@
 [
-  { "id": 1, "name": "AWS", "count": 120, "image": "https://images.unsplash.com/photo-1669865015890-4dbd855de0f7" },
-  { "id": 2, "name": "Azure", "count": 98, "image": "https://images.unsplash.com/photo-1662052955282-da15376f3919" },
-  { "id": 3, "name": "Google Cloud", "count": 87, "image": "https://images.unsplash.com/photo-1728710718080-3cf64d995d2c" },
-  { "id": 4, "name": "DigitalOcean", "count": 45, "image": "https://images.unsplash.com/photo-1660000770692-2e8b0c376ae1" },
-  { "id": 5, "name": "IBM Cloud", "count": 32, "image": "https://images.unsplash.com/photo-1665936653831-211c14d123ea" }
+  { "id": 1, "name": "AWS", "count": 120, "image": "https://images.unsplash.com/photo-1669865015890-4dbd855de0f7?w=400&q=75&auto=format" },
+  { "id": 2, "name": "Azure", "count": 98, "image": "https://images.unsplash.com/photo-1662052955282-da15376f3919?w=400&q=75&auto=format" },
+  { "id": 3, "name": "Google Cloud", "count": 87, "image": "https://images.unsplash.com/photo-1728710718080-3cf64d995d2c?w=400&q=75&auto=format" },
+  { "id": 4, "name": "DigitalOcean", "count": 45, "image": "https://images.unsplash.com/photo-1660000770692-2e8b0c376ae1?w=400&q=75&auto=format" },
+  { "id": 5, "name": "IBM Cloud", "count": 32, "image": "https://images.unsplash.com/photo-1665936653831-211c14d123ea?w=400&q=75&auto=format" }
 ]

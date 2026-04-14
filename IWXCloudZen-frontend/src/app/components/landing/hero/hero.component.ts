@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GlobalSearchComponent } from '../../../global-search/global-search.component';
 
@@ -7,6 +7,7 @@ import { GlobalSearchComponent } from '../../../global-search/global-search.comp
   standalone: true,
   imports: [CommonModule, GlobalSearchComponent],
   templateUrl: './hero.component.html',
-  styleUrls: ['./hero.component.css']
+  styleUrls: ['./hero.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HeroComponent {}

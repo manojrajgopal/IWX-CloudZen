@@ -368,6 +368,11 @@ export interface CreateEcsServiceRequest {
   networkConfiguration: CreateEcsServiceNetworkConfig;
 }
 
+export interface UpdateEcsServiceRequest {
+  desiredCount: number;
+  taskDefinition: string;
+}
+
 export interface ContainerPortMapping {
   containerPort: number;
   hostPort: number;
@@ -408,6 +413,59 @@ export interface CreateTaskDefinitionRequest {
   containerDefinitions: CreateContainerDefinition[];
 }
 
+// ── ECS Run Task ──
+
+export interface RunTaskNetworkConfig {
+  subnets: string[];
+  securityGroups: string[];
+  assignPublicIp: boolean;
+}
+
+export interface RunTaskEnvironmentOverride {
+  containerName: string;
+  environment: { name: string; value: string }[];
+}
+
+export interface RunTaskRequest {
+  clusterName: string;
+  taskDefinition: string;
+  launchType: string;
+  count: number;
+  networkConfiguration: RunTaskNetworkConfig;
+  environmentOverrides: RunTaskEnvironmentOverride[];
+}
+
+// ── ECS Sync Results ──
+
+export interface SyncEcsServicesResult {
+  clusterName: string;
+  added: number;
+  updated: number;
+  removed: number;
+  services: EcsService[];
+}
+
+export interface SyncEcsTasksResult {
+  clusterName: string;
+  added: number;
+  updated: number;
+  removed: number;
+  tasks: EcsTask[];
+}
+
+export interface SyncTaskDefinitionsResult {
+  added: number;
+  updated: number;
+  removed: number;
+  taskDefinitions: EcsTaskDefinition[];
+}
+
+// ── ECS Stop Task ──
+
+export interface StopTaskRequest {
+  reason: string;
+}
+
 // ── Permissions / IAM ──
 
 export interface CheckPermissionRequest {
@@ -427,3 +485,4 @@ export interface PermissionCheckResponse {
   deniedCount: number;
   results: CheckPermissionResult[];
 }
+

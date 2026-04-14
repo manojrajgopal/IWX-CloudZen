@@ -106,10 +106,33 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex items-center gap-3 flex-shrink-0">
+      <div class="flex items-center gap-3 flex-shrink-0 flex-wrap">
+        <button (click)="openUpdatePanel()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-xs uppercase tracking-wider hover:bg-gray-800 transition" title="Update Service">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z"/>
+          </svg>
+          Update
+        </button>
+        <button (click)="syncService()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-xs uppercase tracking-wider hover:bg-black hover:text-white hover:border-black transition" [disabled]="syncing" title="Sync Services">
+          <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Sync
+        </button>
+        <button (click)="syncTasks()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-xs uppercase tracking-wider hover:bg-black hover:text-white hover:border-black transition" [disabled]="syncing" title="Sync Tasks">
+          <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+          </svg>
+          Sync Tasks
+        </button>
         <button (click)="refreshData()" class="btn-overview-icon" title="Refresh">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+        <button (click)="openDeleteConfirm()" class="btn-overview-icon text-red-400 hover:!bg-red-600 hover:!text-white hover:!border-red-600" title="Delete Service">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
           </svg>
         </button>
         <a routerLink="/dashboard/ecs" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-black hover:bg-black hover:text-white transition">
@@ -731,6 +754,13 @@
                       <span class="text-xs text-gray-500">{{ task.stoppedAt ? formatDateTime(task.stoppedAt) : '—' }}</span>
                     </div>
                   </div>
+                  <button *ngIf="task.lastStatus.toLowerCase() !== 'stopped'"
+                          (click)="$event.stopPropagation(); openStopTask(task)"
+                          class="ml-2 p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition flex-shrink-0" title="Stop Task">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z"/>
+                    </svg>
+                  </button>
                 </div>
 
                 <!-- Task Expanded Detail -->
@@ -1049,5 +1079,127 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ════ TOAST MESSAGE ════ -->
+<div *ngIf="toastMessage" class="fixed top-6 right-6 z-[70] max-w-md px-5 py-3 flex items-center gap-3 text-sm border rounded-xl shadow-lg animate-fade-in"
+     [ngClass]="toastType === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'"
+     style="animation: fadeIn 0.3s ease-out">
+  <svg *ngIf="toastType === 'success'" class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+  </svg>
+  <svg *ngIf="toastType === 'error'" class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+  </svg>
+  <span>{{ toastMessage }}</span>
+  <button (click)="toastMessage = null" class="ml-auto text-gray-400 hover:text-gray-600">
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+  </button>
+</div>
+
+<!-- ════ UPDATE SERVICE PANEL ════ -->
+<div *ngIf="showUpdatePanel && service" class="fixed inset-0 z-50 flex justify-end">
+  <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" (click)="closeUpdatePanel()"></div>
+  <div class="relative bg-white w-full max-w-lg h-full flex flex-col shadow-2xl border-l border-gray-100 overflow-hidden"
+       style="animation: slideInRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards">
+    <div class="flex items-center justify-between px-8 py-5 border-b border-gray-100 flex-shrink-0">
+      <div>
+        <h2 class="font-serif text-lg font-bold">Update Service</h2>
+        <p class="text-xs text-gray-400 uppercase tracking-wider">{{ service.serviceName }}</p>
+      </div>
+      <button (click)="closeUpdatePanel()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="flex-1 overflow-y-auto px-8 py-6 space-y-6">
+      <!-- Error -->
+      <div *ngIf="updateMessage" class="px-4 py-3 text-sm border rounded-xl"
+           [ngClass]="updateMessageType === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-200 text-green-700'">
+        {{ updateMessage }}
+      </div>
+      <!-- Desired Count -->
+      <div>
+        <label class="block text-xs uppercase tracking-widest text-gray-400 font-medium mb-2">Desired Task Count</label>
+        <input type="number" [(ngModel)]="updateForm.desiredCount" min="0" max="100"
+               class="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-300"/>
+        <p class="text-xs text-gray-400 mt-1">Current: {{ service.desiredCount }} · Running: {{ service.runningCount }}</p>
+      </div>
+      <!-- Task Definition -->
+      <div>
+        <label class="block text-xs uppercase tracking-widest text-gray-400 font-medium mb-2">Task Definition</label>
+        <select [(ngModel)]="updateForm.taskDefinition"
+                class="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 bg-white">
+          <option *ngFor="let td of allTaskDefinitions" [value]="td.family">{{ td.family }} (rev {{ td.revision }})</option>
+        </select>
+        <p class="text-xs text-gray-400 mt-1">Select a task definition family</p>
+      </div>
+      <!-- Current Info -->
+      <div class="bg-gray-50 border border-gray-100 rounded-xl p-4">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Current Task Definition</p>
+        <p class="text-xs font-mono text-gray-700 break-all">{{ service.taskDefinition }}</p>
+      </div>
+    </div>
+    <div class="px-8 py-4 border-t border-gray-100 flex items-center gap-3 flex-shrink-0 bg-gray-50">
+      <button (click)="closeUpdatePanel()" class="flex-1 px-4 py-2.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-100 transition">Cancel</button>
+      <button (click)="submitUpdate()" class="flex-1 px-4 py-2.5 text-sm bg-black text-white rounded-xl hover:bg-gray-800 transition" [disabled]="updating">
+        {{ updating ? 'Updating...' : 'Update Service' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ DELETE CONFIRMATION ════ -->
+<div *ngIf="showDeleteConfirm && service" class="fixed inset-0 z-[60] flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="closeDeleteConfirm()"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md p-8" style="animation: fadeIn 0.2s ease-out">
+    <div class="flex justify-center mb-5">
+      <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center">
+        <svg class="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+      </div>
+    </div>
+    <h3 class="text-lg font-serif font-bold text-center mb-2">Delete Service</h3>
+    <p class="text-sm text-gray-500 text-center mb-6">
+      Are you sure you want to delete <strong class="text-black">{{ service.serviceName }}</strong>? This action cannot be undone.
+    </p>
+    <div class="flex items-center gap-3">
+      <button (click)="closeDeleteConfirm()" class="flex-1 px-4 py-2.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 transition">Cancel</button>
+      <button (click)="confirmDelete()" class="flex-1 px-4 py-2.5 text-sm bg-red-600 text-white rounded-xl hover:bg-red-700 transition" [disabled]="deleting">
+        {{ deleting ? 'Deleting...' : 'Delete Service' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ STOP TASK DIALOG ════ -->
+<div *ngIf="showStopTaskDialog && stopTaskTarget" class="fixed inset-0 z-[60] flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="closeStopTask()"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md p-8" style="animation: fadeIn 0.2s ease-out">
+    <div class="flex justify-center mb-5">
+      <div class="w-14 h-14 rounded-full bg-yellow-50 flex items-center justify-center">
+        <svg class="w-7 h-7 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z"/>
+        </svg>
+      </div>
+    </div>
+    <h3 class="text-lg font-serif font-bold text-center mb-2">Stop Task</h3>
+    <p class="text-sm text-gray-500 text-center mb-4">
+      Stop task <strong class="text-black font-mono text-xs">{{ getShortTaskId(stopTaskTarget.taskArn) }}</strong>?
+    </p>
+    <div class="mb-6">
+      <label class="block text-xs uppercase tracking-widest text-gray-400 font-medium mb-2">Reason (optional)</label>
+      <input type="text" [(ngModel)]="stopReason" placeholder="e.g., Stopping for maintenance"
+             class="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-300"/>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="closeStopTask()" class="flex-1 px-4 py-2.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 transition">Cancel</button>
+      <button (click)="confirmStopTask()" class="flex-1 px-4 py-2.5 text-sm bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition" [disabled]="stoppingTask">
+        {{ stoppingTask ? 'Stopping...' : 'Stop Task' }}
+      </button>
+    </div>
   </div>
 </div>

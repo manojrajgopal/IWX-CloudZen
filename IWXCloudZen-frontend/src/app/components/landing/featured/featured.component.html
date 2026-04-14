@@ -7,9 +7,9 @@
       </p>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-      <div *ngFor="let service of featured" class="border border-gray-200 p-6 hover:shadow-lg transition card-hover">
+      <div *ngFor="let service of featured; trackBy: trackService" class="border border-gray-200 p-6 hover:shadow-lg transition card-hover">
         <div class="w-16 h-16 rounded-full overflow-hidden mb-4">
-          <img [src]="service.icon" alt="{{ service.title }}" class="w-full h-full object-cover">
+          <img [src]="service.icon" alt="{{ service.title }}" decoding="async" fetchpriority="low" width="128" height="128" class="w-full h-full object-cover">
         </div>
         <h3 class="text-xl font-serif font-bold mb-2">{{ service.title }}</h3>
         <p class="text-gray-500 text-sm">{{ service.description }}</p>

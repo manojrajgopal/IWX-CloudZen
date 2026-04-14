@@ -8,7 +8,7 @@
           <div *ngFor="let t of testimonials" class="w-full flex-shrink-0 px-4">
             <div class="bg-gray-50 p-8 md:p-12">
               <div class="flex items-center gap-4 mb-6">
-                <img [src]="t.image" [alt]="t.name" class="w-14 h-14 rounded-full object-cover" />
+                <img [src]="t.image" [alt]="t.name" decoding="async" fetchpriority="low" width="56" height="56" class="w-14 h-14 rounded-full object-cover" />
                 <div>
                   <h4 class="font-serif font-bold text-lg">{{ t.name }}</h4>
                   <p class="text-sm text-gray-500">{{ t.location }}</p>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HeroComponent } from '../../components/landing/hero/hero.component';
 import { StatsComponent } from '../../components/landing/stats/stats.component';
@@ -22,6 +22,22 @@ import { NewsletterComponent } from '../../components/landing/newsletter/newslet
     NewsletterComponent
   ],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.css']
+  styleUrls: ['./home.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent {}
+export class HomeComponent implements AfterViewInit {
+  loading = true;
+
+  constructor(private cdr: ChangeDetectorRef) {}
+
+  ngAfterViewInit(): void {
+    // All child components are rendered — wait for the browser to finish
+    // painting everything, then fade out the loading overlay.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        this.loading = false;
+        this.cdr.markForCheck();
+      });
+    });
+  }
+}

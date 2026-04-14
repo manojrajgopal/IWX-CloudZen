@@ -41,7 +41,13 @@ import {
   UpdateVpcRequest,
   DeleteVpcResponse,
   CreateEcsServiceRequest,
+  UpdateEcsServiceRequest,
   CreateTaskDefinitionRequest,
+  RunTaskRequest,
+  StopTaskRequest,
+  SyncEcsServicesResult,
+  SyncEcsTasksResult,
+  SyncTaskDefinitionsResult,
   CheckPermissionRequest,
   PermissionCheckResponse
 } from '../models/cloud-services.model';
@@ -309,6 +315,69 @@ export class CloudServicesService {
   deleteS3File(fileId: number): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/api/cloud/services/storage/aws/s3/files/${fileId}`
+    );
+  }
+
+  // ── ECS Update / Delete / Sync / Run / Stop ──
+
+  updateEcsService(serviceId: number, accountId: number, request: UpdateEcsServiceRequest): Observable<EcsService> {
+    return this.http.put<EcsService>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/services/${serviceId}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deleteEcsService(serviceId: number, accountId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/services/${serviceId}?accountId=${accountId}`
+    );
+  }
+
+  syncEcsServices(accountId: number, clusterName: string): Observable<SyncEcsServicesResult> {
+    return this.http.post<SyncEcsServicesResult>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/services/sync?accountId=${accountId}&clusterName=${encodeURIComponent(clusterName)}`,
+      null
+    );
+  }
+
+  syncTasks(accountId: number, clusterName: string): Observable<SyncEcsTasksResult> {
+    return this.http.post<SyncEcsTasksResult>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/tasks/sync?accountId=${accountId}&clusterName=${encodeURIComponent(clusterName)}`,
+      null
+    );
+  }
+
+  syncTaskDefinitions(accountId: number): Observable<SyncTaskDefinitionsResult> {
+    return this.http.post<SyncTaskDefinitionsResult>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/task-definitions/sync?accountId=${accountId}`,
+      null
+    );
+  }
+
+  stopTask(taskId: number, accountId: number, request: StopTaskRequest): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/tasks/${taskId}/stop?accountId=${accountId}`,
+      request
+    );
+  }
+
+  runTask(accountId: number, request: RunTaskRequest): Observable<EcsTask[]> {
+    return this.http.post<EcsTask[]>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/tasks/run?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deregisterTaskDefinition(tdId: number, accountId: number): Observable<EcsTaskDefinition> {
+    return this.http.post<EcsTaskDefinition>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/task-definitions/${tdId}/deregister?accountId=${accountId}`,
+      null
+    );
+  }
+
+  deleteTaskDefinition(tdId: number, accountId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.apiUrl}/api/cloud/services/ecs/aws/task-definitions/${tdId}?accountId=${accountId}`
     );
   }
 

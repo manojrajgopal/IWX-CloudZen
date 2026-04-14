@@ -7,7 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../services/cloud-services.service';
 import { CloudAccount } from '../../../models/cloud-account.model';
-import { EcsService, EcsSyncResponse } from '../../../models/cloud-services.model';
+import { EcsService, EcsTaskDefinition, EcsSyncResponse } from '../../../models/cloud-services.model';
 import { EcsFilterByProviderPipe, EcsFilterByStatusPipe, EcsFilterByLaunchTypePipe } from './ecs.pipes';
 
 type ViewMode = 'grid' | 'list';
@@ -57,6 +57,24 @@ export class EcsComponent implements OnInit, OnDestroy {
   syncMessage: string | null = null;
   syncMessageType: 'success' | 'error' | null = null;
 
+  // Task Definitions
+  taskDefinitions: EcsTaskDefinition[] = [];
+  showTaskDefinitions = false;
+  tdSearchQuery = '';
+  tdSelectedStatus = 'all';
+
+  // Active tab
+  activeTab: 'services' | 'task-definitions' = 'services';
+
+  // Action states
+  deletingServiceId: number | null = null;
+  deregisteringTdId: number | null = null;
+  deletingTdId: number | null = null;
+  syncingTd = false;
+
+  // Confirm dialog
+  confirmAction: { type: string; id: number; name: string; accountId: number } | null = null;
+
   // Metrics
   metrics: EcsMetric[] = [
     { label: 'Total Services', value: '—', icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10', color: 'text-black' },
@@ -104,12 +122,16 @@ export class EcsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const requests = accounts.map(a =>
+    const serviceReqs = accounts.map(a =>
       this.cloudServicesService.getEcsServices(a.id).pipe(catchError(() => of({ services: [] })))
     );
+    const tdReqs = accounts.map(a =>
+      this.cloudServicesService.getEcsTaskDefinitions(a.id).pipe(catchError(() => of({ taskDefinitions: [] })))
+    );
 
-    forkJoin(requests).subscribe(results => {
-      this.services = results.flatMap((r: any) => r.services || []);
+    forkJoin([forkJoin(serviceReqs), forkJoin(tdReqs)]).subscribe(([svcResults, tdResults]) => {
+      this.services = svcResults.flatMap((r: any) => r.services || []);
+      this.taskDefinitions = tdResults.flatMap((r: any) => r.taskDefinitions || []);
       this.loading = false;
       this.updateMetrics();
     });
@@ -414,5 +436,159 @@ export class EcsComponent implements OnInit, OnDestroy {
 
   get totalPending(): number {
     return this.services.reduce((sum, s) => sum + (s.pendingCount || 0), 0);
+  }
+
+  // ── Task Definitions ──
+
+  get filteredTaskDefinitions(): EcsTaskDefinition[] {
+    let result = [...this.taskDefinitions];
+
+    if (this.tdSearchQuery.trim()) {
+      const q = this.tdSearchQuery.toLowerCase();
+      result = result.filter(td =>
+        td.family?.toLowerCase().includes(q) ||
+        td.taskDefinitionArn?.toLowerCase().includes(q) ||
+        td.cpu?.includes(q) ||
+        td.memory?.includes(q)
+      );
+    }
+
+    if (this.tdSelectedStatus !== 'all') {
+      result = result.filter(td => td.status?.toLowerCase() === this.tdSelectedStatus);
+    }
+
+    return result;
+  }
+
+  get activeTaskDefs(): number {
+    return this.taskDefinitions.filter(td => td.status?.toLowerCase() === 'active').length;
+  }
+
+  get inactiveTaskDefs(): number {
+    return this.taskDefinitions.filter(td => td.status?.toLowerCase() === 'inactive').length;
+  }
+
+  // ── Confirm Dialog ──
+
+  openConfirm(type: string, id: number, name: string, accountId: number): void {
+    this.confirmAction = { type, id, name, accountId };
+  }
+
+  closeConfirm(): void {
+    this.confirmAction = null;
+  }
+
+  executeConfirm(): void {
+    if (!this.confirmAction) return;
+    const { type, id, accountId } = this.confirmAction;
+
+    switch (type) {
+      case 'delete-service':
+        this.deleteService(id, accountId);
+        break;
+      case 'deregister-td':
+        this.deregisterTaskDefinition(id, accountId);
+        break;
+      case 'delete-td':
+        this.deleteTaskDef(id, accountId);
+        break;
+    }
+    this.confirmAction = null;
+  }
+
+  // ── Service Actions ──
+
+  deleteService(serviceId: number, accountId: number): void {
+    this.deletingServiceId = serviceId;
+    this.cloudServicesService.deleteEcsService(serviceId, accountId).subscribe({
+      next: () => {
+        this.services = this.services.filter(s => s.id !== serviceId);
+        this.deletingServiceId = null;
+        this.updateMetrics();
+        this.showToast('Service deleted successfully.', 'success');
+        if (this.selectedService?.id === serviceId) this.closeDetail();
+      },
+      error: (err) => {
+        this.deletingServiceId = null;
+        this.showToast(err?.error?.message || 'Failed to delete service.', 'error');
+      }
+    });
+  }
+
+  // ── Task Definition Actions ──
+
+  deregisterTaskDefinition(tdId: number, accountId: number): void {
+    this.deregisteringTdId = tdId;
+    this.cloudServicesService.deregisterTaskDefinition(tdId, accountId).subscribe({
+      next: (updated) => {
+        const idx = this.taskDefinitions.findIndex(td => td.id === tdId);
+        if (idx >= 0) this.taskDefinitions[idx] = updated;
+        this.deregisteringTdId = null;
+        this.showToast(`Task definition "${updated.family}" deregistered (INACTIVE).`, 'success');
+      },
+      error: (err) => {
+        this.deregisteringTdId = null;
+        this.showToast(err?.error?.message || 'Failed to deregister task definition.', 'error');
+      }
+    });
+  }
+
+  deleteTaskDef(tdId: number, accountId: number): void {
+    this.deletingTdId = tdId;
+    this.cloudServicesService.deleteTaskDefinition(tdId, accountId).subscribe({
+      next: () => {
+        this.taskDefinitions = this.taskDefinitions.filter(td => td.id !== tdId);
+        this.deletingTdId = null;
+        this.showToast('Task definition deleted successfully.', 'success');
+      },
+      error: (err) => {
+        this.deletingTdId = null;
+        this.showToast(err?.error?.message || 'Failed to delete task definition.', 'error');
+      }
+    });
+  }
+
+  syncTaskDefinitions(): void {
+    if (this.syncingTd) return;
+    this.syncingTd = true;
+    const awsAccounts = this.accounts.filter(a => a.provider?.toUpperCase() === 'AWS');
+    if (awsAccounts.length === 0) {
+      this.syncingTd = false;
+      this.showToast('No AWS accounts to sync.', 'error');
+      return;
+    }
+
+    const requests = awsAccounts.map(a =>
+      this.cloudServicesService.syncTaskDefinitions(a.id).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin(requests).subscribe({
+      next: (results) => {
+        const valid = results.filter((r): r is any => r !== null);
+        const added = valid.reduce((s, r) => s + (r.added || 0), 0);
+        const updated = valid.reduce((s, r) => s + (r.updated || 0), 0);
+        const removed = valid.reduce((s, r) => s + (r.removed || 0), 0);
+        this.syncingTd = false;
+        this.showToast(`Task Definitions synced — ${added} added, ${updated} updated, ${removed} removed`, 'success');
+        this.loadData();
+      },
+      error: () => {
+        this.syncingTd = false;
+        this.showToast('Task definition sync failed.', 'error');
+      }
+    });
+  }
+
+  private showToast(message: string, type: 'success' | 'error'): void {
+    this.syncMessage = message;
+    this.syncMessageType = type;
+    setTimeout(() => this.syncMessage = null, 5000);
+  }
+
+  getContainerCount(td: EcsTaskDefinition): number {
+    try {
+      const containers = JSON.parse(td.containerDefinitionsJson || '[]');
+      return containers.length;
+    } catch { return td.containerCount || 0; }
   }
 }

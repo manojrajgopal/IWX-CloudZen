@@ -1,0 +1,517 @@
+<div class="container-lux py-12 md:py-20">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- HEADER -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="flex items-center gap-3 mb-12">
+    <button (click)="goBack()" class="text-gray-400 hover:text-black transition">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.986V5.653z"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-3xl md:text-5xl font-serif font-bold tracking-tight">Run Task</h1>
+      <p class="text-sm text-gray-400 uppercase tracking-widest mt-1">AWS ECS &middot; Launch Standalone Task</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'loading'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <path d="M50 15 L65 25 L65 45 L50 55 L35 45 L35 25 Z" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-draw"/>
+        <path d="M35 55 L50 65 L65 55" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-wave"/>
+      </svg>
+    </div>
+    <div class="w-48 h-1 bg-gray-200 mx-auto mb-4">
+      <div class="h-full bg-black animate-loading-bar"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Loading accounts...</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- RUNNING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'running'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <path d="M50 15 L65 25 L65 45 L50 55 L35 45 L35 25 Z" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-draw"/>
+        <path d="M35 55 L50 65 L65 55" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-wave"/>
+      </svg>
+    </div>
+    <div class="w-64 h-1.5 bg-gray-200 mx-auto mb-4 overflow-hidden">
+      <div class="h-full bg-black transition-all duration-200 ease-out" [style.width.%]="progress"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Launching task...</p>
+    <p class="text-xs text-gray-400 mt-2">{{ selectedTaskDefinition }} on {{ selectedClusterName }}</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FORM -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'form'" class="max-w-3xl mx-auto animate-fadeIn">
+    <div class="border border-gray-200 bg-white">
+      <!-- Form Header -->
+      <div class="px-8 py-6 border-b border-gray-100">
+        <h2 class="text-lg font-serif font-bold">Task Configuration</h2>
+        <p class="text-sm text-gray-400 mt-1">Configure and launch a standalone ECS task.</p>
+      </div>
+
+      <!-- Form Body -->
+      <div class="px-8 py-8 space-y-0">
+
+        <!-- ─── Cloud Account ─── -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Cloud Account</label>
+          <div *ngIf="accounts.length === 0" class="p-6 border border-dashed border-gray-200 text-center">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+            </svg>
+            <p class="text-sm text-gray-500 mb-2">No AWS accounts connected</p>
+            <a routerLink="/profile" class="text-xs text-black underline hover:no-underline">Connect an account</a>
+          </div>
+          <div *ngIf="accounts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div *ngFor="let acc of accounts"
+                 (click)="selectAccount(acc.id)"
+                 class="account-card flex items-center gap-3 p-4 border cursor-pointer transition-all duration-200"
+                 [ngClass]="selectedAccountId === acc.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="selectedAccountId === acc.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ acc.accountName }}</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ acc.provider }} &middot; {{ acc.region }}</p>
+              </div>
+              <div *ngIf="selectedAccountId === acc.id" class="flex-shrink-0">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Only show rest when account selected -->
+        <div *ngIf="selectedAccountId">
+
+          <!-- Loading resources -->
+          <div *ngIf="resourcesLoading" class="form-section-divider text-center py-8">
+            <div class="w-32 h-1 bg-gray-200 mx-auto mb-3">
+              <div class="h-full bg-black animate-loading-bar"></div>
+            </div>
+            <p class="text-xs text-gray-400 uppercase tracking-widest">Loading resources...</p>
+          </div>
+
+          <div *ngIf="!resourcesLoading">
+
+            <!-- ─── Cluster Selection ─── -->
+            <div class="form-section-divider">
+              <label class="text-xs uppercase tracking-widest text-gray-400 mb-3 block">Cluster</label>
+              <div *ngIf="clusters.length === 0" class="p-5 border border-dashed border-gray-200 text-center">
+                <p class="text-sm text-gray-500 mb-2">No clusters found</p>
+                <a routerLink="/dashboard/clusters/create" class="text-xs text-black underline hover:no-underline">Create a cluster first</a>
+              </div>
+              <div *ngIf="clusters.length > 0" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                <div *ngFor="let cluster of clusters"
+                     (click)="selectedClusterName = cluster.name"
+                     class="resource-option"
+                     [class.selected]="selectedClusterName === cluster.name">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                       [ngClass]="selectedClusterName === cluster.name ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+                    </svg>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium truncate">{{ cluster.name }}</p>
+                    <p class="text-[10px] text-gray-400 uppercase">{{ cluster.status }}</p>
+                  </div>
+                  <svg *ngIf="selectedClusterName === cluster.name" class="w-4 h-4 text-black flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- ─── Task Definition Selection ─── -->
+            <div class="form-section-divider">
+              <label class="text-xs uppercase tracking-widest text-gray-400 mb-3 block">Task Definition</label>
+              <div *ngIf="taskDefinitions.length === 0" class="p-5 border border-dashed border-gray-200 text-center">
+                <p class="text-sm text-gray-500 mb-2">No task definitions found</p>
+                <a routerLink="/dashboard/ecs/create-task-definition" class="text-xs text-black underline hover:no-underline">Register a task definition first</a>
+              </div>
+              <div *ngIf="taskDefinitions.length > 0" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                <div *ngFor="let td of taskDefinitions"
+                     (click)="selectedTaskDefinition = td.family; onTaskDefinitionChanged()"
+                     class="resource-option"
+                     [class.selected]="selectedTaskDefinition === td.family">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                       [ngClass]="selectedTaskDefinition === td.family ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium truncate">{{ td.family }}:{{ td.revision }}</p>
+                    <p class="text-[10px] text-gray-400 uppercase">{{ td.cpu }} CPU &middot; {{ td.memory }} MiB &middot; {{ td.containerCount }} container(s)</p>
+                  </div>
+                  <svg *ngIf="selectedTaskDefinition === td.family" class="w-4 h-4 text-black flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- ─── Launch Type & Task Count ─── -->
+            <div class="form-section-divider">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <!-- Launch Type -->
+                <div>
+                  <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Launch Type</label>
+                  <div class="flex gap-2 flex-wrap">
+                    <button *ngFor="let lt of launchTypes"
+                            (click)="launchType = lt"
+                            class="px-4 py-2 text-xs uppercase tracking-wider border transition"
+                            [ngClass]="launchType === lt ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'">
+                      {{ lt }}
+                    </button>
+                  </div>
+                </div>
+                <!-- Task Count -->
+                <div>
+                  <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Task Count</label>
+                  <div class="flex items-center gap-4">
+                    <button (click)="taskCount = taskCount > 1 ? taskCount - 1 : 1"
+                            class="w-10 h-10 flex items-center justify-center border border-gray-200 text-gray-500 hover:border-black hover:text-black transition">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/></svg>
+                    </button>
+                    <input type="number" [(ngModel)]="taskCount" min="1" max="10"
+                           class="w-20 text-center py-2.5 border border-gray-200 text-sm font-mono font-bold focus:outline-none focus:border-black">
+                    <button (click)="taskCount = taskCount < 10 ? taskCount + 1 : 10"
+                            class="w-10 h-10 flex items-center justify-center border border-gray-200 text-gray-500 hover:border-black hover:text-black transition">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                    </button>
+                    <span class="text-xs text-gray-400">task(s)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ─── Network Configuration ─── -->
+            <div class="form-section-divider">
+              <h3 class="text-sm font-serif font-bold mb-1">Network Configuration</h3>
+              <p class="text-xs text-gray-400 mb-6">Configure networking for your task.</p>
+
+              <!-- Subnets -->
+              <div class="mb-6">
+                <label class="text-xs uppercase tracking-widest text-gray-400 mb-3 block">Subnets</label>
+                <div *ngIf="subnets.length === 0" class="p-5 border border-dashed border-gray-200 text-center">
+                  <p class="text-sm text-gray-500 mb-2">No subnets found</p>
+                  <a routerLink="/dashboard/subnets/create" class="text-xs text-black underline hover:no-underline">Create a subnet</a>
+                </div>
+                <div *ngIf="subnets.length > 0" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                  <div *ngFor="let subnet of subnets"
+                       (click)="toggleSubnet(subnet.subnetId)"
+                       class="multi-select-item"
+                       [class.selected]="isSubnetSelected(subnet.subnetId)">
+                    <div class="w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition"
+                         [ngClass]="isSubnetSelected(subnet.subnetId) ? 'bg-black border-black' : 'border-gray-300'">
+                      <svg *ngIf="isSubnetSelected(subnet.subnetId)" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm truncate">{{ subnet.name || subnet.subnetId }}</p>
+                      <p class="text-[10px] text-gray-400 font-mono">{{ subnet.subnetId }} &middot; {{ subnet.cidrBlock }} &middot; {{ subnet.availabilityZone }}</p>
+                    </div>
+                  </div>
+                </div>
+                <p *ngIf="selectedSubnets.length > 0" class="mt-2 text-xs text-gray-500">{{ selectedSubnets.length }} subnet(s) selected</p>
+              </div>
+
+              <!-- Security Groups -->
+              <div class="mb-6">
+                <label class="text-xs uppercase tracking-widest text-gray-400 mb-3 block">Security Groups</label>
+                <p *ngIf="selectedSubnets.length > 0 && filteredSecurityGroups.length !== securityGroups.length" class="text-[10px] text-gray-400 mb-2 flex items-center gap-1">
+                  <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Showing security groups matching the VPC(s) of selected subnets
+                </p>
+                <div *ngIf="filteredSecurityGroups.length === 0" class="p-5 border border-dashed border-gray-200 text-center">
+                  <p class="text-sm text-gray-500 mb-2">No security groups found</p>
+                  <a routerLink="/dashboard/security-groups/create" class="text-xs text-black underline hover:no-underline">Create a security group</a>
+                </div>
+                <div *ngIf="filteredSecurityGroups.length > 0" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                  <div *ngFor="let sg of filteredSecurityGroups"
+                       (click)="toggleSecurityGroup(sg.securityGroupId)"
+                       class="multi-select-item"
+                       [class.selected]="isSecurityGroupSelected(sg.securityGroupId)">
+                    <div class="w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition"
+                         [ngClass]="isSecurityGroupSelected(sg.securityGroupId) ? 'bg-black border-black' : 'border-gray-300'">
+                      <svg *ngIf="isSecurityGroupSelected(sg.securityGroupId)" class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm truncate">{{ sg.groupName }}</p>
+                      <p class="text-[10px] text-gray-400 font-mono">{{ sg.securityGroupId }} &middot; {{ sg.vpcId }}</p>
+                    </div>
+                  </div>
+                </div>
+                <p *ngIf="selectedSecurityGroups.length > 0" class="mt-2 text-xs text-gray-500">{{ selectedSecurityGroups.length }} security group(s) selected</p>
+              </div>
+
+              <!-- Assign Public IP -->
+              <div class="flex items-center justify-between p-4 border border-gray-100 rounded-sm">
+                <div>
+                  <p class="text-sm font-medium">Assign Public IP</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Enable public IP address assignment for the task</p>
+                </div>
+                <button (click)="assignPublicIp = !assignPublicIp"
+                        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200"
+                        [ngClass]="assignPublicIp ? 'bg-black' : 'bg-gray-200'">
+                  <span class="inline-block h-4 w-4 rounded-full bg-white transition-transform duration-200 shadow-sm"
+                        [ngClass]="assignPublicIp ? 'translate-x-6' : 'translate-x-1'"></span>
+                </button>
+              </div>
+            </div>
+
+            <!-- ─── Environment Overrides ─── -->
+            <div class="form-section-divider">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <h3 class="text-sm font-serif font-bold">Environment Overrides</h3>
+                  <p class="text-xs text-gray-400 mt-0.5">Override environment variables for specific containers (optional).</p>
+                </div>
+                <button (click)="addEnvOverride()" [disabled]="!selectedTaskDefinition"
+                        class="text-[10px] uppercase tracking-wider flex items-center gap-1 transition"
+                        [ngClass]="selectedTaskDefinition ? 'text-gray-500 hover:text-black' : 'text-gray-300 cursor-not-allowed'">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                  </svg>
+                  Add Override
+                </button>
+              </div>
+
+              <div *ngIf="environmentOverrides.length === 0 && selectedTaskDefinition" class="p-5 border border-dashed border-gray-200 text-center">
+                <svg class="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <p class="text-xs text-gray-500">No environment overrides configured</p>
+                <p class="text-[10px] text-gray-400 mt-1">Click "Add Override" to customize container environment variables</p>
+              </div>
+
+              <div *ngFor="let override of environmentOverrides; let oi = index" class="env-override-block">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] uppercase tracking-wider text-gray-400">Container</span>
+                    <select [(ngModel)]="override.containerName"
+                            class="text-sm border border-gray-200 px-3 py-1.5 focus:outline-none focus:border-black">
+                      <option value="" disabled>Select container</option>
+                      <option *ngFor="let cn of containerNames" [value]="cn">{{ cn }}</option>
+                    </select>
+                  </div>
+                  <button (click)="removeEnvOverride(oi)" class="text-gray-400 hover:text-red-500 transition">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+                <div *ngFor="let ev of override.envVars; let vi = index" class="env-var-row">
+                  <input type="text" [(ngModel)]="ev.name" placeholder="ENV_NAME" class="font-mono">
+                  <span class="text-gray-300">=</span>
+                  <input type="text" [(ngModel)]="ev.value" placeholder="value">
+                  <button (click)="removeEnvVar(oi, vi)" class="text-gray-400 hover:text-red-500 transition flex-shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+                <button (click)="addEnvVar(oi)" class="text-[10px] uppercase tracking-wider text-gray-500 hover:text-black transition mt-1 flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                  </svg>
+                  Add Variable
+                </button>
+              </div>
+            </div>
+
+            <!-- ─── Preview ─── -->
+            <div *ngIf="isFormValid" class="form-section-divider">
+              <div class="p-5 bg-gray-50 border border-gray-100">
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-3">Configuration Preview</p>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Cluster</span>
+                    <span class="text-gray-900 font-medium">{{ selectedClusterName }}</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Task Definition</span>
+                    <span class="text-gray-900 font-medium">{{ selectedTaskDefinition }}</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Launch Type</span>
+                    <span class="text-gray-900 font-medium">{{ launchType }}</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Task Count</span>
+                    <span class="text-gray-900 font-medium">{{ taskCount }}</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Subnets</span>
+                    <span class="text-gray-900 font-medium">{{ selectedSubnets.length }} selected</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Security Groups</span>
+                    <span class="text-gray-900 font-medium">{{ selectedSecurityGroups.length }} selected</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Public IP</span>
+                    <span class="text-gray-900 font-medium">{{ assignPublicIp ? 'Enabled' : 'Disabled' }}</span>
+                  </div>
+                  <div *ngIf="environmentOverrides.length > 0" class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Env Overrides</span>
+                    <span class="text-gray-900 font-medium">{{ environmentOverrides.length }} container(s)</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-gray-500">Account</span>
+                    <span class="text-gray-900 font-medium">{{ selectedAccount?.accountName }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Footer -->
+      <div class="px-8 py-5 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <button (click)="goBack()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          {{ backLabel }}
+        </button>
+        <button (click)="runTask()" [disabled]="!isFormValid"
+                class="px-8 py-3 text-sm font-medium transition-all duration-200"
+                [ngClass]="isFormValid ? 'bg-black text-white hover:bg-gray-800 active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+          Run Task
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SUCCESS STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'success'" class="max-w-2xl mx-auto animate-fadeIn">
+    <div class="border border-green-200 bg-green-50/30">
+      <div class="px-8 py-8 text-center border-b border-green-100">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+          <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-serif font-bold text-gray-900 mb-1">Task Launched</h2>
+        <p class="text-sm text-gray-500">{{ launchedTasks.length }} task(s) have been successfully launched.</p>
+      </div>
+
+      <div class="px-8 py-6">
+        <!-- Summary -->
+        <div class="space-y-3 mb-6">
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Cluster</span>
+            <span class="text-sm font-medium text-gray-900">{{ selectedClusterName }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Task Definition</span>
+            <span class="text-sm font-medium text-gray-900">{{ selectedTaskDefinition }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Launch Type</span>
+            <span class="text-sm font-medium text-gray-900">{{ launchType }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Tasks Launched</span>
+            <span class="text-sm font-medium text-gray-900">{{ launchedTasks.length }}</span>
+          </div>
+        </div>
+
+        <!-- Task List -->
+        <div *ngIf="launchedTasks.length > 0">
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-3">Launched Tasks</p>
+          <div class="space-y-2">
+            <div *ngFor="let task of launchedTasks" class="flex items-center justify-between p-3 border border-green-100/50 bg-white">
+              <div>
+                <p class="text-xs font-mono font-medium text-gray-900">{{ getTaskShortId(task.taskArn) }}</p>
+                <p class="text-[10px] text-gray-400 mt-0.5">{{ task.clusterName }}</p>
+              </div>
+              <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded"
+                    [ngClass]="{
+                      'bg-green-100 text-green-700': task.lastStatus === 'RUNNING',
+                      'bg-yellow-100 text-yellow-700': task.lastStatus === 'PENDING' || task.lastStatus === 'PROVISIONING',
+                      'bg-gray-100 text-gray-600': task.lastStatus !== 'RUNNING' && task.lastStatus !== 'PENDING' && task.lastStatus !== 'PROVISIONING'
+                    }">
+                {{ task.lastStatus }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-8 py-5 border-t border-green-100 flex items-center justify-between bg-green-50/20">
+        <button (click)="goBack()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          {{ backLabel }}
+        </button>
+        <div class="flex items-center gap-3">
+          <button (click)="resetForm()" class="px-5 py-2.5 text-xs uppercase tracking-wider border border-gray-200 text-gray-600 hover:border-black hover:text-black transition">
+            Run Another
+          </button>
+          <button (click)="goToTasks()" class="px-5 py-2.5 text-xs uppercase tracking-wider bg-black text-white hover:bg-gray-800 transition">
+            View All Tasks
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'error'" class="max-w-2xl mx-auto animate-fadeIn">
+    <div class="border border-red-200 bg-red-50/30 px-8 py-10 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+        <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-serif font-bold text-gray-900 mb-2">Task Launch Failed</h2>
+      <p class="text-sm text-gray-500 mb-1">{{ errorMessage }}</p>
+      <div class="flex items-center justify-center gap-3 mt-6">
+        <button (click)="goBack()" class="px-5 py-2.5 text-xs uppercase tracking-wider border border-gray-200 text-gray-600 hover:border-black hover:text-black transition">
+          {{ backLabel }}
+        </button>
+        <button (click)="resetForm()" class="px-5 py-2.5 text-xs uppercase tracking-wider bg-black text-white hover:bg-gray-800 transition">
+          Try Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

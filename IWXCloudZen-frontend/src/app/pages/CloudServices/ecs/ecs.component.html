@@ -29,7 +29,19 @@
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
             </svg>
-            Create
+            Create Service
+          </a>
+          <a routerLink="/dashboard/ecs/create-task-definition" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-xs uppercase tracking-wider hover:bg-black hover:text-white hover:border-black transition active:scale-[0.98]">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+            Task Def
+          </a>
+          <a routerLink="/dashboard/ecs/tasks" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-xs uppercase tracking-wider hover:bg-black hover:text-white hover:border-black transition active:scale-[0.98]">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+            </svg>
+            Tasks
           </a>
           <button (click)="syncData()" class="inline-flex items-center justify-center w-10 h-10 border border-gray-200 text-gray-400 hover:bg-black hover:text-white hover:border-black transition" title="Sync ECS" [disabled]="syncing">
             <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -219,6 +231,39 @@
       </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- TABS: Services / Task Definitions -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="flex items-center gap-1 mb-6 bg-white rounded-2xl border border-gray-100 p-1.5 animate-fade-in">
+      <button (click)="activeTab = 'services'" class="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium rounded-xl transition-all"
+              [ngClass]="activeTab === 'services' ? 'bg-black text-white' : 'text-gray-500 hover:text-black hover:bg-gray-50'">
+        <span class="flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+          </svg>
+          Services
+          <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold"
+                [ngClass]="activeTab === 'services' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'">{{ services.length }}</span>
+        </span>
+      </button>
+      <button (click)="activeTab = 'task-definitions'" class="flex-1 sm:flex-none px-6 py-2.5 text-sm font-medium rounded-xl transition-all"
+              [ngClass]="activeTab === 'task-definitions' ? 'bg-black text-white' : 'text-gray-500 hover:text-black hover:bg-gray-50'">
+        <span class="flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          Task Definitions
+          <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold"
+                [ngClass]="activeTab === 'task-definitions' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'">{{ taskDefinitions.length }}</span>
+        </span>
+      </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- SERVICES TAB -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <ng-container *ngIf="activeTab === 'services'">
+
     <!-- Filters -->
     <div class="bg-white rounded-2xl border border-gray-100 p-5 mb-6 animate-fade-in stagger-3">
       <div class="flex flex-col lg:flex-row lg:items-center gap-4">
@@ -345,6 +390,9 @@
                 Created
                 <span *ngIf="sortField === 'createdAt'" class="ml-1">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
               </th>
+              <th class="text-right px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -389,6 +437,26 @@
               </td>
               <td class="px-6 py-4 text-sm text-gray-500">{{ getAccountName(svc.cloudAccountId) }}</td>
               <td class="px-6 py-4 text-sm text-gray-400">{{ formatDate(svc.createdAt) }}</td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <a [routerLink]="['/dashboard/ecs', svc.id]" class="p-1.5 text-gray-400 hover:text-black rounded-lg hover:bg-gray-100 transition" title="View Details" (click)="$event.stopPropagation()">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </a>
+                  <button (click)="$event.stopPropagation(); openConfirm('delete-service', svc.id, svc.serviceName, svc.cloudAccountId)"
+                          class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition" title="Delete Service"
+                          [disabled]="deletingServiceId === svc.id">
+                    <svg *ngIf="deletingServiceId !== svc.id" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    <svg *ngIf="deletingServiceId === svc.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -521,6 +589,189 @@
 
     </div>
 
+    </ng-container><!-- END SERVICES TAB -->
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- TASK DEFINITIONS TAB -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <ng-container *ngIf="activeTab === 'task-definitions'">
+
+      <!-- TD Toolbar -->
+      <div class="bg-white rounded-2xl border border-gray-100 p-5 mb-6 animate-fade-in">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+          <div class="relative flex-1">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+            <input type="text" [(ngModel)]="tdSearchQuery" placeholder="Search task definitions by family, ARN..."
+                   class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-300 transition-all"/>
+          </div>
+          <select [(ngModel)]="tdSelectedStatus" class="px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 bg-white">
+            <option value="all">All Statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <button (click)="syncTaskDefinitions()" class="inline-flex items-center gap-2 px-4 py-2.5 text-sm border border-gray-200 rounded-xl hover:bg-black hover:text-white hover:border-black transition" [disabled]="syncingTd">
+            <svg class="w-4 h-4" [class.animate-spin]="syncingTd" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+            </svg>
+            Sync
+          </button>
+        </div>
+        <div class="flex items-center gap-4 mt-4 pt-4 border-t border-gray-50">
+          <span class="text-xs text-gray-400">{{ filteredTaskDefinitions.length }} of {{ taskDefinitions.length }} definitions</span>
+          <span class="text-xs text-gray-300">|</span>
+          <span class="text-xs text-green-600">{{ activeTaskDefs }} active</span>
+          <span class="text-xs text-red-500">{{ inactiveTaskDefs }} inactive</span>
+        </div>
+      </div>
+
+      <!-- TD Metrics -->
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-5 mb-6 animate-fade-in">
+        <div class="bg-white rounded-2xl border border-gray-100 p-5">
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Total</p>
+          <p class="text-3xl font-bold text-black font-serif">{{ taskDefinitions.length }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-5">
+          <p class="text-xs font-medium text-green-600 uppercase tracking-wider mb-2">Active</p>
+          <p class="text-3xl font-bold text-green-600 font-serif">{{ activeTaskDefs }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-5">
+          <p class="text-xs font-medium text-red-500 uppercase tracking-wider mb-2">Inactive</p>
+          <p class="text-3xl font-bold text-red-500 font-serif">{{ inactiveTaskDefs }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-gray-100 p-5">
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Accounts</p>
+          <p class="text-3xl font-bold text-black font-serif">{{ accounts.length }}</p>
+        </div>
+      </div>
+
+      <!-- TD Loading -->
+      <div *ngIf="loading" class="flex flex-col items-center justify-center py-24">
+        <div class="w-8 h-8 border-2 border-gray-200 border-t-black rounded-full animate-spin mb-4"></div>
+        <p class="text-sm text-gray-400">Loading task definitions…</p>
+      </div>
+
+      <!-- TD Empty -->
+      <div *ngIf="!loading && filteredTaskDefinitions.length === 0" class="text-center py-24 animate-fade-in">
+        <svg class="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p class="text-gray-400 font-medium">No task definitions found</p>
+        <a routerLink="/dashboard/ecs/create-task-definition" class="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-black text-white text-xs uppercase tracking-wider hover:bg-gray-800 transition">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          Register Task Definition
+        </a>
+      </div>
+
+      <!-- TD Table -->
+      <div *ngIf="!loading && filteredTaskDefinitions.length > 0" class="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-fade-in">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-gray-100">
+                <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Family</th>
+                <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Revision</th>
+                <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">CPU / Memory</th>
+                <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Network</th>
+                <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Containers</th>
+                <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Account</th>
+                <th class="text-right px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let td of filteredTaskDefinitions" class="service-row border-b border-gray-50">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="p-1.5 bg-gray-50 rounded-lg">
+                      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <span class="text-sm font-medium text-black">{{ td.family }}</span>
+                      <span class="block text-xs text-gray-400 font-mono truncate max-w-[200px]">{{ td.taskDefinitionArn }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600 font-mono">{{ td.revision }}</td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" [class]="getStatusClass(td.status)">
+                    <span class="w-1.5 h-1.5 rounded-full" [class]="getStatusDotClass(td.status)"></span>
+                    {{ td.status | titlecase }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600 font-mono">{{ td.cpu }} / {{ td.memory }} MiB</td>
+                <td class="px-6 py-4 text-sm text-gray-600">{{ td.networkMode || '—' }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600 font-semibold">{{ getContainerCount(td) }}</td>
+                <td class="px-6 py-4 text-sm text-gray-500">{{ getAccountName(td.cloudAccountId) }}</td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    <button *ngIf="td.status.toLowerCase() === 'active'"
+                            (click)="openConfirm('deregister-td', td.id, td.family, td.cloudAccountId)"
+                            class="p-1.5 text-gray-400 hover:text-yellow-600 rounded-lg hover:bg-yellow-50 transition" title="Deregister (make INACTIVE)"
+                            [disabled]="deregisteringTdId === td.id">
+                      <svg *ngIf="deregisteringTdId !== td.id" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                      </svg>
+                      <svg *ngIf="deregisteringTdId === td.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                      </svg>
+                    </button>
+                    <button (click)="openConfirm('delete-td', td.id, td.family, td.cloudAccountId)"
+                            class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition" title="Delete"
+                            [disabled]="deletingTdId === td.id">
+                      <svg *ngIf="deletingTdId !== td.id" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                      <svg *ngIf="deletingTdId === td.id" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </ng-container><!-- END TASK DEFINITIONS TAB -->
+
+  </div>
+</div>
+
+<!-- ════ CONFIRMATION DIALOG ════ -->
+<div *ngIf="confirmAction" class="fixed inset-0 z-[60] flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="closeConfirm()"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md p-8 animate-fade-in">
+    <div class="flex justify-center mb-5">
+      <div class="w-14 h-14 rounded-full flex items-center justify-center"
+           [ngClass]="confirmAction.type === 'deregister-td' ? 'bg-yellow-50' : 'bg-red-50'">
+        <svg class="w-7 h-7" [ngClass]="confirmAction.type === 'deregister-td' ? 'text-yellow-500' : 'text-red-500'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+        </svg>
+      </div>
+    </div>
+    <h3 class="text-lg font-serif font-bold text-center mb-2">
+      {{ confirmAction.type === 'delete-service' ? 'Delete Service' : confirmAction.type === 'deregister-td' ? 'Deregister Task Definition' : 'Delete Task Definition' }}
+    </h3>
+    <p class="text-sm text-gray-500 text-center mb-6">
+      Are you sure you want to {{ confirmAction.type === 'deregister-td' ? 'deregister' : 'delete' }}
+      <strong class="text-black">{{ confirmAction.name }}</strong>?
+      <span *ngIf="confirmAction.type !== 'deregister-td'">This action cannot be undone.</span>
+      <span *ngIf="confirmAction.type === 'deregister-td'">It will be marked as INACTIVE.</span>
+    </p>
+    <div class="flex items-center gap-3">
+      <button (click)="closeConfirm()" class="flex-1 px-4 py-2.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 transition">
+        Cancel
+      </button>
+      <button (click)="executeConfirm()" class="flex-1 px-4 py-2.5 text-sm text-white rounded-xl transition"
+              [ngClass]="confirmAction.type === 'deregister-td' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-red-600 hover:bg-red-700'">
+        {{ confirmAction.type === 'deregister-td' ? 'Deregister' : 'Delete' }}
+      </button>
+    </div>
   </div>
 </div>
 
