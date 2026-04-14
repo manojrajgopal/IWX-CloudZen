@@ -1,13 +1,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../services/cloud-services.service';
 import { CloudAccount } from '../../../models/cloud-account.model';
-import { Ec2Instance } from '../../../models/cloud-services.model';
+import { Ec2Instance, Ec2SyncResponse } from '../../../models/cloud-services.model';
 import { Ec2FilterByProviderPipe, Ec2FilterByStatePipe, Ec2FilterByTypePipe } from './ec2-instances.pipes';
 
 type ViewMode = 'grid' | 'list';
@@ -67,7 +67,15 @@ export class Ec2InstancesComponent implements OnInit, OnDestroy {
     { value: 'GCP', label: 'GCP Compute' }
   ];
 
+  // Sync
+  syncing = false;
+  lastSyncResults: Ec2SyncResponse[] = [];
+  showSyncReport = false;
+  syncMessage: string | null = null;
+  syncMessageType: 'success' | 'error' | null = null;
+
   constructor(
+    private router: Router,
     private cloudAccountService: CloudAccountService,
     private cloudServicesService: CloudServicesService
   ) {}
@@ -201,6 +209,11 @@ export class Ec2InstancesComponent implements OnInit, OnDestroy {
     setTimeout(() => this.selectedInstance = null, 300);
   }
 
+  goToOverview(inst: Ec2Instance): void {
+    this.closeDetail();
+    this.router.navigate(['/dashboard/ec2-instances', inst.id]);
+  }
+
   ngOnDestroy(): void {
     document.body.style.overflow = '';
   }
@@ -302,5 +315,53 @@ export class Ec2InstancesComponent implements OnInit, OnDestroy {
 
   get ebsOptimizedCount(): number {
     return this.instances.filter(i => i.ebsOptimized).length;
+  }
+
+  // ── Sync ──
+
+  syncData(): void {
+    if (this.syncing) return;
+    this.syncing = true;
+    this.syncMessage = null;
+    this.lastSyncResults = [];
+    this.showSyncReport = false;
+
+    const awsAccounts = this.accounts.filter(a => a.provider?.toUpperCase() === 'AWS');
+    if (awsAccounts.length === 0) {
+      this.syncing = false;
+      this.syncMessage = 'No AWS accounts found to sync.';
+      this.syncMessageType = 'error';
+      setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      return;
+    }
+
+    const syncRequests = awsAccounts.map(a =>
+      this.cloudServicesService.syncEc2Instances(a.id).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin(syncRequests).subscribe({
+      next: (results) => {
+        this.syncing = false;
+        this.lastSyncResults = results.filter((r): r is Ec2SyncResponse => r !== null);
+        const totalAdded = this.lastSyncResults.reduce((sum, r) => sum + (r.added || 0), 0);
+        const totalUpdated = this.lastSyncResults.reduce((sum, r) => sum + (r.updated || 0), 0);
+        const totalInstances = this.lastSyncResults.reduce((sum, r) => sum + (r.instances?.length || 0), 0);
+        this.syncMessage = `Sync completed — ${awsAccounts.length} account${awsAccounts.length !== 1 ? 's' : ''} · ${totalInstances} instance${totalInstances !== 1 ? 's' : ''} · +${totalAdded} added · ${totalUpdated} updated`;
+        this.syncMessageType = 'success';
+        this.showSyncReport = true;
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 6000);
+        this.loadData();
+      },
+      error: () => {
+        this.syncing = false;
+        this.syncMessage = 'Sync failed. Please try again.';
+        this.syncMessageType = 'error';
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      }
+    });
+  }
+
+  closeSyncReport(): void {
+    this.showSyncReport = false;
   }
 }

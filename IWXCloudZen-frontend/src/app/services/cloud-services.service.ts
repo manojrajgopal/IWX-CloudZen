@@ -32,6 +32,11 @@ import {
   RemoveRulesRequest,
   LogGroupsResponse,
   Ec2InstancesResponse,
+  Ec2Instance,
+  LaunchEc2InstanceRequest,
+  UpdateEc2InstanceRequest,
+  Ec2SyncResponse,
+  KeyPairsResponse,
   FullSyncResult,
   FileListResponse,
   BucketFileSyncResponse,
@@ -322,6 +327,66 @@ export class CloudServicesService {
   getEc2Instances(accountId: number): Observable<Ec2InstancesResponse> {
     return this.http.get<Ec2InstancesResponse>(
       `${this.apiUrl}/api/cloud/services/ec2/aws/list?accountId=${accountId}`
+    );
+  }
+
+  launchEc2Instance(accountId: number, request: LaunchEc2InstanceRequest): Observable<Ec2Instance[]> {
+    return this.http.post<Ec2Instance[]>(
+      `${this.apiUrl}/api/cloud/services/ec2/aws/launch?accountId=${accountId}`,
+      request
+    );
+  }
+
+  syncEc2Instances(accountId: number): Observable<Ec2SyncResponse> {
+    return this.http.post<Ec2SyncResponse>(
+      `${this.apiUrl}/api/cloud/services/ec2/aws/sync?accountId=${accountId}`,
+      null
+    );
+  }
+
+  getEc2InstanceById(instanceId: number, accountId: number): Observable<Ec2Instance> {
+    return this.http.get<Ec2Instance>(
+      `${this.apiUrl}/api/cloud/services/ec2/aws/get/${instanceId}?accountId=${accountId}`
+    );
+  }
+
+  updateEc2Instance(instanceId: number, accountId: number, request: UpdateEc2InstanceRequest): Observable<Ec2Instance> {
+    return this.http.put<Ec2Instance>(
+      `${this.apiUrl}/api/cloud/services/ec2/aws/update/${instanceId}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  startEc2Instance(instanceId: number, accountId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/api/cloud/services/ec2/aws/start/${instanceId}?accountId=${accountId}`,
+      null
+    );
+  }
+
+  stopEc2Instance(instanceId: number, accountId: number, force = false): Observable<{ message: string }> {
+    const url = force
+      ? `${this.apiUrl}/api/cloud/services/ec2/aws/stop/${instanceId}?accountId=${accountId}&force=true`
+      : `${this.apiUrl}/api/cloud/services/ec2/aws/stop/${instanceId}?accountId=${accountId}`;
+    return this.http.post<{ message: string }>(url, null);
+  }
+
+  rebootEc2Instance(instanceId: number, accountId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.apiUrl}/api/cloud/services/ec2/aws/reboot/${instanceId}?accountId=${accountId}`,
+      null
+    );
+  }
+
+  terminateEc2Instance(instanceId: number, accountId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(
+      `${this.apiUrl}/api/cloud/services/ec2/aws/terminate/${instanceId}?accountId=${accountId}`
+    );
+  }
+
+  getKeyPairs(accountId: number): Observable<KeyPairsResponse> {
+    return this.http.get<KeyPairsResponse>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/list?accountId=${accountId}`
     );
   }
 

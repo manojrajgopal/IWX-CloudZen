@@ -13,6 +13,7 @@ import { SubnetsComponent } from './pages/CloudServices/subnets/subnets.componen
 import { SecurityGroupsComponent } from './pages/CloudServices/security-groups/security-groups.component';
 import { CloudWatchLogsComponent } from './pages/CloudServices/cloudwatch-logs/cloudwatch-logs.component';
 import { Ec2InstancesComponent } from './pages/CloudServices/ec2-instances/ec2-instances.component';
+import { LaunchInstanceComponent } from './pages/CloudServices/ec2-instances/launch-instance/launch-instance.component';
 import { CreateBucketComponent } from './pages/CloudServices/cloud-storage/create-bucket/create-bucket.component';
 import { BucketOverviewComponent } from './pages/CloudServices/cloud-storage/bucket-overview/bucket-overview.component';
 import { SearchResultsComponent } from './global-search/search-results.component';
@@ -27,6 +28,7 @@ import { CreateSecurityGroupComponent } from './pages/CloudServices/security-gro
 import { CreateSubnetComponent } from './pages/CloudServices/subnets/create-subnet/create-subnet.component';
 import { SubnetOverviewComponent } from './pages/CloudServices/subnets/subnet-overview/subnet-overview.component';
 import { SecurityGroupOverviewComponent } from './pages/CloudServices/security-groups/security-group-overview/security-group-overview.component';
+import { Ec2OverviewComponent } from './pages/CloudServices/ec2-instances/ec2-overview/ec2-overview.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -55,6 +57,8 @@ export const routes: Routes = [
   { path: 'dashboard/security-groups/:id', component: SecurityGroupOverviewComponent },
   { path: 'dashboard/security-groups', component: SecurityGroupsComponent },
   { path: 'dashboard/cloudwatch-logs', component: CloudWatchLogsComponent },
+  { path: 'dashboard/ec2-instances/create', component: LaunchInstanceComponent },
+  { path: 'dashboard/ec2-instances/:id', component: Ec2OverviewComponent },
   { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },
   { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }

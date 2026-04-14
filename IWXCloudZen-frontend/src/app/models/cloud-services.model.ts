@@ -287,6 +287,56 @@ export interface Ec2Instance {
   updatedAt: string | null;
 }
 
+export interface LaunchEc2InstanceRequest {
+  instanceName: string;
+  imageId: string;
+  instanceType: string;
+  keyName: string;
+  subnetId: string;
+  securityGroupIds: string[];
+  minCount: number;
+  maxCount: number;
+  ebsOptimized: boolean;
+  userData: string;
+  tags: { [key: string]: string };
+}
+
+export interface UpdateEc2InstanceRequest {
+  instanceName?: string;
+  platform?: string;
+  securityGroupIds?: string[];
+  tags?: { [key: string]: string };
+}
+
+export interface Ec2SyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  instances: Ec2Instance[];
+}
+
+export interface KeyPair {
+  id: number;
+  keyPairId: string;
+  keyName: string;
+  keyFingerprint: string;
+  keyType: string;
+  isImported: boolean;
+  hasPrivateKey: boolean;
+  publicKeyMaterial: string;
+  privateKeyMaterial: string;
+  tags: { [key: string]: string };
+  awsCreatedAt: string;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface KeyPairsResponse {
+  keyPairs: KeyPair[];
+}
+
 // Cloud Storage Sync Response
 export interface CloudFileResponse {
   id: number;
