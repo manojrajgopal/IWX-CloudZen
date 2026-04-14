@@ -41,7 +41,9 @@ import {
   UpdateVpcRequest,
   DeleteVpcResponse,
   CreateEcsServiceRequest,
-  CreateTaskDefinitionRequest
+  CreateTaskDefinitionRequest,
+  CheckPermissionRequest,
+  PermissionCheckResponse
 } from '../models/cloud-services.model';
 
 @Injectable({
@@ -307,6 +309,15 @@ export class CloudServicesService {
   deleteS3File(fileId: number): Observable<void> {
     return this.http.delete<void>(
       `${this.apiUrl}/api/cloud/services/storage/aws/s3/files/${fileId}`
+    );
+  }
+
+  // ── Permissions ──
+
+  checkPermissions(accountId: number, request: CheckPermissionRequest): Observable<PermissionCheckResponse> {
+    return this.http.post<PermissionCheckResponse>(
+      `${this.apiUrl}/api/permissions/aws/check?accountId=${accountId}`,
+      request
     );
   }
 }

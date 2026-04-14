@@ -309,12 +309,19 @@
                     Create Security Group
                   </button>
                 </div>
-                <div *ngIf="securityGroups.length === 0" class="p-5 border border-dashed border-gray-200 text-center">
-                  <p class="text-sm text-gray-500 mb-2">No security groups found</p>
+                <p *ngIf="selectedSubnets.length > 0 && filteredSecurityGroups.length !== securityGroups.length" class="text-[10px] text-gray-400 mb-2 flex items-center gap-1">
+                  <svg class="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Showing security groups matching the VPC(s) of selected subnets
+                </p>
+                <div *ngIf="filteredSecurityGroups.length === 0" class="p-5 border border-dashed border-gray-200 text-center">
+                  <p *ngIf="selectedSubnets.length === 0" class="text-sm text-gray-500 mb-2">No security groups found</p>
+                  <p *ngIf="selectedSubnets.length > 0" class="text-sm text-gray-500 mb-2">No security groups found for the selected subnet VPC(s)</p>
                   <button (click)="navigateToCreateSecurityGroup()" class="text-xs text-black underline hover:no-underline">Create a security group</button>
                 </div>
-                <div *ngIf="securityGroups.length > 0" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
-                  <div *ngFor="let sg of securityGroups"
+                <div *ngIf="filteredSecurityGroups.length > 0" class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto">
+                  <div *ngFor="let sg of filteredSecurityGroups"
                        (click)="toggleSecurityGroup(sg.securityGroupId)"
                        class="multi-select-item"
                        [class.selected]="isSecurityGroupSelected(sg.securityGroupId)">

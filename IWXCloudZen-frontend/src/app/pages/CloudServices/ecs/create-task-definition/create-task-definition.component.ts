@@ -8,7 +8,8 @@ import { CloudAccount } from '../../../../models/cloud-account.model';
 import {
   EcsTaskDefinition, CreateTaskDefinitionRequest,
   CreateContainerDefinition, ContainerPortMapping,
-  ContainerEnvironment, ContainerLogConfiguration
+  ContainerEnvironment, ContainerLogConfiguration,
+  CheckPermissionResult, LogGroup, EcrRepository
 } from '../../../../models/cloud-services.model';
 
 type FormState = 'loading' | 'form' | 'creating' | 'success' | 'error';
@@ -16,6 +17,7 @@ type FormState = 'loading' | 'form' | 'creating' | 'success' | 'error';
 interface ContainerForm {
   name: string;
   image: string;
+  imageMode: 'select' | 'manual';
   cpu: number;
   memory: number;
   memoryReservation: number | null;
@@ -50,6 +52,22 @@ export class CreateTaskDefinitionComponent implements OnInit {
   osFamily = 'LINUX';
 
   containers: ContainerForm[] = [];
+
+  // IAM Roles
+  iamRoles: CheckPermissionResult[] = [];
+  loadingRoles = false;
+  rolesError = '';
+  executionRoleMode: 'select' | 'manual' = 'select';
+  taskRoleMode: 'select' | 'manual' = 'select';
+  selectedExecutionRoleBase = '';
+
+  // CloudWatch Log Groups
+  logGroups: LogGroup[] = [];
+  loadingLogGroups = false;
+
+  // ECR Repositories
+  ecrRepositories: EcrRepository[] = [];
+  loadingEcrRepos = false;
 
   formState: FormState = 'loading';
   createdTaskDef: EcsTaskDefinition | null = null;
@@ -96,9 +114,19 @@ export class CreateTaskDefinitionComponent implements OnInit {
         const preSelectId = this.route.snapshot.queryParamMap.get('accountId');
         if (preSelectId) {
           const found = this.accounts.find(a => a.id === +preSelectId);
-          if (found) this.selectedAccountId = found.id;
+          if (found) {
+            this.selectedAccountId = found.id;
+            this.loadIamRoles(found.id);
+            this.loadLogGroups(found.id);
+            this.loadEcrRepositories(found.id);
+            this.prefillLogOptionsForContainers();
+          }
         } else if (this.accounts.length === 1) {
           this.selectedAccountId = this.accounts[0].id;
+          this.loadIamRoles(this.accounts[0].id);
+          this.loadLogGroups(this.accounts[0].id);
+          this.loadEcrRepositories(this.accounts[0].id);
+          this.prefillLogOptionsForContainers();
         }
         this.formState = 'form';
         this.cdr.detectChanges();
@@ -112,6 +140,129 @@ export class CreateTaskDefinitionComponent implements OnInit {
 
   selectAccount(accountId: number): void {
     this.selectedAccountId = accountId;
+    this.executionRoleArn = '';
+    this.taskRoleArn = '';
+    this.selectedExecutionRoleBase = '';
+    this.executionRoleMode = 'select';
+    this.taskRoleMode = 'select';
+    this.loadIamRoles(accountId);
+    this.loadLogGroups(accountId);
+    this.loadEcrRepositories(accountId);
+    this.prefillLogOptionsForContainers();
+  }
+
+  private loadIamRoles(accountId: number): void {
+    this.loadingRoles = true;
+    this.rolesError = '';
+    this.iamRoles = [];
+
+    this.cloudServicesService.checkPermissions(accountId, {
+      actions: ['iam:ListRoles'],
+      resourceArns: ['*']
+    }).subscribe({
+      next: (response) => {
+        this.iamRoles = response.results.filter(r => r.isAllowed);
+        this.loadingRoles = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.rolesError = 'Failed to load IAM roles. You can enter the ARN manually.';
+        this.loadingRoles = false;
+        this.executionRoleMode = 'manual';
+        this.taskRoleMode = 'manual';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private loadLogGroups(accountId: number): void {
+    this.loadingLogGroups = true;
+    this.logGroups = [];
+    this.cloudServicesService.getLogGroups(accountId).subscribe({
+      next: (response) => {
+        this.logGroups = response.logGroups || [];
+        this.loadingLogGroups = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingLogGroups = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private loadEcrRepositories(accountId: number): void {
+    this.loadingEcrRepos = true;
+    this.ecrRepositories = [];
+    this.cloudServicesService.getEcrRepositories(accountId).subscribe({
+      next: (response) => {
+        this.ecrRepositories = response.repositories || [];
+        this.loadingEcrRepos = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.loadingEcrRepos = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  getRoleName(arn: string): string {
+    if (!arn) return '';
+    const parts = arn.split('/');
+    return parts.length > 1 ? parts.slice(1).join('/') : arn;
+  }
+
+  selectExecutionRole(arn: string): void {
+    this.selectedExecutionRoleBase = arn;
+    this.updateExecutionRoleArn();
+  }
+
+  onFamilyChange(): void {
+    if (this.executionRoleMode === 'select' && this.selectedExecutionRoleBase) {
+      this.updateExecutionRoleArn();
+    }
+  }
+
+  private updateExecutionRoleArn(): void {
+    const base = this.selectedExecutionRoleBase;
+    if (!base) return;
+    const familyName = this.family.trim();
+    if (base.endsWith('/')) {
+      this.executionRoleArn = base + familyName;
+    } else {
+      this.executionRoleArn = base;
+    }
+  }
+
+  selectTaskRole(arn: string): void {
+    this.taskRoleArn = this.taskRoleArn === arn ? '' : arn;
+  }
+
+  private prefillLogOptionsForContainers(): void {
+    const account = this.selectedAccount;
+    if (!account) return;
+    for (const container of this.containers) {
+      const regionOpt = container.logOptions.find(o => o.key === 'awslogs-region');
+      if (regionOpt && !regionOpt.value) {
+        regionOpt.value = account.region || '';
+      }
+      const prefixOpt = container.logOptions.find(o => o.key === 'awslogs-stream-prefix');
+      if (prefixOpt && !prefixOpt.value) {
+        prefixOpt.value = container.name || 'ecs';
+      }
+    }
+  }
+
+  setLogOptionValue(container: ContainerForm, key: string, value: string): void {
+    const opt = container.logOptions.find(o => o.key === key);
+    if (opt) {
+      opt.value = value;
+    }
+  }
+
+  getLogOptionValue(container: ContainerForm, key: string): string {
+    return container.logOptions.find(o => o.key === key)?.value || '';
   }
 
   get selectedAccount(): CloudAccount | null {
@@ -149,9 +300,12 @@ export class CreateTaskDefinitionComponent implements OnInit {
   // ── Container Management ──
 
   addContainer(): void {
+    const account = this.selectedAccount;
+    const containerName = this.containers.length === 0 ? 'app' : `container-${this.containers.length + 1}`;
     this.containers.push({
-      name: this.containers.length === 0 ? 'app' : `container-${this.containers.length + 1}`,
+      name: containerName,
       image: '',
+      imageMode: 'select',
       cpu: 256,
       memory: 512,
       memoryReservation: null,
@@ -162,8 +316,8 @@ export class CreateTaskDefinitionComponent implements OnInit {
       logDriver: 'awslogs',
       logOptions: [
         { key: 'awslogs-group', value: '' },
-        { key: 'awslogs-region', value: '' },
-        { key: 'awslogs-stream-prefix', value: '' }
+        { key: 'awslogs-region', value: account?.region || '' },
+        { key: 'awslogs-stream-prefix', value: containerName }
       ],
       expanded: true
     });
@@ -309,6 +463,13 @@ export class CreateTaskDefinitionComponent implements OnInit {
     this.familyTouched = false;
     this.createdTaskDef = null;
     this.errorMessage = '';
+    this.iamRoles = [];
+    this.rolesError = '';
+    this.executionRoleMode = 'select';
+    this.taskRoleMode = 'select';
+    this.selectedExecutionRoleBase = '';
+    this.logGroups = [];
+    this.ecrRepositories = [];
     this.formState = 'form';
     this.addContainer();
   }

@@ -407,3 +407,23 @@ export interface CreateTaskDefinitionRequest {
   osFamily: string;
   containerDefinitions: CreateContainerDefinition[];
 }
+
+// ── Permissions / IAM ──
+
+export interface CheckPermissionRequest {
+  actions: string[];
+  resourceArns: string[];
+}
+
+export interface CheckPermissionResult {
+  action: string;
+  resource: string;
+  evalDecision: string;
+  isAllowed: boolean;
+}
+
+export interface PermissionCheckResponse {
+  allowedCount: number;
+  deniedCount: number;
+  results: CheckPermissionResult[];
+}

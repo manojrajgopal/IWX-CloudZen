@@ -174,6 +174,12 @@ export class CreateEcsServiceComponent implements OnInit {
     } else {
       this.selectedSubnets.push(subnetId);
     }
+    // Remove any selected security groups whose VPC is no longer in the selected subnets
+    const validVpcIds = this.selectedSubnetVpcIds;
+    this.selectedSecurityGroups = this.selectedSecurityGroups.filter(sgId => {
+      const sg = this.securityGroups.find(s => s.securityGroupId === sgId);
+      return sg ? validVpcIds.has(sg.vpcId) : false;
+    });
   }
 
   isSubnetSelected(subnetId: string): boolean {
@@ -191,6 +197,21 @@ export class CreateEcsServiceComponent implements OnInit {
 
   isSecurityGroupSelected(sgId: string): boolean {
     return this.selectedSecurityGroups.includes(sgId);
+  }
+
+  get selectedSubnetVpcIds(): Set<string> {
+    const vpcIds = new Set<string>();
+    for (const subnetId of this.selectedSubnets) {
+      const subnet = this.subnets.find(s => s.subnetId === subnetId);
+      if (subnet) vpcIds.add(subnet.vpcId);
+    }
+    return vpcIds;
+  }
+
+  get filteredSecurityGroups(): SecurityGroup[] {
+    if (this.selectedSubnets.length === 0) return this.securityGroups;
+    const vpcIds = this.selectedSubnetVpcIds;
+    return this.securityGroups.filter(sg => vpcIds.has(sg.vpcId));
   }
 
   // ── Navigation Helpers ──
