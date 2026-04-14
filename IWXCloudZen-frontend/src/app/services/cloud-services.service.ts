@@ -26,6 +26,10 @@ import {
   SecurityGroupSyncResponse,
   SecurityGroup,
   CreateSecurityGroupRequest,
+  UpdateSecurityGroupRequest,
+  DeleteSecurityGroupResponse,
+  AddRulesRequest,
+  RemoveRulesRequest,
   LogGroupsResponse,
   Ec2InstancesResponse,
   FullSyncResult,
@@ -265,6 +269,47 @@ export class CloudServicesService {
   getSecurityGroupById(id: number, accountId: number): Observable<SecurityGroup> {
     return this.http.get<SecurityGroup>(
       `${this.apiUrl}/api/cloud/services/security-groups/aws/${id}?accountId=${accountId}`
+    );
+  }
+
+  updateSecurityGroup(id: number, accountId: number, request: UpdateSecurityGroupRequest): Observable<SecurityGroup> {
+    return this.http.put<SecurityGroup>(
+      `${this.apiUrl}/api/cloud/services/security-groups/aws/update/${id}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deleteSecurityGroup(id: number, accountId: number): Observable<DeleteSecurityGroupResponse> {
+    return this.http.delete<DeleteSecurityGroupResponse>(
+      `${this.apiUrl}/api/cloud/services/security-groups/aws/delete/${id}?accountId=${accountId}`
+    );
+  }
+
+  addInboundRules(id: number, accountId: number, request: AddRulesRequest): Observable<SecurityGroup> {
+    return this.http.post<SecurityGroup>(
+      `${this.apiUrl}/api/cloud/services/security-groups/aws/${id}/inbound/add?accountId=${accountId}`,
+      request
+    );
+  }
+
+  removeInboundRules(id: number, accountId: number, request: RemoveRulesRequest): Observable<SecurityGroup> {
+    return this.http.post<SecurityGroup>(
+      `${this.apiUrl}/api/cloud/services/security-groups/aws/${id}/inbound/remove?accountId=${accountId}`,
+      request
+    );
+  }
+
+  addOutboundRules(id: number, accountId: number, request: AddRulesRequest): Observable<SecurityGroup> {
+    return this.http.post<SecurityGroup>(
+      `${this.apiUrl}/api/cloud/services/security-groups/aws/${id}/outbound/add?accountId=${accountId}`,
+      request
+    );
+  }
+
+  removeOutboundRules(id: number, accountId: number, request: RemoveRulesRequest): Observable<SecurityGroup> {
+    return this.http.post<SecurityGroup>(
+      `${this.apiUrl}/api/cloud/services/security-groups/aws/${id}/outbound/remove?accountId=${accountId}`,
+      request
     );
   }
 

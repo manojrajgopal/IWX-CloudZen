@@ -350,6 +350,10 @@ export interface SecurityGroupsResponse { totalCount: number; vpcIdFilter: strin
 export interface SecurityGroupSyncResponse { added: number; updated: number; removed: number; securityGroups: SecurityGroup[]; }
 export interface CreateSecurityGroupRuleRequest { protocol: string; fromPort: number; toPort: number; ipv4Ranges: string[]; ipv6Ranges: string[]; referencedGroupIds: string[]; description: string | null; }
 export interface CreateSecurityGroupRequest { groupName: string; description: string; vpcId: string; inboundRules: CreateSecurityGroupRuleRequest[]; outboundRules: CreateSecurityGroupRuleRequest[]; }
+export interface UpdateSecurityGroupRequest { groupName: string; description: string; vpcId: string; inboundRules: CreateSecurityGroupRuleRequest[]; outboundRules: CreateSecurityGroupRuleRequest[]; }
+export interface DeleteSecurityGroupResponse { message: string; }
+export interface AddRulesRequest { rules: CreateSecurityGroupRuleRequest[]; }
+export interface RemoveRulesRequest { ruleIds: string[]; }
 export interface LogGroupsResponse { logGroups: LogGroup[]; }
 export interface Ec2InstancesResponse { instances: Ec2Instance[]; }
 

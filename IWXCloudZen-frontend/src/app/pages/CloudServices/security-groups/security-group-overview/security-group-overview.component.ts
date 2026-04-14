@@ -1,17 +1,18 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../../services/cloud-services.service';
 import { CloudAccount } from '../../../../models/cloud-account.model';
-import { SecurityGroup, SecurityGroupRule } from '../../../../models/cloud-services.model';
+import { SecurityGroup, SecurityGroupRule, CreateSecurityGroupRuleRequest } from '../../../../models/cloud-services.model';
 
 @Component({
   selector: 'app-security-group-overview',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './security-group-overview.component.html',
   styleUrls: ['./security-group-overview.component.css']
 })
@@ -386,5 +387,287 @@ export class SecurityGroupOverviewComponent implements OnInit, OnDestroy {
     if (s >= 80) return 'Good';
     if (s >= 50) return 'Fair';
     return 'Poor';
+  }
+
+  // ══════════════════════════════════════════
+  // UPDATE Security Group
+  // ══════════════════════════════════════════
+  showUpdatePanel = false;
+  updating = false;
+  updateError: string | null = null;
+  updateSuccess: string | null = null;
+  updateFields: { groupName: string; description: string } = { groupName: '', description: '' };
+
+  openUpdatePanel(): void {
+    this.showUpdatePanel = true;
+    this.updateError = null;
+    this.updateSuccess = null;
+    this.updateFields = {
+      groupName: this.sg?.groupName ?? '',
+      description: this.sg?.description ?? ''
+    };
+    setTimeout(() => {
+      document.getElementById('updatePanel')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }
+
+  closeUpdatePanel(): void {
+    this.showUpdatePanel = false;
+    this.updateError = null;
+    this.updateSuccess = null;
+  }
+
+  updateSecurityGroup(): void {
+    if (!this.sg || !this.account) return;
+    this.updating = true;
+    this.updateError = null;
+    this.updateSuccess = null;
+
+    const body = {
+      groupName: this.updateFields.groupName,
+      description: this.updateFields.description,
+      vpcId: this.sg.vpcId,
+      inboundRules: this.sg.inboundRules.map(r => this.ruleToRequest(r)),
+      outboundRules: this.sg.outboundRules.map(r => this.ruleToRequest(r))
+    };
+
+    this.cloudServicesService.updateSecurityGroup(this.sg.id, this.account.id, body).subscribe({
+      next: (updated) => {
+        this.sg = updated;
+        this.updateSuccess = 'Security group updated successfully.';
+        this.updating = false;
+      },
+      error: (err) => {
+        this.updateError = err?.error?.message || 'Failed to update security group.';
+        this.updating = false;
+      }
+    });
+  }
+
+  private ruleToRequest(rule: SecurityGroupRule): CreateSecurityGroupRuleRequest {
+    return {
+      protocol: rule.protocol,
+      fromPort: rule.fromPort,
+      toPort: rule.toPort,
+      ipv4Ranges: rule.ipv4Ranges || [],
+      ipv6Ranges: rule.ipv6Ranges || [],
+      referencedGroupIds: rule.referencedGroupIds || [],
+      description: rule.description
+    };
+  }
+
+  // ══════════════════════════════════════════
+  // DELETE Security Group
+  // ══════════════════════════════════════════
+  showDeleteConfirm = false;
+  deleting = false;
+  deleteError: string | null = null;
+
+  openDeleteConfirm(): void {
+    this.showDeleteConfirm = true;
+    this.deleteError = null;
+  }
+
+  closeDeleteConfirm(): void {
+    this.showDeleteConfirm = false;
+    this.deleteError = null;
+  }
+
+  deleteSecurityGroup(): void {
+    if (!this.sg || !this.account) return;
+    this.deleting = true;
+    this.deleteError = null;
+
+    this.cloudServicesService.deleteSecurityGroup(this.sg.id, this.account.id).subscribe({
+      next: () => {
+        this.deleting = false;
+        this.router.navigate(['/dashboard/security-groups']);
+      },
+      error: (err) => {
+        this.deleteError = err?.error?.message || 'Failed to delete security group.';
+        this.deleting = false;
+      }
+    });
+  }
+
+  // ══════════════════════════════════════════
+  // ADD RULES
+  // ══════════════════════════════════════════
+  showAddRulePanel: 'inbound' | 'outbound' | null = null;
+  addingRule = false;
+  addRuleError: string | null = null;
+  addRuleSuccess: string | null = null;
+
+  // New rule form fields
+  newRuleProtocol = 'tcp';
+  newRuleFromPort = 80;
+  newRuleToPort = 80;
+  newRuleDescription = '';
+  newRuleIpv4Open = true;
+  newRuleIpv6Open = false;
+  newRuleCustomCidr = '';
+
+  // Preset templates for quick selection
+  rulePresets: { label: string; protocol: string; fromPort: number; toPort: number; description: string }[] = [
+    { label: 'SSH', protocol: 'tcp', fromPort: 22, toPort: 22, description: 'Allow SSH' },
+    { label: 'HTTP', protocol: 'tcp', fromPort: 80, toPort: 80, description: 'Allow HTTP' },
+    { label: 'HTTPS', protocol: 'tcp', fromPort: 443, toPort: 443, description: 'Allow HTTPS' },
+    { label: 'RDP', protocol: 'tcp', fromPort: 3389, toPort: 3389, description: 'Allow RDP' },
+    { label: 'MySQL', protocol: 'tcp', fromPort: 3306, toPort: 3306, description: 'Allow MySQL' },
+    { label: 'PostgreSQL', protocol: 'tcp', fromPort: 5432, toPort: 5432, description: 'Allow PostgreSQL' },
+    { label: 'MongoDB', protocol: 'tcp', fromPort: 27017, toPort: 27017, description: 'Allow MongoDB' },
+    { label: 'Redis', protocol: 'tcp', fromPort: 6379, toPort: 6379, description: 'Allow Redis' },
+    { label: 'HTTP Alt', protocol: 'tcp', fromPort: 8080, toPort: 8080, description: 'Allow HTTP Alt' },
+    { label: 'All Traffic', protocol: '-1', fromPort: -1, toPort: -1, description: 'Allow all traffic' },
+    { label: 'DNS (UDP)', protocol: 'udp', fromPort: 53, toPort: 53, description: 'Allow DNS' },
+    { label: 'ICMP', protocol: 'icmp', fromPort: -1, toPort: -1, description: 'Allow ICMP' },
+  ];
+
+  openAddRulePanel(type: 'inbound' | 'outbound'): void {
+    this.showAddRulePanel = type;
+    this.addRuleError = null;
+    this.addRuleSuccess = null;
+    this.resetNewRuleForm();
+    setTimeout(() => {
+      document.getElementById('addRulePanel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  closeAddRulePanel(): void {
+    this.showAddRulePanel = null;
+    this.addRuleError = null;
+    this.addRuleSuccess = null;
+  }
+
+  selectPreset(preset: { label: string; protocol: string; fromPort: number; toPort: number; description: string }): void {
+    this.newRuleProtocol = preset.protocol;
+    this.newRuleFromPort = preset.fromPort;
+    this.newRuleToPort = preset.toPort;
+    this.newRuleDescription = preset.description;
+  }
+
+  resetNewRuleForm(): void {
+    this.newRuleProtocol = 'tcp';
+    this.newRuleFromPort = 80;
+    this.newRuleToPort = 80;
+    this.newRuleDescription = '';
+    this.newRuleIpv4Open = true;
+    this.newRuleIpv6Open = false;
+    this.newRuleCustomCidr = '';
+  }
+
+  submitAddRule(): void {
+    if (!this.sg || !this.account || !this.showAddRulePanel) return;
+    this.addingRule = true;
+    this.addRuleError = null;
+    this.addRuleSuccess = null;
+
+    const ipv4Ranges: string[] = [];
+    const ipv6Ranges: string[] = [];
+    if (this.newRuleCustomCidr.trim()) {
+      const cidr = this.newRuleCustomCidr.trim();
+      if (cidr.includes(':')) ipv6Ranges.push(cidr);
+      else ipv4Ranges.push(cidr);
+    } else {
+      if (this.newRuleIpv4Open) ipv4Ranges.push('0.0.0.0/0');
+      if (this.newRuleIpv6Open) ipv6Ranges.push('::/0');
+    }
+
+    const rule: CreateSecurityGroupRuleRequest = {
+      protocol: this.newRuleProtocol,
+      fromPort: this.newRuleFromPort,
+      toPort: this.newRuleToPort,
+      ipv4Ranges,
+      ipv6Ranges,
+      referencedGroupIds: [],
+      description: this.newRuleDescription || null
+    };
+
+    const request = { rules: [rule] };
+    const obs = this.showAddRulePanel === 'inbound'
+      ? this.cloudServicesService.addInboundRules(this.sg.id, this.account.id, request)
+      : this.cloudServicesService.addOutboundRules(this.sg.id, this.account.id, request);
+
+    obs.subscribe({
+      next: (updated) => {
+        this.sg = updated;
+        this.addRuleSuccess = `${this.showAddRulePanel === 'inbound' ? 'Inbound' : 'Outbound'} rule added successfully.`;
+        this.addingRule = false;
+        this.resetNewRuleForm();
+      },
+      error: (err) => {
+        this.addRuleError = err?.error?.message || 'Failed to add rule.';
+        this.addingRule = false;
+      }
+    });
+  }
+
+  // ══════════════════════════════════════════
+  // REMOVE RULES
+  // ══════════════════════════════════════════
+  removingRules: Record<string, boolean> = {};
+  selectedInboundRuleIds: Set<string> = new Set();
+  selectedOutboundRuleIds: Set<string> = new Set();
+  removingBulk: 'inbound' | 'outbound' | null = null;
+  removeRuleError: string | null = null;
+
+  toggleRuleSelection(ruleId: string, type: 'inbound' | 'outbound'): void {
+    const set = type === 'inbound' ? this.selectedInboundRuleIds : this.selectedOutboundRuleIds;
+    if (set.has(ruleId)) set.delete(ruleId);
+    else set.add(ruleId);
+  }
+
+  isRuleSelected(ruleId: string, type: 'inbound' | 'outbound'): boolean {
+    return type === 'inbound' ? this.selectedInboundRuleIds.has(ruleId) : this.selectedOutboundRuleIds.has(ruleId);
+  }
+
+  removeSelectedRules(type: 'inbound' | 'outbound'): void {
+    if (!this.sg || !this.account) return;
+    const set = type === 'inbound' ? this.selectedInboundRuleIds : this.selectedOutboundRuleIds;
+    if (set.size === 0) return;
+
+    this.removingBulk = type;
+    this.removeRuleError = null;
+
+    const request = { ruleIds: [...set] };
+    const obs = type === 'inbound'
+      ? this.cloudServicesService.removeInboundRules(this.sg.id, this.account.id, request)
+      : this.cloudServicesService.removeOutboundRules(this.sg.id, this.account.id, request);
+
+    obs.subscribe({
+      next: (updated) => {
+        this.sg = updated;
+        set.clear();
+        this.removingBulk = null;
+      },
+      error: (err) => {
+        this.removeRuleError = err?.error?.message || 'Failed to remove rules.';
+        this.removingBulk = null;
+      }
+    });
+  }
+
+  removeSingleRule(ruleId: string, type: 'inbound' | 'outbound'): void {
+    if (!this.sg || !this.account) return;
+    this.removingRules[ruleId] = true;
+    this.removeRuleError = null;
+
+    const request = { ruleIds: [ruleId] };
+    const obs = type === 'inbound'
+      ? this.cloudServicesService.removeInboundRules(this.sg.id, this.account.id, request)
+      : this.cloudServicesService.removeOutboundRules(this.sg.id, this.account.id, request);
+
+    obs.subscribe({
+      next: (updated) => {
+        this.sg = updated;
+        delete this.removingRules[ruleId];
+        this.selectedInboundRuleIds.delete(ruleId);
+        this.selectedOutboundRuleIds.delete(ruleId);
+      },
+      error: (err) => {
+        this.removeRuleError = err?.error?.message || 'Failed to remove rule.';
+        delete this.removingRules[ruleId];
+      }
+    });
   }
 }
