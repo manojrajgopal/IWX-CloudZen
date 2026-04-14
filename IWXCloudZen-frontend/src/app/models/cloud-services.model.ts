@@ -344,6 +344,8 @@ export interface EcsServicesResponse { clusterName: string; totalCount: number; 
 export interface SubnetsResponse { totalCount: number; vpcIdFilter: string | null; subnets: Subnet[]; }
 export interface SubnetSyncResponse { added: number; updated: number; removed: number; subnets: Subnet[]; }
 export interface CreateSubnetRequest { name: string; vpcId: string; cidrBlock: string; availabilityZone: string; mapPublicIpOnLaunch: boolean; ipv6CidrBlock: string | null; }
+export interface UpdateSubnetRequest { name?: string; mapPublicIpOnLaunch?: boolean; assignIpv6AddressOnCreation?: boolean; }
+export interface DeleteSubnetResponse { message: string; }
 export interface SecurityGroupsResponse { totalCount: number; vpcIdFilter: string | null; securityGroups: SecurityGroup[]; }
 export interface SecurityGroupSyncResponse { added: number; updated: number; removed: number; securityGroups: SecurityGroup[]; }
 export interface CreateSecurityGroupRuleRequest { protocol: string; fromPort: number; toPort: number; ipv4Ranges: string[]; ipv6Ranges: string[]; referencedGroupIds: string[]; description: string | null; }

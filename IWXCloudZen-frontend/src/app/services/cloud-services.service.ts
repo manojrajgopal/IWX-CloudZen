@@ -19,6 +19,8 @@ import {
   SubnetsResponse,
   SubnetSyncResponse,
   CreateSubnetRequest,
+  UpdateSubnetRequest,
+  DeleteSubnetResponse,
   Subnet,
   SecurityGroupsResponse,
   SecurityGroupSyncResponse,
@@ -212,6 +214,31 @@ export class CloudServicesService {
     return this.http.post<Subnet>(
       `${this.apiUrl}/api/cloud/services/subnet/aws/create?accountId=${accountId}`,
       request
+    );
+  }
+
+  getSubnetById(subnetId: number, accountId: number): Observable<Subnet> {
+    return this.http.get<Subnet>(
+      `${this.apiUrl}/api/cloud/services/subnet/aws/${subnetId}?accountId=${accountId}`
+    );
+  }
+
+  getSubnetsByVpc(accountId: number, vpcId: string): Observable<SubnetsResponse> {
+    return this.http.get<SubnetsResponse>(
+      `${this.apiUrl}/api/cloud/services/subnet/aws/list?accountId=${accountId}&vpcId=${encodeURIComponent(vpcId)}`
+    );
+  }
+
+  updateSubnet(subnetId: number, accountId: number, request: UpdateSubnetRequest): Observable<Subnet> {
+    return this.http.put<Subnet>(
+      `${this.apiUrl}/api/cloud/services/subnet/aws/update/${subnetId}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deleteSubnet(subnetId: number, accountId: number): Observable<DeleteSubnetResponse> {
+    return this.http.delete<DeleteSubnetResponse>(
+      `${this.apiUrl}/api/cloud/services/subnet/aws/delete/${subnetId}?accountId=${accountId}`
     );
   }
 
