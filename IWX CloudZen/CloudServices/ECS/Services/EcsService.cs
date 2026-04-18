@@ -5,6 +5,7 @@ using IWX_CloudZen.CloudServices.ECS.Entities;
 using IWX_CloudZen.CloudServices.ECS.Factory;
 using IWX_CloudZen.CloudServices.ECS.Interfaces;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System.Text.RegularExpressions;
 
@@ -225,11 +226,11 @@ namespace IWX_CloudZen.CloudServices.ECS.Services
             var (account, provider) = await Resolve(user, accountId);
 
             // Normalize to satisfy AWS ECS family name constraints
-            request.Family = NormalizeFamilyName(request.Family);
+            request.Family = CloudResourceNameNormalizer.NormalizeGeneralName(request.Family);
 
             // Normalize all container names to satisfy AWS ECS constraints
             foreach (var container in request.ContainerDefinitions)
-                container.Name = NormalizeContainerName(container.Name);
+                container.Name = CloudResourceNameNormalizer.NormalizeGeneralName(container.Name);
 
             var cloudInfo = await provider.RegisterTaskDefinition(account, request);
 
@@ -353,6 +354,8 @@ namespace IWX_CloudZen.CloudServices.ECS.Services
             string user, int accountId, CreateEcsServiceRequest request)
         {
             var (account, provider) = await Resolve(user, accountId);
+
+            request.ServiceName = CloudResourceNameNormalizer.NormalizeGeneralName(request.ServiceName);
 
             var cloudInfo = await provider.CreateService(account, request);
 

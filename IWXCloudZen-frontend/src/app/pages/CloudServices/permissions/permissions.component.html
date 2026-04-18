@@ -1,0 +1,857 @@
+<!-- ── Permissions Dashboard ── -->
+<div class="min-h-screen bg-gray-50/50">
+
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-100">
+    <div class="container-lux py-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <a routerLink="/dashboard" class="text-gray-400 hover:text-black transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+              </svg>
+            </a>
+            <span class="text-gray-300">|</span>
+            <div class="p-2 bg-gray-50 rounded-xl">
+              <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="font-serif text-3xl md:text-5xl font-bold text-black tracking-tight">Permissions</h1>
+              <p class="text-gray-500 mt-1 text-sm">IAM Policies · Permission Checks · Policy Management</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- Account Selector -->
+          <select *ngIf="accounts.length > 0" [(ngModel)]="selectedAccountId" (ngModelChange)="onAccountChange()"
+                  class="px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 bg-white min-w-[180px]">
+            <option *ngFor="let a of accounts" [ngValue]="a.id">{{ a.accountName }}</option>
+          </select>
+          <!-- Sync Button -->
+          <button (click)="syncPolicies()" class="btn-icon" title="Sync Policies from Cloud" [disabled]="syncing || !selectedAccountId">
+            <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+          </button>
+          <!-- Refresh Button -->
+          <button (click)="refreshData()" class="p-2.5 border border-gray-200 text-gray-500 hover:text-black hover:border-gray-400 transition rounded-xl" title="Refresh">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.992 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-lux py-8">
+
+    <!-- TOAST MESSAGE -->
+    <div *ngIf="toastMessage" class="mb-6 px-5 py-3 flex items-center gap-3 text-sm border animate-fadeIn rounded-xl"
+         [ngClass]="toastType === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'">
+      <svg *ngIf="toastType === 'success'" class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+      </svg>
+      <svg *ngIf="toastType === 'error'" class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+      </svg>
+      <span>{{ toastMessage }}</span>
+    </div>
+
+    <!-- SYNC REPORT -->
+    <div *ngIf="showSyncReport && lastSyncResult" class="mb-8 border border-green-200 bg-green-50/50 p-6 animate-fadeIn rounded-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-semibold text-gray-900">Sync Report</h3>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Last sync results</p>
+          </div>
+        </div>
+        <button (click)="closeSyncReport()" class="text-gray-400 hover:text-gray-600 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      <div class="grid grid-cols-3 gap-4 mb-5">
+        <div class="text-center p-3 bg-white border border-green-100 rounded-xl">
+          <p class="text-xl font-bold text-green-600">{{ lastSyncResult.added }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Added</p>
+        </div>
+        <div class="text-center p-3 bg-white border border-blue-100 rounded-xl">
+          <p class="text-xl font-bold text-blue-600">{{ lastSyncResult.updated }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Updated</p>
+        </div>
+        <div class="text-center p-3 bg-white border border-red-100 rounded-xl">
+          <p class="text-xl font-bold text-red-500">{{ lastSyncResult.removed }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Removed</p>
+        </div>
+      </div>
+      <!-- Synced policy list -->
+      <div class="space-y-2 max-h-48 overflow-y-auto">
+        <div *ngFor="let p of lastSyncResult.policies" class="flex items-center justify-between text-xs py-2 px-3 bg-white border border-gray-100 rounded-lg">
+          <div class="flex items-center gap-2 min-w-0 flex-1">
+            <div class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+            <span class="font-medium text-gray-800 truncate">{{ p.policyName }}</span>
+            <span class="px-1.5 py-0.5 text-[10px] rounded border" [ngClass]="getPolicyTypeClass(p.policyType)">{{ p.policyType }}</span>
+          </div>
+          <span class="text-gray-400 text-[10px] flex-shrink-0">{{ p.provider }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- No accounts state -->
+    <div *ngIf="!loading && accounts.length === 0" class="text-center py-20 border border-gray-200 bg-white rounded-2xl">
+      <svg class="w-16 h-16 mx-auto text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+      </svg>
+      <p class="text-gray-500 text-lg mb-2">No cloud accounts connected yet.</p>
+      <p class="text-gray-400 text-sm mb-6">Connect a cloud account to manage permissions.</p>
+      <a routerLink="/profile" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">Connect Account</a>
+    </div>
+
+    <!-- Main content (when accounts exist) -->
+    <ng-container *ngIf="!loading && accounts.length > 0">
+
+      <!-- Metrics -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div *ngFor="let m of metrics; let i = index"
+             class="metric-card bg-white rounded-2xl border border-gray-100 p-6 animate-fade-in"
+             [class]="'metric-card bg-white rounded-2xl border border-gray-100 p-6 animate-fade-in stagger-' + (i + 1)">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">{{ m.label }}</span>
+            <svg class="w-5 h-5" [class]="m.color" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="m.icon"/>
+            </svg>
+          </div>
+          <div class="text-3xl font-bold text-black font-serif">{{ m.value }}</div>
+        </div>
+      </div>
+
+      <!-- User Info Bar -->
+      <div *ngIf="summary" class="bg-white rounded-2xl border border-gray-100 p-5 mb-8 animate-fade-in">
+        <div class="flex flex-wrap items-center gap-6">
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"/>
+            </svg>
+            <span class="text-sm text-gray-600">User: <strong class="text-black">{{ summary.userName || '—' }}</strong></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+            <span class="text-sm text-gray-600">Managed Policies: <strong class="text-black">{{ summary.attachedManagedPoliciesCount }}</strong></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span class="text-sm text-gray-600">Inline Policies: <strong class="text-black">{{ summary.inlinePoliciesCount }}</strong></span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+            <span class="text-sm text-gray-600">Group Policies: <strong class="text-black">{{ summary.groupPoliciesCount }}</strong></span>
+          </div>
+          <div *ngIf="summary.groups.length > 0" class="flex items-center gap-2 ml-auto">
+            <span class="text-sm text-gray-600">Groups: <strong class="text-black">{{ summary.groups.join(', ') }}</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Navigation Tabs -->
+      <div class="flex flex-wrap gap-2 mb-8 animate-fade-in stagger-3">
+        <button *ngFor="let s of sections" (click)="switchSection(s.key)"
+                class="section-tab inline-flex items-center gap-2 px-4 py-2.5 text-sm rounded-xl transition-all"
+                [ngClass]="activeSection === s.key ? 'section-tab-active' : 'section-tab-inactive'">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="s.icon"/>
+          </svg>
+          {{ s.label }}
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- SECTION: Summary -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeSection === 'summary'" class="animate-fade-in">
+        <!-- Loading -->
+        <div *ngIf="summaryLoading" class="space-y-4">
+          <div *ngFor="let _ of [1,2,3,4,5]" class="bg-white rounded-xl border border-gray-100 p-5">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 skeleton-line rounded-lg"></div>
+              <div class="flex-1 space-y-2">
+                <div class="h-4 skeleton-line w-2/3"></div>
+                <div class="h-3 skeleton-line w-1/3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary content -->
+        <div *ngIf="!summaryLoading && summary">
+          <h2 class="text-xl font-serif font-bold mb-6">Policy Overview</h2>
+
+          <!-- Policies breakdown -->
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
+            <!-- Managed Policies Card -->
+            <div class="bg-white rounded-2xl border border-gray-100 p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-900">AWS Managed Policies</h3>
+                  <p class="text-3xl font-bold font-serif text-black">{{ summary.attachedManagedPoliciesCount }}</p>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400">Policies created and managed by AWS</p>
+            </div>
+
+            <!-- Inline Policies Card -->
+            <div class="bg-white rounded-2xl border border-gray-100 p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-900">Inline Policies</h3>
+                  <p class="text-3xl font-bold font-serif text-black">{{ summary.inlinePoliciesCount }}</p>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400">Policies embedded directly in the user</p>
+            </div>
+
+            <!-- Group Policies Card -->
+            <div class="bg-white rounded-2xl border border-gray-100 p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-900">Group Policies</h3>
+                  <p class="text-3xl font-bold font-serif text-black">{{ summary.groupPoliciesCount }}</p>
+                </div>
+              </div>
+              <p class="text-xs text-gray-400">Policies inherited from IAM groups</p>
+            </div>
+          </div>
+
+          <!-- Attached Policies List in Summary -->
+          <h3 class="text-lg font-serif font-bold mb-4">Attached Policies</h3>
+          <div *ngIf="summary.policies.length === 0" class="text-center py-12 bg-white rounded-2xl border border-gray-100">
+            <p class="text-gray-400">No policies attached to this user.</p>
+          </div>
+          <div *ngIf="summary.policies.length > 0" class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <!-- Table header -->
+            <div class="hidden md:grid md:grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 text-[10px] text-gray-400 uppercase tracking-wider">
+              <div class="col-span-4">Policy Name</div>
+              <div class="col-span-3">Type</div>
+              <div class="col-span-3">Attached Via</div>
+              <div class="col-span-2 text-right">Actions</div>
+            </div>
+            <!-- Rows -->
+            <div *ngFor="let p of summary.policies; let i = index"
+                 class="policy-row grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 border-b border-gray-50 items-center cursor-pointer"
+                 (click)="switchSection('policies')">
+              <div class="col-span-4 flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                     [ngClass]="p.type === 'Inline' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                  </svg>
+                </div>
+                <div class="min-w-0">
+                  <p class="font-medium text-gray-900 text-sm truncate">{{ p.policyName }}</p>
+                  <p class="text-[10px] text-gray-400 font-mono truncate">{{ truncateArn(p.policyArn) }}</p>
+                </div>
+              </div>
+              <div class="col-span-3">
+                <span class="inline-flex px-2 py-0.5 text-[10px] rounded-full border" [ngClass]="getPolicyTypeClass(p.type)">{{ p.type }}</span>
+              </div>
+              <div class="col-span-3">
+                <span class="text-sm text-gray-600">{{ p.attachedVia }}</span>
+              </div>
+              <div class="col-span-2 text-right">
+                <svg class="w-4 h-4 text-gray-300 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- SECTION: Attached Policies -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeSection === 'policies'" class="animate-fade-in">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-xl font-serif font-bold">Attached Policies</h2>
+          <!-- Search -->
+          <div class="relative w-full sm:w-80">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+            </svg>
+            <input type="text" [(ngModel)]="policiesSearchQuery" placeholder="Search policies..."
+                   class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-300 transition-all"/>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="policiesLoading" class="space-y-3">
+          <div *ngFor="let _ of [1,2,3,4]" class="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-4">
+            <div class="w-10 h-10 skeleton-line rounded-lg"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 skeleton-line w-1/2"></div>
+              <div class="h-3 skeleton-line w-1/3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="!policiesLoading && filteredPolicies.length === 0" class="text-center py-16 bg-white rounded-2xl border border-gray-100">
+          <svg class="w-12 h-12 mx-auto text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+          </svg>
+          <p class="text-gray-400">No policies found.</p>
+        </div>
+
+        <!-- Policies Table -->
+        <div *ngIf="!policiesLoading && filteredPolicies.length > 0" class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div class="px-6 py-3 border-b border-gray-100 flex items-center justify-between">
+            <span class="text-xs text-gray-400">{{ filteredPolicies.length }} of {{ policiesResponse!.totalPolicies }} policies</span>
+          </div>
+          <!-- Table header -->
+          <div class="hidden md:grid md:grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 text-[10px] text-gray-400 uppercase tracking-wider">
+            <div class="col-span-4">Policy Name</div>
+            <div class="col-span-3">ARN</div>
+            <div class="col-span-2">Type</div>
+            <div class="col-span-1">Via</div>
+            <div class="col-span-2 text-right">Actions</div>
+          </div>
+          <!-- Rows -->
+          <div *ngFor="let p of filteredPolicies; let i = index"
+               class="policy-row grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 border-b border-gray-50 items-center">
+            <div class="col-span-4 flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="p.policyType === 'Inline' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <p class="font-medium text-gray-900 text-sm truncate cursor-pointer hover:underline" (click)="openPolicyDetail(p)">{{ p.policyName }}</p>
+              </div>
+            </div>
+            <div class="col-span-3 min-w-0">
+              <p class="text-xs text-gray-400 font-mono truncate" [title]="p.policyArn">{{ truncateArn(p.policyArn) }}</p>
+            </div>
+            <div class="col-span-2">
+              <span class="inline-flex px-2 py-0.5 text-[10px] rounded-full border" [ngClass]="getPolicyTypeClass(p.policyType)">{{ p.policyType }}</span>
+            </div>
+            <div class="col-span-1">
+              <span class="text-xs text-gray-500">{{ p.attachedVia }}</span>
+            </div>
+            <div class="col-span-2 text-right flex items-center justify-end gap-2">
+              <button (click)="openPolicyDetail(p)" class="p-1.5 text-gray-400 hover:text-black transition rounded-lg hover:bg-gray-50" title="View Details">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </button>
+              <button *ngIf="p.policyType !== 'Inline'" (click)="detachPolicy(p.policyArn)"
+                      [disabled]="detachingArn === p.policyArn"
+                      class="p-1.5 text-red-400 hover:text-red-600 transition rounded-lg hover:bg-red-50" title="Detach Policy">
+                <svg *ngIf="detachingArn !== p.policyArn" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.181 8.68l-4.503-4.503a2.25 2.25 0 00-3.182 3.182l4.503 4.503m4.503-4.503L8.68 13.18m4.5-4.5l4.504 4.504a2.25 2.25 0 01-3.182 3.182l-4.504-4.504m4.504-4.504L8.68 13.18"/>
+                </svg>
+                <svg *ngIf="detachingArn === p.policyArn" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- SECTION: Browse & Attach Policies -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeSection === 'browse'" class="animate-fade-in">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <h2 class="text-xl font-serif font-bold">Browse Available Policies</h2>
+        </div>
+
+        <!-- Search + Scope filters -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-5 mb-6">
+          <div class="flex flex-col sm:flex-row gap-3">
+            <!-- Scope selector -->
+            <select [(ngModel)]="browseScope" (ngModelChange)="onBrowseScopeChange()"
+                    class="px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 bg-white">
+              <option *ngFor="let s of scopeOptions" [value]="s.value">{{ s.label }}</option>
+            </select>
+            <!-- Search input -->
+            <div class="relative flex-1">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+              </svg>
+              <input type="text" [(ngModel)]="browseSearchQuery" (keyup.enter)="onBrowseSearch()"
+                     placeholder="Search policies (e.g., S3, EC2, Lambda)..."
+                     class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-300 transition-all"/>
+            </div>
+            <button (click)="onBrowseSearch()"
+                    class="px-5 py-2.5 bg-black text-white text-sm rounded-xl hover:bg-gray-800 transition inline-flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+              </svg>
+              Search
+            </button>
+          </div>
+          <div class="mt-3 text-xs text-gray-400">
+            Found {{ browseTotalCount }} policies
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="browseLoading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let _ of [1,2,3,4]" class="bg-white rounded-xl border border-gray-100 p-5">
+            <div class="space-y-3">
+              <div class="h-4 skeleton-line w-2/3"></div>
+              <div class="h-3 skeleton-line w-full"></div>
+              <div class="h-8 skeleton-line w-24"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available policies grid -->
+        <div *ngIf="!browseLoading && availablePolicies.length === 0" class="text-center py-16 bg-white rounded-2xl border border-gray-100">
+          <svg class="w-12 h-12 mx-auto text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+          </svg>
+          <p class="text-gray-400">No policies found. Try a different search term.</p>
+        </div>
+
+        <div *ngIf="!browseLoading && availablePolicies.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let p of availablePolicies"
+               class="browse-card bg-white rounded-xl border border-gray-100 p-5">
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="min-w-0 flex-1">
+                <h4 class="font-medium text-gray-900 text-sm truncate">{{ p.policyName }}</h4>
+                <p class="text-[10px] text-gray-400 font-mono truncate mt-0.5" [title]="p.policyArn">{{ truncateArn(p.policyArn) }}</p>
+              </div>
+              <span class="inline-flex px-2 py-0.5 text-[10px] rounded-full border bg-blue-50 text-blue-700 border-blue-200 flex-shrink-0">{{ p.scope }}</span>
+            </div>
+            <p *ngIf="p.description" class="text-xs text-gray-500 mb-3 line-clamp-2">{{ p.description }}</p>
+            <div class="flex items-center justify-between">
+              <div *ngIf="isAlreadyAttached(p.policyArn)" class="flex items-center gap-1.5 text-green-600 text-xs">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+                Already attached
+              </div>
+              <button *ngIf="!isAlreadyAttached(p.policyArn)" (click)="attachPolicy(p)"
+                      [disabled]="attachingArn === p.policyArn"
+                      class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs bg-black text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50">
+                <svg *ngIf="attachingArn !== p.policyArn" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                <svg *ngIf="attachingArn === p.policyArn" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Attach
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- SECTION: Check Permissions -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeSection === 'check'" class="animate-fade-in">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-serif font-bold">Check Permissions</h2>
+            <p class="text-sm text-gray-400 mt-1">Select AWS actions to verify if they are allowed or denied</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <span *ngIf="selectedActions.length > 0" class="text-xs text-gray-500">{{ selectedActions.length }} action{{ selectedActions.length !== 1 ? 's' : '' }} selected</span>
+            <button *ngIf="selectedActions.length > 0" (click)="clearSelectedActions()"
+                    class="text-xs text-gray-500 hover:text-black transition underline underline-offset-2">Clear</button>
+          </div>
+        </div>
+
+        <!-- Resource selector -->
+        <div class="bg-white rounded-2xl border border-gray-100 p-5 mb-6">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">Target Resource</h3>
+          <select [(ngModel)]="selectedResource"
+                  class="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 bg-white">
+            <option *ngFor="let r of resourceOptions" [value]="r.value">{{ r.label }}</option>
+          </select>
+        </div>
+
+        <!-- Action Groups (Accordion) -->
+        <div class="space-y-3 mb-8">
+          <div *ngFor="let group of actionGroups" class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <!-- Group header -->
+            <div class="group-header flex items-center justify-between px-5 py-4" (click)="toggleGroupExpand(group.service)">
+              <div class="flex items-center gap-3">
+                <button (click)="$event.stopPropagation(); selectAllServiceActions(group)"
+                        class="w-5 h-5 rounded border flex items-center justify-center flex-shrink-0 transition"
+                        [ngClass]="isAllServiceSelected(group) ? 'bg-black border-black text-white' : isSomeServiceSelected(group) ? 'bg-gray-200 border-gray-300' : 'border-gray-300 hover:border-gray-400'">
+                  <svg *ngIf="isAllServiceSelected(group)" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  <svg *ngIf="isSomeServiceSelected(group) && !isAllServiceSelected(group)" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M18 12H6"/>
+                  </svg>
+                </button>
+                <h3 class="text-sm font-semibold text-gray-900">{{ group.service }}</h3>
+                <span class="text-[10px] text-gray-400">{{ group.actions.length }} actions</span>
+                <span *ngIf="getSelectedCountForGroup(group) > 0"
+                      class="text-[10px] px-1.5 py-0.5 rounded-full bg-black text-white">{{ getSelectedCountForGroup(group) }} selected</span>
+              </div>
+              <svg class="w-4 h-4 text-gray-400 transition-transform" [class.rotate-180]="isGroupExpanded(group.service)" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/>
+              </svg>
+            </div>
+
+            <!-- Expanded actions -->
+            <div *ngIf="isGroupExpanded(group.service)" class="px-5 pb-4 border-t border-gray-50 pt-3">
+              <div class="flex flex-wrap gap-2">
+                <button *ngFor="let action of group.actions" (click)="toggleAction(action)"
+                        class="action-chip inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition"
+                        [ngClass]="isActionSelected(action) ? 'action-chip-selected' : 'action-chip-unselected'">
+                  <svg *ngIf="isActionSelected(action)" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                  {{ action }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Run check button -->
+        <div class="flex items-center gap-4 mb-8">
+          <button (click)="runPermissionCheck()" [disabled]="checkLoading || selectedActions.length === 0"
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition rounded-xl disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg *ngIf="!checkLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125v-9M10.125 2.25h.375a9 9 0 019 9v.375M10.125 2.25A3.375 3.375 0 0113.5 5.625v1.5c0 .621.504 1.125 1.125 1.125h1.5a3.375 3.375 0 013.375 3.375M9 15l2.25 2.25L15 12"/>
+            </svg>
+            <svg *ngIf="checkLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Run Permission Check
+          </button>
+          <span *ngIf="selectedActions.length === 0" class="text-xs text-gray-400">Select at least one action to check</span>
+        </div>
+
+        <!-- Check Results -->
+        <div *ngIf="checkResults.length > 0" class="animate-fade-in">
+          <!-- Results summary -->
+          <div class="grid grid-cols-2 gap-4 mb-6">
+            <div class="bg-green-50 rounded-2xl border border-green-100 p-5 text-center">
+              <p class="text-3xl font-bold font-serif text-green-600">{{ checkAllowedCount }}</p>
+              <p class="text-xs text-green-500 uppercase tracking-wider mt-1">Allowed</p>
+            </div>
+            <div class="bg-red-50 rounded-2xl border border-red-100 p-5 text-center">
+              <p class="text-3xl font-bold font-serif text-red-600">{{ checkDeniedCount }}</p>
+              <p class="text-xs text-red-500 uppercase tracking-wider mt-1">Denied</p>
+            </div>
+          </div>
+
+          <!-- Results table -->
+          <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <div class="hidden md:grid md:grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 text-[10px] text-gray-400 uppercase tracking-wider">
+              <div class="col-span-1">Status</div>
+              <div class="col-span-4">Action</div>
+              <div class="col-span-4">Resource</div>
+              <div class="col-span-3">Decision</div>
+            </div>
+            <div *ngFor="let r of checkResults"
+                 class="check-result-row grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 border-b border-gray-50 items-center">
+              <div class="col-span-1">
+                <div class="w-3 h-3 rounded-full" [ngClass]="getDecisionDotClass(r.isAllowed)"></div>
+              </div>
+              <div class="col-span-4">
+                <span class="text-sm font-medium text-gray-900 font-mono">{{ r.action }}</span>
+              </div>
+              <div class="col-span-4 min-w-0">
+                <span class="text-xs text-gray-500 font-mono truncate block" [title]="r.resource">{{ r.resource }}</span>
+              </div>
+              <div class="col-span-3">
+                <span class="inline-flex px-2.5 py-1 text-[10px] rounded-full border font-medium" [ngClass]="getDecisionClass(r.evalDecision)">
+                  {{ r.isAllowed ? 'ALLOWED' : 'DENIED' }}
+                  <span class="ml-1 opacity-60">({{ r.evalDecision }})</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <!-- SECTION: Synced Policies (DB) -->
+      <!-- ═══════════════════════════════════════════════════════ -->
+      <div *ngIf="activeSection === 'synced'" class="animate-fade-in">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-serif font-bold">Synced Policies</h2>
+            <p class="text-sm text-gray-400 mt-1">Policies stored in the database from cloud sync</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <!-- Search -->
+            <div class="relative w-full sm:w-64">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+              </svg>
+              <input type="text" [(ngModel)]="syncedSearchQuery" placeholder="Search synced policies..."
+                     class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-300 transition-all"/>
+            </div>
+            <button (click)="syncPolicies()" [disabled]="syncing"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-black text-white text-sm rounded-xl hover:bg-gray-800 transition disabled:opacity-50">
+              <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Sync Now
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div *ngIf="syncedLoading" class="space-y-3">
+          <div *ngFor="let _ of [1,2,3,4]" class="bg-white rounded-xl border border-gray-100 p-5 flex items-center gap-4">
+            <div class="w-10 h-10 skeleton-line rounded-lg"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-4 skeleton-line w-1/2"></div>
+              <div class="h-3 skeleton-line w-1/3"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div *ngIf="!syncedLoading && syncedPolicies.length === 0" class="text-center py-16 bg-white rounded-2xl border border-gray-100">
+          <svg class="w-12 h-12 mx-auto text-gray-200 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375"/>
+          </svg>
+          <p class="text-gray-400 mb-2">No synced policies found.</p>
+          <p class="text-gray-300 text-sm">Click "Sync Now" to fetch policies from the cloud.</p>
+        </div>
+
+        <!-- Synced policies list -->
+        <div *ngIf="!syncedLoading && filteredSyncedPolicies.length > 0" class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div class="px-6 py-3 border-b border-gray-100 flex items-center justify-between">
+            <span class="text-xs text-gray-400">{{ filteredSyncedPolicies.length }} of {{ syncedTotalPolicies }} policies</span>
+          </div>
+          <!-- Table header -->
+          <div class="hidden md:grid md:grid-cols-12 gap-4 px-6 py-3 bg-gray-50 border-b border-gray-100 text-[10px] text-gray-400 uppercase tracking-wider">
+            <div class="col-span-3">Policy Name</div>
+            <div class="col-span-3">ARN</div>
+            <div class="col-span-2">Type</div>
+            <div class="col-span-1">Via</div>
+            <div class="col-span-1">Provider</div>
+            <div class="col-span-2">Synced At</div>
+          </div>
+          <div *ngFor="let p of filteredSyncedPolicies"
+               class="policy-row grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 px-6 py-4 border-b border-gray-50 items-center cursor-pointer"
+               (click)="openPolicyDetail(p)">
+            <div class="col-span-3 flex items-center gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="p.policyType === 'Inline' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                </svg>
+              </div>
+              <p class="font-medium text-gray-900 text-sm truncate">{{ p.policyName }}</p>
+            </div>
+            <div class="col-span-3 min-w-0">
+              <p class="text-xs text-gray-400 font-mono truncate" [title]="p.policyArn">{{ truncateArn(p.policyArn) }}</p>
+            </div>
+            <div class="col-span-2">
+              <span class="inline-flex px-2 py-0.5 text-[10px] rounded-full border" [ngClass]="getPolicyTypeClass(p.policyType)">{{ p.policyType }}</span>
+            </div>
+            <div class="col-span-1">
+              <span class="text-xs text-gray-500">{{ p.attachedVia }}</span>
+            </div>
+            <div class="col-span-1">
+              <span class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">{{ p.provider }}</span>
+            </div>
+            <div class="col-span-2">
+              <span class="text-xs text-gray-400">{{ formatDate(p.createdAt) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- Loading state for initial load -->
+    <div *ngIf="loading" class="space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div *ngFor="let _ of [1,2,3,4]" class="bg-white rounded-2xl border border-gray-100 p-6">
+          <div class="space-y-3">
+            <div class="h-3 skeleton-line w-1/2"></div>
+            <div class="h-8 skeleton-line w-1/3"></div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-2xl border border-gray-100 p-8">
+        <div class="space-y-4">
+          <div class="h-4 skeleton-line w-1/3"></div>
+          <div class="h-3 skeleton-line w-2/3"></div>
+          <div class="h-3 skeleton-line w-1/2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- Detail Panel (Slide-over) -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div *ngIf="selectedPolicy">
+  <!-- Backdrop -->
+  <div class="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+       [class.modal-backdrop-enter]="showDetailPanel"
+       [class.modal-backdrop-exit]="!showDetailPanel"
+       (click)="closeDetail()"></div>
+
+  <!-- Panel -->
+  <div class="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-white shadow-2xl border-l border-gray-200 flex flex-col"
+       [class.detail-panel-enter]="showDetailPanel"
+       [class.detail-panel-exit]="!showDetailPanel">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100 flex-shrink-0">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+             [ngClass]="$any(selectedPolicy).policyType === 'Inline' ? 'bg-amber-50 text-amber-600' : 'bg-blue-50 text-blue-600'">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <h3 class="text-lg font-serif font-bold truncate">{{ $any(selectedPolicy).policyName }}</h3>
+          <p class="text-xs text-gray-400">Policy Details</p>
+        </div>
+      </div>
+      <button (click)="closeDetail()" class="w-9 h-9 flex items-center justify-center hover:bg-gray-100 rounded-lg transition flex-shrink-0">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto px-6 py-5 detail-panel-body">
+      <!-- General Info -->
+      <div class="mb-6">
+        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">General Information</h4>
+        <div class="space-y-0">
+          <div class="detail-row">
+            <span class="detail-label">Policy Name</span>
+            <span class="detail-value">{{ $any(selectedPolicy).policyName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Policy ARN</span>
+            <span class="detail-value font-mono text-xs">{{ $any(selectedPolicy).policyArn }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Type</span>
+            <span class="detail-value">
+              <span class="inline-flex px-2 py-0.5 text-[10px] rounded-full border" [ngClass]="getPolicyTypeClass($any(selectedPolicy).policyType)">{{ $any(selectedPolicy).policyType }}</span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Attached Via</span>
+            <span class="detail-value">{{ $any(selectedPolicy).attachedVia }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Provider & Account (synced policies) -->
+      <div *ngIf="$any(selectedPolicy).provider" class="mb-6">
+        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Cloud Details</h4>
+        <div class="space-y-0">
+          <div class="detail-row">
+            <span class="detail-label">Provider</span>
+            <span class="detail-value">{{ $any(selectedPolicy).provider }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Cloud Account</span>
+            <span class="detail-value">{{ getAccountName($any(selectedPolicy).cloudAccountId) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Record ID</span>
+            <span class="detail-value font-mono">{{ $any(selectedPolicy).id }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timestamps (synced policies) -->
+      <div *ngIf="$any(selectedPolicy).createdAt" class="mb-6">
+        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Timestamps</h4>
+        <div class="space-y-0">
+          <div class="detail-row">
+            <span class="detail-label">Created At</span>
+            <span class="detail-value">{{ formatDateTime($any(selectedPolicy).createdAt) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Updated At</span>
+            <span class="detail-value">{{ $any(selectedPolicy).updatedAt ? formatDateTime($any(selectedPolicy).updatedAt) : '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statements (attached policies) -->
+      <div *ngIf="$any(selectedPolicy).statements?.length > 0" class="mb-6">
+        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Policy Statements</h4>
+        <div *ngFor="let stmt of $any(selectedPolicy).statements; let i = index"
+             class="mb-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded font-medium"
+                  [ngClass]="stmt.effect === 'Allow' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+              {{ stmt.effect }}
+            </span>
+            <span class="text-xs text-gray-400">Statement {{ i + 1 }}</span>
+          </div>
+          <div *ngIf="stmt.action?.length > 0" class="mb-2">
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Actions</p>
+            <div class="flex flex-wrap gap-1">
+              <span *ngFor="let a of stmt.action" class="text-[10px] px-1.5 py-0.5 bg-white border border-gray-200 rounded font-mono">{{ a }}</span>
+            </div>
+          </div>
+          <div *ngIf="stmt.resource?.length > 0">
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-1">Resources</p>
+            <div class="flex flex-wrap gap-1">
+              <span *ngFor="let r of stmt.resource" class="text-[10px] px-1.5 py-0.5 bg-white border border-gray-200 rounded font-mono break-all">{{ r }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-gray-100 flex-shrink-0 flex items-center justify-between bg-gray-50">
+      <span class="text-[10px] uppercase tracking-wider text-gray-400">
+        {{ $any(selectedPolicy).policyType || 'Policy' }}
+      </span>
+      <button (click)="closeDetail()"
+              class="px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition rounded-lg">
+        Close
+      </button>
+    </div>
+  </div>
+</div>

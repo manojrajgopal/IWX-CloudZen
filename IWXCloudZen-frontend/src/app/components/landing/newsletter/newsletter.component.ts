@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -7,7 +7,8 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './newsletter.component.html',
-  styleUrls: ['./newsletter.component.css']
+  styleUrls: ['./newsletter.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NewsletterComponent {
   onSubmit(form: any) {

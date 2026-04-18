@@ -170,10 +170,12 @@ button, a, [role="button"], input[type="submit"], input[type="button"], select {
 /* Image zoom container */
 .img-zoom {
   overflow: hidden;
+  contain: layout style paint;
 }
 
 .img-zoom img {
   transition: transform 0.6s ease;
+  will-change: transform;
 }
 
 .img-zoom:hover img {

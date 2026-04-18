@@ -7,7 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../services/cloud-services.service';
 import { CloudAccount } from '../../../models/cloud-account.model';
-import { SecurityGroup, SecurityGroupRule } from '../../../models/cloud-services.model';
+import { SecurityGroup, SecurityGroupRule, SecurityGroupSyncResponse } from '../../../models/cloud-services.model';
 import { SgFilterByProviderPipe } from './security-groups.pipes';
 
 type ViewMode = 'grid' | 'list';
@@ -48,6 +48,13 @@ export class SecurityGroupsComponent implements OnInit, OnDestroy {
   selectedGroup: SecurityGroup | null = null;
   showDetailPanel = false;
   activeRulesTab: 'inbound' | 'outbound' = 'inbound';
+
+  // Sync state
+  syncing = false;
+  lastSyncResults: SecurityGroupSyncResponse[] = [];
+  showSyncReport = false;
+  syncMessage: string | null = null;
+  syncMessageType: 'success' | 'error' | null = null;
 
   // Metrics
   metrics: SgMetric[] = [
@@ -201,6 +208,67 @@ export class SecurityGroupsComponent implements OnInit, OnDestroy {
 
   refreshData(): void {
     this.loadData();
+  }
+
+  syncData(): void {
+    if (this.syncing) return;
+    this.syncing = true;
+    this.syncMessage = null;
+    this.lastSyncResults = [];
+    this.showSyncReport = false;
+
+    const awsAccounts = this.accounts.filter(a => a.provider?.toUpperCase() === 'AWS');
+    if (awsAccounts.length === 0) {
+      this.syncing = false;
+      this.syncMessage = 'No AWS accounts found to sync.';
+      this.syncMessageType = 'error';
+      setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      return;
+    }
+
+    const syncRequests = awsAccounts.map(a =>
+      this.cloudServicesService.syncSecurityGroups(a.id).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin(syncRequests).subscribe({
+      next: (results) => {
+        this.syncing = false;
+        this.lastSyncResults = results.filter((r): r is SecurityGroupSyncResponse => r !== null);
+        const totalAdded = this.getTotalSyncAdded();
+        const totalGroups = this.getTotalSyncGroups();
+        this.syncMessage = `Sync completed — ${awsAccounts.length} account${awsAccounts.length !== 1 ? 's' : ''} · ${totalGroups} group${totalGroups !== 1 ? 's' : ''} · +${totalAdded} added`;
+        this.syncMessageType = 'success';
+        this.showSyncReport = true;
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 6000);
+        this.loadData();
+      },
+      error: () => {
+        this.syncing = false;
+        this.syncMessage = 'Sync failed. Please try again.';
+        this.syncMessageType = 'error';
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      }
+    });
+  }
+
+  closeSyncReport(): void {
+    this.showSyncReport = false;
+  }
+
+  getTotalSyncAdded(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.added || 0), 0);
+  }
+
+  getTotalSyncUpdated(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.updated || 0), 0);
+  }
+
+  getTotalSyncRemoved(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.removed || 0), 0);
+  }
+
+  getTotalSyncGroups(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.securityGroups?.length || 0), 0);
   }
 
   getAccountName(accountId: number): string {

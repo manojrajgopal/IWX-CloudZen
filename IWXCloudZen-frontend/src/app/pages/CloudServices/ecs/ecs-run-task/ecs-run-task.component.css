@@ -1,0 +1,145 @@
+/* ── Animations ── */
+@keyframes draw {
+  from { stroke-dashoffset: 300; }
+  to { stroke-dashoffset: 0; }
+}
+
+.animate-draw {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+  animation: draw 2s ease-in-out forwards;
+}
+
+@keyframes wave {
+  0% { transform: translateY(0); opacity: 0.3; }
+  50% { transform: translateY(-3px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 0.3; }
+}
+
+.animate-wave {
+  animation: wave 1.5s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes loadingBar {
+  0% { width: 0; }
+  50% { width: 70%; }
+  90% { width: 90%; }
+  100% { width: 95%; }
+}
+
+.animate-loading-bar {
+  animation: loadingBar 2s ease-in-out infinite;
+  background: #000;
+}
+
+/* ── Account Card ── */
+.account-card {
+  position: relative;
+}
+
+.account-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #000;
+  transition: width 0.3s ease;
+}
+
+.account-card:hover::after {
+  width: 100%;
+}
+
+/* ── Resource Selector ── */
+.resource-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e5e5e5;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.resource-option:hover {
+  border-color: #d4d4d4;
+  background-color: #fafafa;
+}
+
+.resource-option.selected {
+  border-color: #000;
+  background-color: #f9f9f9;
+}
+
+/* ── Multi-select Item ── */
+.multi-select-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid #e5e5e5;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 0.8125rem;
+}
+
+.multi-select-item:hover {
+  border-color: #d4d4d4;
+  background-color: #fafafa;
+}
+
+.multi-select-item.selected {
+  border-color: #000;
+  background-color: #f7f7f7;
+}
+
+/* ── Section Divider ── */
+.form-section-divider {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 2rem;
+  margin-top: 2rem;
+}
+
+/* ── Env Override ── */
+.env-override-block {
+  border: 1px solid #e5e5e5;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.env-override-block:hover {
+  border-color: #d4d4d4;
+}
+
+.env-var-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.env-var-row input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e5e5;
+  font-size: 0.8125rem;
+  font-family: 'Inter', ui-monospace, monospace;
+  transition: border-color 0.15s;
+}
+
+.env-var-row input:focus {
+  outline: none;
+  border-color: #000;
+}

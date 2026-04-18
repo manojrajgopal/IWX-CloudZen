@@ -7,7 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../services/cloud-services.service';
 import { CloudAccount } from '../../../models/cloud-account.model';
-import { Subnet } from '../../../models/cloud-services.model';
+import { Subnet, SubnetSyncResponse } from '../../../models/cloud-services.model';
 import { SubnetFilterByProviderPipe, SubnetFilterByStatePipe, SubnetFilterByAzPipe } from './subnets.pipes';
 
 type ViewMode = 'grid' | 'list';
@@ -52,6 +52,13 @@ export class SubnetsComponent implements OnInit, OnDestroy {
   selectedSubnet: Subnet | null = null;
   showDetailPanel = false;
 
+  // Sync state
+  syncing = false;
+  lastSyncResults: SubnetSyncResponse[] = [];
+  showSyncReport = false;
+  syncMessage: string | null = null;
+  syncMessageType: 'success' | 'error' | null = null;
+
   // Metrics
   metrics: SubnetMetric[] = [
     { label: 'Total Subnets', value: '—', icon: 'M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z', color: 'text-black' },
@@ -62,7 +69,7 @@ export class SubnetsComponent implements OnInit, OnDestroy {
 
   providers = [
     { value: 'all', label: 'All Providers' },
-    { value: 'AWS', label: 'AWS VPC' },
+    { value: 'AWS', label: 'AWS Subnet' },
     { value: 'Azure', label: 'Azure VNet' },
     { value: 'GCP', label: 'GCP Subnet' }
   ];
@@ -239,6 +246,67 @@ export class SubnetsComponent implements OnInit, OnDestroy {
     this.loadData();
   }
 
+  syncData(): void {
+    if (this.syncing) return;
+    this.syncing = true;
+    this.syncMessage = null;
+    this.lastSyncResults = [];
+    this.showSyncReport = false;
+
+    const awsAccounts = this.accounts.filter(a => a.provider?.toUpperCase() === 'AWS');
+    if (awsAccounts.length === 0) {
+      this.syncing = false;
+      this.syncMessage = 'No AWS accounts found to sync.';
+      this.syncMessageType = 'error';
+      setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      return;
+    }
+
+    const syncRequests = awsAccounts.map(a =>
+      this.cloudServicesService.syncSubnets(a.id).pipe(catchError(() => of(null)))
+    );
+
+    forkJoin(syncRequests).subscribe({
+      next: (results) => {
+        this.syncing = false;
+        this.lastSyncResults = results.filter((r): r is SubnetSyncResponse => r !== null);
+        const totalAdded = this.getTotalSyncAdded();
+        const totalSubnets = this.getTotalSyncSubnets();
+        this.syncMessage = `Sync completed — ${awsAccounts.length} account${awsAccounts.length !== 1 ? 's' : ''} · ${totalSubnets} subnet${totalSubnets !== 1 ? 's' : ''} · +${totalAdded} added`;
+        this.syncMessageType = 'success';
+        this.showSyncReport = true;
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 6000);
+        this.loadData();
+      },
+      error: () => {
+        this.syncing = false;
+        this.syncMessage = 'Sync failed. Please try again.';
+        this.syncMessageType = 'error';
+        setTimeout(() => { this.syncMessage = null; this.syncMessageType = null; }, 4000);
+      }
+    });
+  }
+
+  closeSyncReport(): void {
+    this.showSyncReport = false;
+  }
+
+  getTotalSyncAdded(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.added || 0), 0);
+  }
+
+  getTotalSyncUpdated(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.updated || 0), 0);
+  }
+
+  getTotalSyncRemoved(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.removed || 0), 0);
+  }
+
+  getTotalSyncSubnets(): number {
+    return this.lastSyncResults.reduce((sum, r) => sum + (r.subnets?.length || 0), 0);
+  }
+
   getAccountName(accountId: number): string {
     const acc = this.accounts.find(a => a.id === accountId);
     return acc ? acc.accountName : `Account #${accountId}`;
@@ -260,7 +328,7 @@ export class SubnetsComponent implements OnInit, OnDestroy {
 
   getProviderLabel(provider: string): string {
     switch (provider?.toUpperCase()) {
-      case 'AWS': return 'AWS VPC';
+      case 'AWS': return 'AWS Subnet';
       case 'AZURE': return 'Azure VNet';
       case 'GCP': return 'GCP Subnet';
       default: return provider || 'Unknown';

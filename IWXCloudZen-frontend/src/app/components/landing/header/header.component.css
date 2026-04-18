@@ -41,3 +41,54 @@
 .menu-icon-enter {
   animation: iconEnter 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
+/* ---- Dropdown chain styles ---- */
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-panel {
+  position: absolute;
+  min-width: 220px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px -8px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  padding: 6px 0;
+  z-index: 60;
+  animation: dropdownFadeIn 0.18s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  color: #374151;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+  cursor: pointer;
+  border: none;
+  background: none;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+/* Row that contains a link + chevron for items with both route and children */
+.dropdown-item-row {
+  position: relative;
+}
+
+.dropdown-item-row:hover {
+  background: #f3f4f6;
+}
+
+/* Chevron rotate utility */
+.rotate-180 {
+  transform: rotate(180deg);
+}

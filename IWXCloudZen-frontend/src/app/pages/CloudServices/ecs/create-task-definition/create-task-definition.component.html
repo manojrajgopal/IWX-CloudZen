@@ -1,0 +1,719 @@
+<div class="container-lux py-12 md:py-20">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- HEADER -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="flex items-center gap-3 mb-12">
+    <button (click)="goBack()" class="text-gray-400 hover:text-black transition">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-3xl md:text-5xl font-serif font-bold tracking-tight">Register Task Definition</h1>
+      <p class="text-sm text-gray-400 uppercase tracking-widest mt-1">AWS ECS &middot; New Task Definition</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'loading'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <path d="M50 15 L65 25 L65 45 L50 55 L35 45 L35 25 Z" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-draw"/>
+        <path d="M35 55 L50 65 L65 55" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-wave"/>
+      </svg>
+    </div>
+    <div class="w-48 h-1 bg-gray-200 mx-auto mb-4">
+      <div class="h-full bg-black animate-loading-bar"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Loading accounts...</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- CREATING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'creating'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <path d="M50 15 L65 25 L65 45 L50 55 L35 45 L35 25 Z" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-draw"/>
+        <path d="M35 55 L50 65 L65 55" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-wave"/>
+      </svg>
+    </div>
+    <div class="w-64 h-1.5 bg-gray-200 mx-auto mb-4 overflow-hidden">
+      <div class="h-full bg-black transition-all duration-200 ease-out" [style.width.%]="progress"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Registering task definition...</p>
+    <p class="text-xs text-gray-400 mt-2">{{ family }}</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FORM -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'form'" class="max-w-3xl mx-auto animate-fadeIn">
+    <div class="border border-gray-200 bg-white">
+      <!-- Form Header -->
+      <div class="px-8 py-6 border-b border-gray-100">
+        <h2 class="text-lg font-serif font-bold">Task Definition Configuration</h2>
+        <p class="text-sm text-gray-400 mt-1">Define the blueprint for your ECS tasks.</p>
+      </div>
+
+      <!-- Form Body -->
+      <div class="px-8 py-8 space-y-0">
+
+        <!-- ─── Cloud Account ─── -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Cloud Account</label>
+          <div *ngIf="accounts.length === 0" class="p-6 border border-dashed border-gray-200 text-center">
+            <p class="text-sm text-gray-500 mb-2">No AWS accounts connected</p>
+            <a routerLink="/profile" class="text-xs text-black underline hover:no-underline">Connect an account</a>
+          </div>
+          <div *ngIf="accounts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div *ngFor="let acc of accounts"
+                 (click)="selectAccount(acc.id)"
+                 class="account-card flex items-center gap-3 p-4 border cursor-pointer transition-all duration-200"
+                 [ngClass]="selectedAccountId === acc.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="selectedAccountId === acc.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ acc.accountName }}</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ acc.provider }} &middot; {{ acc.region }}</p>
+              </div>
+              <div *ngIf="selectedAccountId === acc.id" class="flex-shrink-0">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Only show rest of form when account is selected -->
+        <div *ngIf="selectedAccountId">
+
+          <!-- ─── Family Name ─── -->
+          <div class="form-section-divider">
+            <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Family Name</label>
+            <div class="relative">
+              <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+              <input type="text" [(ngModel)]="family" (blur)="familyTouched = true" (ngModelChange)="onFamilyChange()"
+                     placeholder="my-task-definition" autocomplete="off"
+                     class="w-full pl-11 pr-4 py-3.5 border text-sm transition-all duration-200 focus:outline-none"
+                     [ngClass]="familyError ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'">
+            </div>
+            <p *ngIf="familyError" class="mt-2 text-xs text-red-500 flex items-center gap-1">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+              {{ familyError }}
+            </p>
+          </div>
+
+          <!-- ─── Compute Configuration ─── -->
+          <div class="form-section-divider">
+            <h3 class="text-sm font-serif font-bold mb-1">Compute Configuration</h3>
+            <p class="text-xs text-gray-400 mb-6">CPU, memory, and compatibility settings for the task.</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+              <!-- CPU -->
+              <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">CPU (Units)</label>
+                <select [(ngModel)]="cpu" (ngModelChange)="onCpuChange()"
+                        class="w-full px-4 py-3 border border-gray-200 text-sm focus:outline-none focus:border-black bg-white">
+                  <option *ngFor="let opt of cpuOptions" [value]="opt">{{ opt }} ({{ +opt / 1024 }} vCPU)</option>
+                </select>
+              </div>
+              <!-- Memory -->
+              <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Memory (MiB)</label>
+                <select [(ngModel)]="memory"
+                        class="w-full px-4 py-3 border border-gray-200 text-sm focus:outline-none focus:border-black bg-white">
+                  <option *ngFor="let opt of availableMemory" [value]="opt">{{ opt }} MiB ({{ (+opt / 1024).toFixed(1) }} GB)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+              <!-- Network Mode -->
+              <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Network Mode</label>
+                <select [(ngModel)]="networkMode"
+                        class="w-full px-4 py-3 border border-gray-200 text-sm focus:outline-none focus:border-black bg-white">
+                  <option *ngFor="let nm of networkModes" [value]="nm">{{ nm }}</option>
+                </select>
+              </div>
+              <!-- OS Family -->
+              <div>
+                <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">OS Family</label>
+                <select [(ngModel)]="osFamily"
+                        class="w-full px-4 py-3 border border-gray-200 text-sm focus:outline-none focus:border-black bg-white">
+                  <option *ngFor="let os of osFamilies" [value]="os">{{ os }}</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Requires Compatibilities -->
+            <div>
+              <label class="block text-xs uppercase tracking-widest text-gray-400 mb-2">Requires Compatibilities</label>
+              <div class="flex gap-2">
+                <button *ngFor="let opt of compatibilityOptions"
+                        (click)="toggleCompatibility(opt)"
+                        class="px-4 py-2 text-xs uppercase tracking-wider border transition"
+                        [ngClass]="isCompatibilitySelected(opt) ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-500 hover:border-gray-300'">
+                  {{ opt }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── IAM Roles ─── -->
+          <div class="form-section-divider">
+            <h3 class="text-sm font-serif font-bold mb-1">IAM Roles</h3>
+            <p class="text-xs text-gray-400 mb-6">Specify execution and task roles for permissions.</p>
+
+            <!-- Loading roles indicator -->
+            <div *ngIf="loadingRoles" class="flex items-center gap-2 mb-4 py-3 px-4 bg-gray-50 border border-gray-100">
+              <svg class="w-4 h-4 text-gray-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span class="text-xs text-gray-500 uppercase tracking-widest">Loading available IAM roles...</span>
+            </div>
+
+            <!-- Roles load error -->
+            <div *ngIf="rolesError && !loadingRoles" class="flex items-center gap-2 mb-4 py-3 px-4 bg-yellow-50 border border-yellow-100">
+              <svg class="w-4 h-4 text-yellow-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+              <span class="text-xs text-yellow-700">{{ rolesError }}</span>
+            </div>
+
+            <!-- ── Execution Role ARN ── -->
+            <div class="mb-6">
+              <div class="flex items-center justify-between mb-3">
+                <label class="block text-xs uppercase tracking-widest text-gray-400">Execution Role ARN <span class="text-red-400">*</span></label>
+                <div class="flex gap-1" *ngIf="!loadingRoles">
+                  <button (click)="executionRoleMode = 'select'; executionRoleArn = ''"
+                          class="text-[10px] uppercase tracking-wider px-2 py-0.5 border transition"
+                          [ngClass]="executionRoleMode === 'select' ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-400 hover:border-gray-300'">
+                    Select
+                  </button>
+                  <button (click)="executionRoleMode = 'manual'; executionRoleArn = ''"
+                          class="text-[10px] uppercase tracking-wider px-2 py-0.5 border transition"
+                          [ngClass]="executionRoleMode === 'manual' ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-400 hover:border-gray-300'">
+                    Manual
+                  </button>
+                </div>
+              </div>
+
+              <!-- Select mode: Card-style selection -->
+              <div *ngIf="executionRoleMode === 'select' && !loadingRoles">
+                <div *ngIf="iamRoles.length > 0" class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+                  <div *ngFor="let role of iamRoles"
+                       (click)="selectExecutionRole(role.resource)"
+                       class="flex items-center gap-3 p-3 border cursor-pointer transition-all duration-200"
+                       [ngClass]="selectedExecutionRoleBase === role.resource ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                         [ngClass]="selectedExecutionRoleBase === role.resource ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+                      </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-gray-900 truncate">{{ getRoleName(role.resource) }}{{ role.resource.endsWith('/') && family.trim() ? family.trim() : '' }}</p>
+                      <p class="text-[10px] text-gray-400 font-mono truncate">{{ role.resource }}{{ role.resource.endsWith('/') && family.trim() ? family.trim() : '' }}</p>
+                    </div>
+                    <div *ngIf="selectedExecutionRoleBase === role.resource" class="flex-shrink-0">
+                      <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <p *ngIf="iamRoles.length === 0 && !loadingRoles && !rolesError" class="text-xs text-gray-400 py-3 text-center border border-dashed border-gray-200">
+                  No roles found. Switch to <button (click)="executionRoleMode = 'manual'" class="underline hover:text-black transition">Manual</button> to enter the ARN directly.
+                </p>
+              </div>
+
+              <!-- Manual mode -->
+              <div *ngIf="executionRoleMode === 'manual' || loadingRoles">
+                <input type="text" [(ngModel)]="executionRoleArn" placeholder="arn:aws:iam::123456789012:role/ecsTaskExecutionRole" autocomplete="off"
+                       class="w-full px-4 py-3 border border-gray-200 text-sm font-mono focus:outline-none focus:border-black">
+              </div>
+            </div>
+
+            <!-- ── Task Role ARN ── -->
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <label class="block text-xs uppercase tracking-widest text-gray-400">Task Role ARN <span class="text-gray-300">(optional)</span></label>
+                <div class="flex gap-1" *ngIf="!loadingRoles">
+                  <button (click)="taskRoleMode = 'select'; taskRoleArn = ''"
+                          class="text-[10px] uppercase tracking-wider px-2 py-0.5 border transition"
+                          [ngClass]="taskRoleMode === 'select' ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-400 hover:border-gray-300'">
+                    Select
+                  </button>
+                  <button (click)="taskRoleMode = 'manual'; taskRoleArn = ''"
+                          class="text-[10px] uppercase tracking-wider px-2 py-0.5 border transition"
+                          [ngClass]="taskRoleMode === 'manual' ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-400 hover:border-gray-300'">
+                    Manual
+                  </button>
+                </div>
+              </div>
+
+              <!-- Select mode: Card-style selection -->
+              <div *ngIf="taskRoleMode === 'select' && !loadingRoles">
+                <div *ngIf="iamRoles.length > 0" class="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+                  <!-- None option -->
+                  <div (click)="taskRoleArn = ''"
+                       class="flex items-center gap-3 p-3 border cursor-pointer transition-all duration-200"
+                       [ngClass]="!taskRoleArn ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                         [ngClass]="!taskRoleArn ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                      </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-gray-500">None (no task role)</p>
+                    </div>
+                    <div *ngIf="!taskRoleArn" class="flex-shrink-0">
+                      <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <!-- Role cards -->
+                  <div *ngFor="let role of iamRoles"
+                       (click)="selectTaskRole(role.resource)"
+                       class="flex items-center gap-3 p-3 border cursor-pointer transition-all duration-200"
+                       [ngClass]="taskRoleArn === role.resource ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                         [ngClass]="taskRoleArn === role.resource ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+                      </svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-gray-900 truncate">{{ getRoleName(role.resource) }}</p>
+                      <p class="text-[10px] text-gray-400 font-mono truncate">{{ role.resource }}</p>
+                    </div>
+                    <div *ngIf="taskRoleArn === role.resource" class="flex-shrink-0">
+                      <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                <p *ngIf="iamRoles.length === 0 && !loadingRoles && !rolesError" class="text-xs text-gray-400 py-3 text-center border border-dashed border-gray-200">
+                  No roles found. Switch to <button (click)="taskRoleMode = 'manual'" class="underline hover:text-black transition">Manual</button> to enter the ARN directly.
+                </p>
+              </div>
+
+              <!-- Manual mode -->
+              <div *ngIf="taskRoleMode === 'manual' || loadingRoles">
+                <input type="text" [(ngModel)]="taskRoleArn" placeholder="arn:aws:iam::123456789012:role/ecsTaskRole" autocomplete="off"
+                       class="w-full px-4 py-3 border border-gray-200 text-sm font-mono focus:outline-none focus:border-black">
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── Container Definitions ─── -->
+          <div class="form-section-divider">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-serif font-bold mb-0.5">Container Definitions</h3>
+                <p class="text-xs text-gray-400">Define one or more containers for this task.</p>
+              </div>
+              <button (click)="addContainer()" class="text-[10px] uppercase tracking-wider text-gray-500 hover:text-black transition flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                Add Container
+              </button>
+            </div>
+
+            <div class="space-y-4">
+              <div *ngFor="let container of containers; let i = index"
+                   class="container-card" [class.expanded]="container.expanded">
+                <!-- Container Header -->
+                <div class="container-header" (click)="toggleContainer(i)">
+                  <div class="flex items-center gap-3">
+                    <div class="w-7 h-7 rounded flex items-center justify-center text-xs font-bold"
+                         [ngClass]="container.essential ? 'bg-black text-white' : 'bg-gray-100 text-gray-500'">
+                      {{ i + 1 }}
+                    </div>
+                    <div>
+                      <span class="text-sm font-medium">{{ container.name || 'Unnamed Container' }}</span>
+                      <span *ngIf="container.essential" class="ml-2 text-[9px] uppercase tracking-wider bg-black text-white px-1.5 py-0.5">Essential</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button *ngIf="containers.length > 1" (click)="removeContainer(i); $event.stopPropagation()"
+                            class="p-1 text-gray-300 hover:text-red-500 transition" title="Remove container">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                    <svg class="w-4 h-4 text-gray-400 transition-transform" [class.rotate-180]="container.expanded"
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <!-- Container Body -->
+                <div *ngIf="container.expanded" class="px-4 pb-4 pt-2 border-t border-gray-100 space-y-4">
+                  <!-- Name & Image -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-[10px] uppercase tracking-widest text-gray-400 mb-1.5">Container Name</label>
+                      <input type="text" [(ngModel)]="container.name" placeholder="app" autocomplete="off"
+                             class="w-full px-3 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-black">
+                    </div>
+                    <div>
+                      <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-[10px] uppercase tracking-widest text-gray-400">Image</label>
+                        <div class="flex gap-1">
+                          <button (click)="container.imageMode = 'select'; container.image = ''"
+                                  class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 border transition"
+                                  [ngClass]="container.imageMode === 'select' ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-400 hover:border-gray-300'">
+                            ECR
+                          </button>
+                          <button (click)="container.imageMode = 'manual'; container.image = ''"
+                                  class="text-[9px] uppercase tracking-wider px-1.5 py-0.5 border transition"
+                                  [ngClass]="container.imageMode === 'manual' ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-400 hover:border-gray-300'">
+                            Manual
+                          </button>
+                        </div>
+                      </div>
+                      <!-- ECR select mode -->
+                      <div *ngIf="container.imageMode === 'select'" class="relative">
+                        <select [(ngModel)]="container.image"
+                                class="w-full px-3 py-2.5 border border-gray-200 text-sm font-mono focus:outline-none focus:border-black bg-white appearance-none pr-8">
+                          <option value="">— Select ECR image —</option>
+                          <option *ngFor="let repo of ecrRepositories" [value]="repo.repositoryUri + ':latest'">{{ repo.repositoryName }} ({{ repo.repositoryUri }})</option>
+                        </select>
+                        <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                        <p *ngIf="ecrRepositories.length === 0 && !loadingEcrRepos" class="mt-1.5 text-[10px] text-gray-400">
+                          No ECR repositories found. Switch to <button (click)="container.imageMode = 'manual'" class="underline hover:text-black transition">Manual</button>.
+                        </p>
+                        <p *ngIf="loadingEcrRepos" class="mt-1.5 text-[10px] text-gray-400 flex items-center gap-1">
+                          <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                          Loading repositories...
+                        </p>
+                      </div>
+                      <!-- Manual mode -->
+                      <input *ngIf="container.imageMode === 'manual'" type="text" [(ngModel)]="container.image" placeholder="nginx:latest" autocomplete="off"
+                             class="w-full px-3 py-2.5 border border-gray-200 text-sm font-mono focus:outline-none focus:border-black">
+                    </div>
+                  </div>
+
+                  <!-- CPU & Memory -->
+                  <div class="grid grid-cols-3 gap-4">
+                    <div>
+                      <label class="block text-[10px] uppercase tracking-widest text-gray-400 mb-1.5">CPU (Units)</label>
+                      <input type="number" [(ngModel)]="container.cpu" min="0"
+                             class="w-full px-3 py-2.5 border border-gray-200 text-sm font-mono focus:outline-none focus:border-black">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] uppercase tracking-widest text-gray-400 mb-1.5">Memory (MiB)</label>
+                      <input type="number" [(ngModel)]="container.memory" min="0"
+                             class="w-full px-3 py-2.5 border border-gray-200 text-sm font-mono focus:outline-none focus:border-black">
+                    </div>
+                    <div class="flex items-end pb-0.5">
+                      <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" [(ngModel)]="container.essential" class="accent-black w-4 h-4">
+                        <span class="text-xs text-gray-600">Essential</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <!-- Port Mappings -->
+                  <div class="sub-section">
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="text-[10px] uppercase tracking-widest text-gray-400">Port Mappings</label>
+                      <button (click)="addPortMapping(container)" class="text-[10px] text-gray-400 hover:text-black transition flex items-center gap-0.5">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Add
+                      </button>
+                    </div>
+                    <div *ngIf="container.portMappings.length === 0" class="text-xs text-gray-400 italic py-1">No port mappings configured</div>
+                    <div *ngFor="let pm of container.portMappings; let j = index" class="inline-row">
+                      <input type="number" [(ngModel)]="pm.containerPort" placeholder="80" min="0" max="65535"
+                             class="w-20 px-2 py-1.5 border border-gray-200 text-xs font-mono focus:outline-none focus:border-black" title="Container Port">
+                      <span class="text-gray-300 text-xs">:</span>
+                      <input type="number" [(ngModel)]="pm.hostPort" placeholder="80" min="0" max="65535"
+                             class="w-20 px-2 py-1.5 border border-gray-200 text-xs font-mono focus:outline-none focus:border-black" title="Host Port">
+                      <select [(ngModel)]="pm.protocol" class="px-2 py-1.5 border border-gray-200 text-xs focus:outline-none focus:border-black bg-white">
+                        <option value="tcp">TCP</option>
+                        <option value="udp">UDP</option>
+                      </select>
+                      <button (click)="removePortMapping(container, j)" class="p-1 text-gray-300 hover:text-red-500 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Environment Variables -->
+                  <div class="sub-section">
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="text-[10px] uppercase tracking-widest text-gray-400">Environment Variables</label>
+                      <button (click)="addEnvVar(container)" class="text-[10px] text-gray-400 hover:text-black transition flex items-center gap-0.5">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                        Add
+                      </button>
+                    </div>
+                    <div *ngIf="container.environment.length === 0" class="text-xs text-gray-400 italic py-1">No environment variables configured</div>
+                    <div *ngFor="let env of container.environment; let j = index" class="inline-row">
+                      <input type="text" [(ngModel)]="env.name" placeholder="KEY"
+                             class="flex-1 px-2 py-1.5 border border-gray-200 text-xs font-mono focus:outline-none focus:border-black">
+                      <span class="text-gray-300 text-xs">=</span>
+                      <input type="text" [(ngModel)]="env.value" placeholder="value"
+                             class="flex-1 px-2 py-1.5 border border-gray-200 text-xs font-mono focus:outline-none focus:border-black">
+                      <button (click)="removeEnvVar(container, j)" class="p-1 text-gray-300 hover:text-red-500 transition">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Log Configuration -->
+                  <div class="sub-section">
+                    <div class="flex items-center justify-between mb-2">
+                      <label class="text-[10px] uppercase tracking-widest text-gray-400">Log Configuration</label>
+                      <button (click)="container.enableLogging = !container.enableLogging"
+                              class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200"
+                              [ngClass]="container.enableLogging ? 'bg-black' : 'bg-gray-200'">
+                        <span class="inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform duration-200 shadow-sm"
+                              [ngClass]="container.enableLogging ? 'translate-x-4' : 'translate-x-0.5'"></span>
+                      </button>
+                    </div>
+                    <div *ngIf="container.enableLogging" class="space-y-3">
+                      <div>
+                        <label class="block text-[10px] uppercase tracking-widest text-gray-400 mb-1">Log Driver</label>
+                        <select [(ngModel)]="container.logDriver"
+                                class="w-full px-3 py-2 border border-gray-200 text-xs focus:outline-none focus:border-black bg-white">
+                          <option *ngFor="let d of logDrivers" [value]="d">{{ d }}</option>
+                        </select>
+                      </div>
+                      <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                          <label class="text-[10px] uppercase tracking-widest text-gray-400">Options</label>
+                          <button (click)="addLogOption(container)" class="text-[10px] text-gray-400 hover:text-black transition flex items-center gap-0.5">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+                            Add
+                          </button>
+                        </div>
+                        <div *ngFor="let opt of container.logOptions; let j = index" class="inline-row">
+                          <input type="text" [(ngModel)]="opt.key" placeholder="key"
+                                 class="flex-1 px-2 py-1.5 border border-gray-200 text-xs font-mono focus:outline-none focus:border-black"
+                                 [readonly]="opt.key === 'awslogs-group' || opt.key === 'awslogs-region' || opt.key === 'awslogs-stream-prefix'">
+                          <span class="text-gray-300 text-xs">=</span>
+
+                          <!-- awslogs-group: dropdown with log groups -->
+                          <div *ngIf="opt.key === 'awslogs-group'" class="flex-1 relative">
+                            <select [(ngModel)]="opt.value"
+                                    class="w-full px-2 py-1.5 border border-gray-200 text-xs font-mono focus:outline-none focus:border-black bg-white appearance-none pr-7">
+                              <option value="">— Select log group —</option>
+                              <option *ngFor="let lg of logGroups" [value]="lg.logGroupName">{{ lg.logGroupName }}</option>
+                            </select>
+                            <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                          </div>
+
+                          <!-- awslogs-region: dropdown with account region pre-selected -->
+                          <div *ngIf="opt.key === 'awslogs-region'" class="flex-1 relative">
+                            <select [(ngModel)]="opt.value"
+                                    class="w-full px-2 py-1.5 border border-gray-200 text-xs font-mono focus:outline-none focus:border-black bg-white appearance-none pr-7">
+                              <option value="">— Select region —</option>
+                              <option *ngIf="selectedAccount?.region" [value]="selectedAccount!.region">{{ selectedAccount!.region }}</option>
+                            </select>
+                            <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                          </div>
+
+                          <!-- awslogs-stream-prefix: dropdown with container name & family -->
+                          <div *ngIf="opt.key === 'awslogs-stream-prefix'" class="flex-1 relative">
+                            <select [(ngModel)]="opt.value"
+                                    class="w-full px-2 py-1.5 border border-gray-200 text-xs font-mono focus:outline-none focus:border-black bg-white appearance-none pr-7">
+                              <option value="">— Select prefix —</option>
+                              <option [value]="container.name || 'ecs'">{{ container.name || 'ecs' }} (container name)</option>
+                              <option *ngIf="family.trim()" [value]="family.trim()">{{ family.trim() }} (family name)</option>
+                              <option value="ecs">ecs</option>
+                            </select>
+                            <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                          </div>
+
+                          <!-- Default: plain text input for custom keys -->
+                          <input *ngIf="opt.key !== 'awslogs-group' && opt.key !== 'awslogs-region' && opt.key !== 'awslogs-stream-prefix'"
+                                 type="text" [(ngModel)]="opt.value" placeholder="value"
+                                 class="flex-1 px-2 py-1.5 border border-gray-200 text-xs font-mono focus:outline-none focus:border-black">
+
+                          <button (click)="removeLogOption(container, j)" class="p-1 text-gray-300 hover:text-red-500 transition">
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── Preview ─── -->
+          <div *ngIf="isFormValid" class="form-section-divider">
+            <div class="p-5 bg-gray-50 border border-gray-100">
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-3">Configuration Preview</p>
+              <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500">Family</span>
+                  <span class="text-gray-900 font-medium font-mono">{{ family.trim() }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500">CPU / Memory</span>
+                  <span class="text-gray-900 font-medium">{{ cpu }} units / {{ memory }} MiB</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500">Network Mode</span>
+                  <span class="text-gray-900 font-medium">{{ networkMode }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500">Compatibilities</span>
+                  <span class="text-gray-900 font-medium">{{ requiresCompatibilities.join(', ') }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500">OS Family</span>
+                  <span class="text-gray-900 font-medium">{{ osFamily }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500">Containers</span>
+                  <span class="text-gray-900 font-medium">{{ containers.length }} container(s)</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500">Account</span>
+                  <span class="text-gray-900 font-medium">{{ selectedAccount?.accountName }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Form Footer -->
+      <div class="px-8 py-5 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <button (click)="goBack()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          {{ backLabel }}
+        </button>
+        <button (click)="create()" [disabled]="!isFormValid"
+                class="px-8 py-3 text-sm font-medium transition-all duration-200"
+                [ngClass]="isFormValid ? 'bg-black text-white hover:bg-gray-800 active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+          Register Task Definition
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SUCCESS STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'success' && createdTaskDef" class="max-w-2xl mx-auto animate-fadeIn">
+    <div class="border border-green-200 bg-green-50/30">
+      <div class="px-8 py-8 text-center border-b border-green-100">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+          <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-serif font-bold text-gray-900 mb-1">Task Definition Registered</h2>
+        <p class="text-sm text-gray-500">Your new task definition has been registered successfully.</p>
+      </div>
+
+      <div class="px-8 py-6">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Family</span>
+            <span class="text-sm font-medium text-gray-900 font-mono">{{ createdTaskDef.family }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Revision</span>
+            <span class="text-sm font-medium text-gray-900">{{ createdTaskDef.revision }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">CPU / Memory</span>
+            <span class="text-sm font-medium text-gray-900">{{ createdTaskDef.cpu }} / {{ createdTaskDef.memory }} MiB</span>
+          </div>
+          <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Containers</span>
+            <span class="text-sm font-medium text-gray-900">{{ createdTaskDef.containerCount }}</span>
+          </div>
+          <div *ngIf="createdTaskDef.taskDefinitionArn" class="py-2 border-b border-green-100/50">
+            <span class="text-xs uppercase tracking-wider text-gray-400 block mb-1">Task Definition ARN</span>
+            <span class="text-xs font-mono text-gray-700 break-all select-all">{{ createdTaskDef.taskDefinitionArn }}</span>
+          </div>
+          <div class="flex items-center justify-between py-2">
+            <span class="text-xs uppercase tracking-wider text-gray-400">Account</span>
+            <span class="text-sm font-medium text-gray-900">{{ selectedAccount?.accountName }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-8 py-5 border-t border-green-100 flex items-center justify-between bg-green-50/20">
+        <button (click)="goToDashboard()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          {{ returnTo ? backLabel : 'Go to ECS Dashboard' }}
+        </button>
+        <button (click)="resetForm()" class="px-5 py-2.5 text-xs uppercase tracking-wider border border-gray-200 text-gray-600 hover:border-black hover:text-black transition">
+          Register Another
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'error'" class="max-w-2xl mx-auto animate-fadeIn">
+    <div class="border border-red-200 bg-red-50/30 px-8 py-10 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+        <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-serif font-bold text-gray-900 mb-2">Registration Failed</h2>
+      <p class="text-sm text-gray-500 mb-1">{{ errorMessage }}</p>
+      <div class="flex items-center justify-center gap-3 mt-6">
+        <button (click)="goBack()" class="px-5 py-2.5 text-xs uppercase tracking-wider border border-gray-200 text-gray-600 hover:border-black hover:text-black transition">
+          {{ backLabel }}
+        </button>
+        <button (click)="resetForm()" class="px-5 py-2.5 text-xs uppercase tracking-wider bg-black text-white hover:bg-gray-800 transition">
+          Try Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

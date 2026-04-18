@@ -13,25 +13,55 @@ import { SubnetsComponent } from './pages/CloudServices/subnets/subnets.componen
 import { SecurityGroupsComponent } from './pages/CloudServices/security-groups/security-groups.component';
 import { CloudWatchLogsComponent } from './pages/CloudServices/cloudwatch-logs/cloudwatch-logs.component';
 import { Ec2InstancesComponent } from './pages/CloudServices/ec2-instances/ec2-instances.component';
+import { LaunchInstanceComponent } from './pages/CloudServices/ec2-instances/launch-instance/launch-instance.component';
 import { CreateBucketComponent } from './pages/CloudServices/cloud-storage/create-bucket/create-bucket.component';
 import { BucketOverviewComponent } from './pages/CloudServices/cloud-storage/bucket-overview/bucket-overview.component';
+import { SearchResultsComponent } from './global-search/search-results.component';
+import { ClusterOverviewComponent } from './pages/CloudServices/clusters/cluster-overview/cluster-overview.component';
+import { CreateClusterComponent } from './pages/CloudServices/clusters/create-cluster/create-cluster.component';
+import { CreateVpcComponent } from './pages/CloudServices/vpcs/create-vpc/create-vpc.component';
+import { VpcOverviewComponent } from './pages/CloudServices/vpcs/vpc-overview/vpc-overview.component';
+import { EcsOverviewComponent } from './pages/CloudServices/ecs/ecs-overview/ecs-overview.component';
+import { CreateEcsServiceComponent } from './pages/CloudServices/ecs/create-ecs-service/create-ecs-service.component';
+import { CreateTaskDefinitionComponent } from './pages/CloudServices/ecs/create-task-definition/create-task-definition.component';
+import { CreateSecurityGroupComponent } from './pages/CloudServices/security-groups/create-security-group/create-security-group.component';
+import { CreateSubnetComponent } from './pages/CloudServices/subnets/create-subnet/create-subnet.component';
+import { SubnetOverviewComponent } from './pages/CloudServices/subnets/subnet-overview/subnet-overview.component';
+import { SecurityGroupOverviewComponent } from './pages/CloudServices/security-groups/security-group-overview/security-group-overview.component';
+import { Ec2OverviewComponent } from './pages/CloudServices/ec2-instances/ec2-overview/ec2-overview.component';
+import { PermissionsComponent } from './pages/CloudServices/permissions/permissions.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'search', component: SearchResultsComponent },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'dashboard/cloud-storage', component: CloudStorageComponent },
   { path: 'dashboard/cloud-storage/create', component: CreateBucketComponent },
   { path: 'dashboard/cloud-storage/:id', component: BucketOverviewComponent },
   { path: 'dashboard/clusters', component: ClustersComponent },
+  { path: 'dashboard/clusters/create', component: CreateClusterComponent },
+  { path: 'dashboard/clusters/:id', component: ClusterOverviewComponent },
   { path: 'dashboard/vpcs', component: VpcsComponent },
+  { path: 'dashboard/vpcs/create', component: CreateVpcComponent },
+  { path: 'dashboard/vpcs/:id', component: VpcOverviewComponent },
   { path: 'dashboard/ecr', component: EcrComponent },
   { path: 'dashboard/ecs', component: EcsComponent },
+  { path: 'dashboard/ecs/create', component: CreateEcsServiceComponent },
+  { path: 'dashboard/ecs/create-task-definition', component: CreateTaskDefinitionComponent },
+  { path: 'dashboard/ecs/:id', component: EcsOverviewComponent },
+  { path: 'dashboard/subnets/create', component: CreateSubnetComponent },
+  { path: 'dashboard/subnets/:id', component: SubnetOverviewComponent },
   { path: 'dashboard/subnets', component: SubnetsComponent },
+  { path: 'dashboard/security-groups/create', component: CreateSecurityGroupComponent },
+  { path: 'dashboard/security-groups/:id', component: SecurityGroupOverviewComponent },
   { path: 'dashboard/security-groups', component: SecurityGroupsComponent },
   { path: 'dashboard/cloudwatch-logs', component: CloudWatchLogsComponent },
+  { path: 'dashboard/ec2-instances/create', component: LaunchInstanceComponent },
+  { path: 'dashboard/ec2-instances/:id', component: Ec2OverviewComponent },
   { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },
+  { path: 'dashboard/permissions', component: PermissionsComponent },
   { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }
 ];

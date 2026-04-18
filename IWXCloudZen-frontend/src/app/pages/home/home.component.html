@@ -1,7 +1,21 @@
-<app-hero></app-hero>
-<app-stats></app-stats>
-<app-featured></app-featured>
-<app-popular-clouds></app-popular-clouds>
-<app-testimonials></app-testimonials>
-<app-how-it-works></app-how-it-works>
-<app-newsletter></app-newsletter>
+<!-- Loading overlay — fades out once all sections are rendered -->
+@if (loading) {
+  <div class="home-loading-overlay">
+    <div class="home-loader">
+      <div class="home-loader-bar"></div>
+      <div class="home-loader-bar"></div>
+      <div class="home-loader-bar"></div>
+    </div>
+  </div>
+}
+
+<!-- All sections render eagerly behind the overlay -->
+<div class="home-content" [class.home-content-ready]="!loading">
+  <app-hero></app-hero>
+  <app-stats></app-stats>
+  <app-featured></app-featured>
+  <app-popular-clouds></app-popular-clouds>
+  <app-testimonials></app-testimonials>
+  <app-how-it-works></app-how-it-works>
+  <app-newsletter></app-newsletter>
+</div>

@@ -4,6 +4,12 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
 import { Subscription } from 'rxjs';
 
+export interface MenuItem {
+  label: string;
+  route?: string;
+  children?: MenuItem[];
+}
+
 @Component({
   selector: 'app-header',
   standalone: true,
@@ -20,6 +26,58 @@ export class HeaderComponent implements OnInit, OnDestroy {
   currentUser: any = null;
   private menuCloseTimer: ReturnType<typeof setTimeout> | null = null;
   private userSub!: Subscription;
+
+  // Dropdown chain state
+  activeDropdown: string | null = null;
+  activeSubMenus: Set<string> = new Set();
+  private dropdownCloseTimer: ReturnType<typeof setTimeout> | null = null;
+
+  // Mobile accordion state
+  mobileExpandedMenus: Set<string> = new Set();
+
+  // Menu structure with nested children (chain)
+  menuItems: MenuItem[] = [
+    {
+      label: 'Services',
+      children: [
+        {
+          label: 'Compute',
+          children: [
+            { label: 'EC2 Instances', route: '/dashboard/ec2-instances' },
+            { label: 'ECS', route: '/dashboard/ecs' },
+            { label: 'Clusters', route: '/dashboard/clusters' }
+          ]
+        },
+        {
+          label: 'Networking',
+          children: [
+            { label: 'VPCs', route: '/dashboard/vpcs' },
+            { label: 'Subnets', route: '/dashboard/subnets' },
+            { label: 'Security Groups', route: '/dashboard/security-groups' }
+          ]
+        },
+        {
+          label: 'Storage',
+          children: [
+            {
+              label: 'Cloud Storage',
+              route: '/dashboard/cloud-storage',
+              children: [
+                { label: 'Create', route: '/dashboard/cloud-storage/create' }
+              ]
+            },
+            { label: 'ECR', route: '/dashboard/ecr' }
+          ]
+        },
+        {
+          label: 'Monitoring',
+          children: [
+            { label: 'CloudWatch Logs', route: '/dashboard/cloudwatch-logs' }
+          ]
+        }
+      ]
+    }
+  ];
 
   constructor(private authService: AuthService) {}
 
@@ -41,6 +99,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   @HostListener('document:click')
   onDocumentClick() {
     this.closeProfileDropdown();
+    this.closeAllDropdowns();
   }
 
   onProfileButtonClick() {
@@ -85,7 +144,70 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.mobileMenuOpen = false;
       this.menuClosing = false;
       this.menuCloseTimer = null;
+      this.mobileExpandedMenus.clear();
     }, 350);
+  }
+
+  // --- Desktop dropdown chain ---
+  openDropdown(label: string) {
+    if (this.dropdownCloseTimer) {
+      clearTimeout(this.dropdownCloseTimer);
+      this.dropdownCloseTimer = null;
+    }
+    this.activeDropdown = label;
+    this.activeSubMenus.clear();
+  }
+
+  closeAllDropdowns() {
+    this.activeDropdown = null;
+    this.activeSubMenus.clear();
+  }
+
+  scheduleCloseDropdowns() {
+    this.dropdownCloseTimer = setTimeout(() => {
+      this.closeAllDropdowns();
+    }, 150);
+  }
+
+  cancelCloseDropdowns() {
+    if (this.dropdownCloseTimer) {
+      clearTimeout(this.dropdownCloseTimer);
+      this.dropdownCloseTimer = null;
+    }
+  }
+
+  openSubMenu(path: string) {
+    this.cancelCloseDropdowns();
+    // Remove sibling sub-menus at the same depth
+    const depth = path.split('/').length;
+    const toRemove: string[] = [];
+    this.activeSubMenus.forEach(p => {
+      if (p.split('/').length >= depth) toRemove.push(p);
+    });
+    toRemove.forEach(p => this.activeSubMenus.delete(p));
+    this.activeSubMenus.add(path);
+  }
+
+  isSubMenuOpen(path: string): boolean {
+    return this.activeSubMenus.has(path);
+  }
+
+  // --- Mobile accordion ---
+  toggleMobileExpand(path: string) {
+    if (this.mobileExpandedMenus.has(path)) {
+      // Close this and all children
+      const toRemove: string[] = [];
+      this.mobileExpandedMenus.forEach(p => {
+        if (p === path || p.startsWith(path + '/')) toRemove.push(p);
+      });
+      toRemove.forEach(p => this.mobileExpandedMenus.delete(p));
+    } else {
+      this.mobileExpandedMenus.add(path);
+    }
+  }
+
+  isMobileExpanded(path: string): boolean {
+    return this.mobileExpandedMenus.has(path);
   }
 
   logout() {

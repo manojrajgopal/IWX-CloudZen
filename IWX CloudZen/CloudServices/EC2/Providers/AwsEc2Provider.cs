@@ -64,9 +64,9 @@ namespace IWX_CloudZen.CloudServices.EC2.Providers
                     NextToken = nextToken
                 });
 
-                foreach (var reservation in response.Reservations)
+                foreach (var reservation in response.Reservations ?? [])
                 {
-                    foreach (var instance in reservation.Instances)
+                    foreach (var instance in reservation.Instances ?? [])
                     {
                         // Skip terminated instances
                         if (instance.State?.Name?.Value == "terminated")
@@ -92,8 +92,8 @@ namespace IWX_CloudZen.CloudServices.EC2.Providers
                 InstanceIds = [instanceId]
             });
 
-            var instance = response.Reservations
-                .SelectMany(r => r.Instances)
+            var instance = (response.Reservations ?? [])
+                .SelectMany(r => r.Instances ?? [])
                 .FirstOrDefault()
                 ?? throw new KeyNotFoundException($"EC2 instance '{instanceId}' not found.");
 

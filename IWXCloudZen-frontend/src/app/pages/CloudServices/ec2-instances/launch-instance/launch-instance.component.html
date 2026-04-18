@@ -1,0 +1,669 @@
+<div class="container-lux py-12 md:py-20">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- HEADER -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="flex items-center gap-3 mb-12">
+    <button (click)="goBack()" class="text-gray-400 hover:text-black transition">
+      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+    </button>
+    <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
+      <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-3xl md:text-5xl font-serif font-bold tracking-tight">Launch Instance</h1>
+      <p class="text-sm text-gray-400 uppercase tracking-widest mt-1">AWS EC2 &middot; New Instance</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'loading'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <rect x="10" y="30" width="80" height="15" rx="3" fill="none" stroke="#000" stroke-width="1.5"/>
+        <rect x="10" y="55" width="80" height="15" rx="3" fill="none" stroke="#000" stroke-width="1.5"/>
+        <circle cx="22" cy="37.5" r="3" fill="#000" opacity="0.3"/>
+        <circle cx="22" cy="62.5" r="3" fill="#000" opacity="0.3"/>
+      </svg>
+    </div>
+    <div class="w-48 h-1 bg-gray-200 mx-auto mb-4">
+      <div class="h-full bg-black animate-loading-bar"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Loading accounts...</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LAUNCHING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'launching'" class="flex flex-col items-center justify-center py-24 animate-fadeIn">
+    <div class="relative w-32 h-32 mx-auto mb-8">
+      <svg viewBox="0 0 100 100" class="w-full h-full">
+        <path d="M50 15 L60 45 L50 40 L40 45 Z" fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" class="animate-draw"/>
+        <line x1="50" y1="45" x2="50" y2="85" stroke="#000" stroke-width="1.5" stroke-dasharray="4 3" class="animate-wave"/>
+        <circle cx="50" cy="85" r="5" fill="none" stroke="#000" stroke-width="1.5" opacity="0.4"/>
+      </svg>
+    </div>
+    <div class="w-64 h-1.5 bg-gray-200 mx-auto mb-4 overflow-hidden">
+      <div class="h-full bg-black transition-all duration-200 ease-out" [style.width.%]="progress"></div>
+    </div>
+    <p class="text-sm text-gray-500 uppercase tracking-widest">Launching instance...</p>
+    <p class="text-xs text-gray-400 mt-2">{{ instanceName }}</p>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- FORM -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'form'" class="max-w-4xl mx-auto animate-fadeIn">
+    <div class="border border-gray-200 bg-white">
+
+      <!-- Form Header -->
+      <div class="px-6 sm:px-8 py-6 border-b border-gray-100">
+        <h2 class="text-lg font-serif font-bold">Instance Configuration</h2>
+        <p class="text-sm text-gray-400 mt-1">Configure and launch a new EC2 instance on your AWS account.</p>
+      </div>
+
+      <!-- Form Body -->
+      <div class="px-6 sm:px-8 py-8 space-y-10">
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 1. CLOUD ACCOUNT -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Cloud Account</label>
+          <div *ngIf="accounts.length === 0" class="p-6 border border-dashed border-gray-200 text-center">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+            </svg>
+            <p class="text-sm text-gray-500 mb-2">No AWS accounts connected</p>
+            <a routerLink="/profile" class="text-xs text-black underline hover:no-underline">Connect an account</a>
+          </div>
+          <div *ngIf="accounts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div *ngFor="let acc of accounts"
+                 (click)="selectAccount(acc.id)"
+                 class="selectable-card flex items-center gap-3 p-4 border cursor-pointer transition-all duration-200"
+                 [ngClass]="selectedAccountId === acc.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="selectedAccountId === acc.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ acc.accountName }}</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ acc.provider }} &middot; {{ acc.region }}</p>
+              </div>
+              <div *ngIf="selectedAccountId === acc.id" class="flex-shrink-0">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 2. INSTANCE NAME -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <label for="instanceName" class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Instance Name</label>
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7"/>
+            </svg>
+            <input id="instanceName" type="text" [(ngModel)]="instanceName" (blur)="instanceNameTouched = true"
+                   placeholder="my-web-server" autocomplete="off"
+                   class="w-full pl-11 pr-4 py-3.5 border text-sm transition-all duration-200 focus:outline-none"
+                   [ngClass]="instanceNameError ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'">
+          </div>
+          <p *ngIf="instanceNameError" class="mt-2 text-xs text-red-500 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            {{ instanceNameError }}
+          </p>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 3. AMI (Machine Image) -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Amazon Machine Image (AMI)</label>
+          <!-- Quick AMI Presets -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+            <div *ngFor="let ami of amiPresets"
+                 (click)="selectAmi(ami.id)"
+                 class="selectable-card flex items-center gap-3 p-3 border cursor-pointer transition-all duration-200"
+                 [ngClass]="imageId === ami.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="imageId === ami.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 004.5 9v.878m13.5-3A2.25 2.25 0 0119.5 9v.878m0 0a2.246 2.246 0 00-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0121 12v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6c0-1.007.661-1.862 1.572-2.147"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-medium text-gray-900 truncate">{{ ami.label }}</p>
+                <p class="text-[10px] text-gray-400 font-mono truncate">{{ ami.id }}</p>
+              </div>
+              <div *ngIf="imageId === ami.id" class="flex-shrink-0">
+                <svg class="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Custom AMI ID -->
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.235-.083.487-.128.75-.128h10.5c.263 0 .515.045.75.128m-12 0A2.25 2.25 0 004.5 9v.878m13.5-3A2.25 2.25 0 0119.5 9v.878m0 0a2.246 2.246 0 00-.75-.128H5.25c-.263 0-.515.045-.75.128m15 0A2.25 2.25 0 0121 12v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6c0-1.007.661-1.862 1.572-2.147"/>
+            </svg>
+            <input type="text" [(ngModel)]="imageId" (blur)="imageIdTouched = true"
+                   placeholder="Or enter a custom AMI ID (ami-xxxxxxxxxxxxxxxxx)" autocomplete="off"
+                   class="w-full pl-11 pr-4 py-3 border text-sm font-mono transition-all duration-200 focus:outline-none"
+                   [ngClass]="imageIdError ? 'border-red-300 focus:border-red-500' : 'border-gray-200 focus:border-black'">
+          </div>
+          <p *ngIf="imageIdError" class="mt-2 text-xs text-red-500 flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            {{ imageIdError }}
+          </p>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 4. INSTANCE TYPE -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Instance Type</label>
+          <div *ngFor="let cat of instanceTypeCategories" class="mb-4">
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-2 flex items-center gap-2">
+              <span class="w-4 h-px bg-gray-200"></span>
+              {{ cat }}
+              <span class="flex-1 h-px bg-gray-200"></span>
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              <div *ngFor="let preset of getPresetsByCategory(cat)"
+                   (click)="selectInstanceType(preset.type)"
+                   class="selectable-card flex items-center gap-3 p-3 border cursor-pointer transition-all duration-200"
+                   [ngClass]="selectedInstanceType === preset.type ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+                <div class="w-8 h-8 rounded flex items-center justify-center flex-shrink-0 text-[10px] font-bold font-mono"
+                     [ngClass]="selectedInstanceType === preset.type ? 'bg-black text-white' : 'bg-gray-100 text-gray-500'">
+                  {{ preset.vcpus }}C
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-xs font-medium text-gray-900 font-mono">{{ preset.type }}</p>
+                  <p class="text-[10px] text-gray-400">{{ preset.memory }} · {{ preset.description }}</p>
+                </div>
+                <div *ngIf="selectedInstanceType === preset.type" class="flex-shrink-0">
+                  <svg class="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 5. KEY PAIR -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Key Pair <span class="normal-case text-gray-300">(for SSH access)</span></label>
+
+          <div *ngIf="!selectedAccountId" class="p-5 border border-dashed border-gray-200 text-center">
+            <p class="text-sm text-gray-400">Select a cloud account above to load key pairs.</p>
+          </div>
+
+          <div *ngIf="selectedAccountId && keyPairsLoading" class="p-5 border border-gray-100 flex items-center gap-3">
+            <div class="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin flex-shrink-0"></div>
+            <p class="text-sm text-gray-400">Loading key pairs...</p>
+          </div>
+
+          <div *ngIf="selectedAccountId && !keyPairsLoading && keyPairsError" class="p-5 border border-red-100 bg-red-50/30 flex items-center justify-between gap-3">
+            <p class="text-sm text-red-500">{{ keyPairsError }}</p>
+            <button type="button" (click)="loadKeyPairs(selectedAccountId!)" class="text-xs text-red-600 underline hover:no-underline flex-shrink-0">Retry</button>
+          </div>
+
+          <div *ngIf="selectedAccountId && !keyPairsLoading && !keyPairsError && keyPairs.length === 0" class="p-6 border border-dashed border-gray-200 text-center">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+            </svg>
+            <p class="text-sm text-gray-500">No key pairs found in this account.</p>
+          </div>
+
+          <div *ngIf="selectedAccountId && !keyPairsLoading && !keyPairsError && keyPairs.length > 0"
+               class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div *ngFor="let kp of keyPairs"
+                 (click)="selectKeyPair(kp)"
+                 class="selectable-card flex items-center gap-3 p-4 border cursor-pointer transition-all duration-200"
+                 [ngClass]="selectedKeyPair?.id === kp.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="selectedKeyPair?.id === kp.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ kp.keyName }}</p>
+                <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                  <span class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 border rounded"
+                        [ngClass]="kp.keyType === 'rsa' ? 'bg-blue-50 text-blue-600 border-blue-200' : 'bg-purple-50 text-purple-600 border-purple-200'">
+                    {{ kp.keyType }}
+                  </span>
+                  <span *ngIf="kp.hasPrivateKey" class="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-green-50 text-green-600 border border-green-200 rounded">
+                    Has Private Key
+                  </span>
+                </div>
+              </div>
+              <div *ngIf="selectedKeyPair?.id === kp.id" class="flex-shrink-0">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 6. SUBNET -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="block text-xs uppercase tracking-widest text-gray-400">Subnet</label>
+            <button *ngIf="selectedAccountId" type="button" (click)="navigateToCreateSubnet()"
+                    class="text-xs text-black border border-black px-3 py-1 hover:bg-black hover:text-white transition-all duration-200 flex items-center gap-1.5">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
+              Create Subnet
+            </button>
+          </div>
+
+          <div *ngIf="!selectedAccountId" class="p-5 border border-dashed border-gray-200 text-center">
+            <p class="text-sm text-gray-400">Select a cloud account above to load subnets.</p>
+          </div>
+
+          <div *ngIf="selectedAccountId && subnetsLoading" class="p-5 border border-gray-100 flex items-center gap-3">
+            <div class="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin flex-shrink-0"></div>
+            <p class="text-sm text-gray-400">Loading subnets...</p>
+          </div>
+
+          <div *ngIf="selectedAccountId && !subnetsLoading && subnetsError" class="p-5 border border-red-100 bg-red-50/30 flex items-center justify-between gap-3">
+            <p class="text-sm text-red-500">{{ subnetsError }}</p>
+            <button type="button" (click)="loadSubnets(selectedAccountId!)" class="text-xs text-red-600 underline hover:no-underline flex-shrink-0">Retry</button>
+          </div>
+
+          <div *ngIf="selectedAccountId && !subnetsLoading && !subnetsError && subnets.length === 0" class="p-6 border border-dashed border-gray-200 text-center">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z"/>
+            </svg>
+            <p class="text-sm text-gray-500 mb-2">No subnets found in this account.</p>
+            <button type="button" (click)="navigateToCreateSubnet()" class="text-xs text-black underline hover:no-underline">Create a Subnet</button>
+          </div>
+
+          <div *ngIf="selectedAccountId && !subnetsLoading && !subnetsError && subnets.length > 0"
+               class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div *ngFor="let subnet of subnets"
+                 (click)="selectSubnet(subnet)"
+                 class="selectable-card flex items-start gap-3 p-4 border cursor-pointer transition-all duration-200"
+                 [ngClass]="selectedSubnet?.id === subnet.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                   [ngClass]="selectedSubnet?.id === subnet.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25z"/>
+                </svg>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-gray-900 truncate">{{ getSubnetDisplayName(subnet) }}</p>
+                <p class="text-xs text-gray-500 font-mono mt-0.5">{{ subnet.cidrBlock }}</p>
+                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                  <span class="text-[10px] text-gray-400 font-mono">{{ subnet.availabilityZone }}</span>
+                  <span class="text-[10px] px-1.5 py-0.5 border rounded"
+                        [ngClass]="subnet.mapPublicIpOnLaunch ? 'bg-green-50 text-green-600 border-green-200' : 'bg-gray-50 text-gray-500 border-gray-200'">
+                    {{ subnet.mapPublicIpOnLaunch ? 'Public' : 'Private' }}
+                  </span>
+                  <span class="text-[10px] text-gray-400 font-mono">{{ subnet.vpcId }}</span>
+                </div>
+              </div>
+              <div *ngIf="selectedSubnet?.id === subnet.id" class="flex-shrink-0 mt-0.5">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 7. SECURITY GROUPS (VPC-filtered) -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="block text-xs uppercase tracking-widest text-gray-400">
+              Security Groups
+              <span *ngIf="selectedSubnet" class="normal-case text-gray-300 ml-1">(VPC: {{ selectedSubnet.vpcId }})</span>
+            </label>
+            <button *ngIf="selectedAccountId" type="button" (click)="navigateToCreateSecurityGroup()"
+                    class="text-xs text-black border border-black px-3 py-1 hover:bg-black hover:text-white transition-all duration-200 flex items-center gap-1.5">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
+              Create Security Group
+            </button>
+          </div>
+
+          <div *ngIf="!selectedSubnet" class="p-5 border border-dashed border-gray-200 text-center">
+            <p class="text-sm text-gray-400">Select a subnet above to filter security groups by VPC.</p>
+          </div>
+
+          <div *ngIf="selectedSubnet && securityGroupsLoading" class="p-5 border border-gray-100 flex items-center gap-3">
+            <div class="w-4 h-4 border-2 border-gray-300 border-t-black rounded-full animate-spin flex-shrink-0"></div>
+            <p class="text-sm text-gray-400">Loading security groups...</p>
+          </div>
+
+          <div *ngIf="selectedSubnet && !securityGroupsLoading && securityGroupsError" class="p-5 border border-red-100 bg-red-50/30 flex items-center justify-between gap-3">
+            <p class="text-sm text-red-500">{{ securityGroupsError }}</p>
+            <button type="button" (click)="loadSecurityGroups(selectedAccountId!)" class="text-xs text-red-600 underline hover:no-underline flex-shrink-0">Retry</button>
+          </div>
+
+          <div *ngIf="selectedSubnet && !securityGroupsLoading && !securityGroupsError && filteredSecurityGroups.length === 0" class="p-6 border border-dashed border-gray-200 text-center">
+            <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+            </svg>
+            <p class="text-sm text-gray-500 mb-2">No security groups found for this VPC.</p>
+            <button type="button" (click)="navigateToCreateSecurityGroup()" class="text-xs text-black underline hover:no-underline">Create a Security Group</button>
+          </div>
+
+          <div *ngIf="selectedSubnet && !securityGroupsLoading && !securityGroupsError && filteredSecurityGroups.length > 0"
+               class="space-y-2">
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Select one or more security groups</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div *ngFor="let sg of filteredSecurityGroups"
+                   (click)="toggleSecurityGroup(sg)"
+                   class="selectable-card flex items-start gap-3 p-4 border cursor-pointer transition-all duration-200"
+                   [ngClass]="isSecurityGroupSelected(sg) ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+                <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                     [ngClass]="isSecurityGroupSelected(sg) ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/>
+                  </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ sg.groupName }}</p>
+                  <p class="text-xs text-gray-500 mt-0.5 truncate">{{ sg.description }}</p>
+                  <div class="flex items-center gap-3 mt-1">
+                    <span class="text-[10px] text-gray-400">
+                      {{ sg.inboundRules.length || 0 }} inbound · {{ sg.outboundRules.length || 0 }} outbound
+                    </span>
+                  </div>
+                </div>
+                <div *ngIf="isSecurityGroupSelected(sg)" class="flex-shrink-0 mt-0.5">
+                  <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <p *ngIf="selectedSecurityGroupIds.size > 0" class="text-xs text-gray-500 mt-2">
+              {{ selectedSecurityGroupIds.size }} security group{{ selectedSecurityGroupIds.size !== 1 ? 's' : '' }} selected
+            </p>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 8. INSTANCE COUNT -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Instance Count</label>
+          <div class="flex flex-wrap gap-2">
+            <button *ngFor="let count of countPresets" type="button"
+                    (click)="selectCount(count)"
+                    class="px-4 py-2 border text-sm font-mono transition-all duration-150"
+                    [ngClass]="minCount === count ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-600 hover:border-gray-400 hover:text-black'">
+              {{ count }}
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">Number of instances to launch</p>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 9. OPTIONS -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Options</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- EBS Optimized -->
+            <button type="button" (click)="ebsOptimized = !ebsOptimized"
+                    class="flex items-center gap-3 p-4 border transition-all duration-200"
+                    [ngClass]="ebsOptimized ? 'border-green-500 bg-green-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="ebsOptimized ? 'bg-green-100' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="ebsOptimized ? 'text-green-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+                </svg>
+              </div>
+              <div class="text-left">
+                <p class="text-sm font-semibold" [ngClass]="ebsOptimized ? 'text-green-700' : 'text-gray-600'">EBS Optimized</p>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ ebsOptimized ? 'Enabled — Dedicated throughput' : 'Disabled — Standard I/O' }}</p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 10. USER DATA (startup script) -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">
+            User Data <span class="normal-case text-gray-300">(startup script — optional)</span>
+          </label>
+          <!-- Quick presets -->
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button *ngFor="let preset of userDataPresets" type="button"
+                    (click)="selectUserDataPreset(preset.value)"
+                    class="text-[10px] uppercase tracking-wider px-2.5 py-1 border transition-all duration-150"
+                    [ngClass]="userData === preset.value ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-500 hover:border-gray-400 hover:text-black'">
+              {{ preset.label }}
+            </button>
+          </div>
+          <textarea [(ngModel)]="userData" rows="5"
+                    placeholder="#!/bin/bash&#10;# Enter your startup script here..."
+                    class="w-full px-4 py-3 border border-gray-200 text-sm font-mono focus:outline-none focus:border-black transition-all duration-200 resize-y"></textarea>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- 11. TAGS -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <label class="block text-xs uppercase tracking-widest text-gray-400">Tags <span class="normal-case text-gray-300">(optional)</span></label>
+            <button type="button" (click)="addTag()"
+                    class="text-xs text-black border border-black px-3 py-1 hover:bg-black hover:text-white transition-all duration-200 flex items-center gap-1.5">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+              </svg>
+              Add Tag
+            </button>
+          </div>
+          <div *ngIf="tags.length === 0" class="p-4 border border-dashed border-gray-200 text-center">
+            <p class="text-sm text-gray-400">No tags added. Click "Add Tag" to add key-value tags.</p>
+          </div>
+          <div *ngIf="tags.length > 0" class="space-y-2">
+            <div *ngFor="let tag of tags; let i = index" class="flex items-center gap-2">
+              <input type="text" [(ngModel)]="tag.key" placeholder="Key (e.g. Environment)"
+                     class="flex-1 px-3 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-black transition">
+              <input type="text" [(ngModel)]="tag.value" placeholder="Value (e.g. Production)"
+                     class="flex-1 px-3 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-black transition">
+              <button type="button" (click)="removeTag(i)" class="p-2 text-gray-400 hover:text-red-500 transition flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- PREVIEW -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div *ngIf="isFormValid" class="p-5 bg-gray-50 border border-gray-100">
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider mb-3">Launch Preview</p>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Instance Name</span>
+              <span class="text-gray-900 font-medium">{{ instanceName.trim() }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">AMI</span>
+              <span class="text-gray-900 font-medium font-mono">{{ imageId }} <span class="text-gray-400 text-[10px] ml-1">({{ getSelectedAmiLabel() }})</span></span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Instance Type</span>
+              <span class="text-gray-900 font-medium font-mono">{{ selectedInstanceType }}</span>
+            </div>
+            <div *ngIf="selectedKeyPair" class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Key Pair</span>
+              <span class="text-gray-900 font-medium">{{ selectedKeyPair.keyName }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Subnet</span>
+              <span class="text-gray-900 font-medium">{{ getSubnetDisplayName(selectedSubnet!) }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Security Groups</span>
+              <span class="text-gray-900 font-medium">{{ selectedSecurityGroupIds.size }} selected</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Count</span>
+              <span class="text-gray-900 font-medium font-mono">{{ minCount }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">EBS Optimized</span>
+              <span class="font-medium" [ngClass]="ebsOptimized ? 'text-green-600' : 'text-gray-500'">{{ ebsOptimized ? 'Yes' : 'No' }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Account</span>
+              <span class="text-gray-900 font-medium">{{ selectedAccount?.accountName }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Form Footer -->
+      <div class="px-6 sm:px-8 py-5 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <button (click)="goBack()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          {{ backLabel }}
+        </button>
+        <button (click)="launch()" [disabled]="!isFormValid"
+                class="px-8 py-3 text-sm font-medium transition-all duration-200 flex items-center gap-2"
+                [ngClass]="isFormValid ? 'bg-black text-white hover:bg-gray-800 active:scale-[0.98]' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.636 5.636a9 9 0 1012.728 0M12 3v9"/>
+          </svg>
+          Launch Instance
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SUCCESS STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'success' && launchedInstances.length > 0" class="max-w-4xl mx-auto animate-fadeIn">
+    <div class="border border-green-200 bg-green-50/30">
+      <!-- Success Header -->
+      <div class="px-6 sm:px-8 py-8 text-center border-b border-green-100">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+          <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <h2 class="text-2xl font-serif font-bold text-gray-900 mb-1">Instance Launched</h2>
+        <p class="text-sm text-gray-500">{{ launchedInstances.length }} instance{{ launchedInstances.length !== 1 ? 's' : '' }} launched successfully.</p>
+      </div>
+
+      <!-- Instance Details -->
+      <div class="px-6 sm:px-8 py-6">
+        <div *ngFor="let inst of launchedInstances; let i = index" class="mb-6 last:mb-0">
+          <p *ngIf="launchedInstances.length > 1" class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Instance {{ i + 1 }}</p>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+              <span class="text-xs uppercase tracking-wider text-gray-400">Name</span>
+              <span class="text-sm font-medium text-gray-900">{{ inst.name || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+              <span class="text-xs uppercase tracking-wider text-gray-400">Instance ID</span>
+              <span class="text-sm font-medium text-gray-900 font-mono">{{ inst.instanceId }}</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+              <span class="text-xs uppercase tracking-wider text-gray-400">State</span>
+              <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">{{ inst.state }}</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+              <span class="text-xs uppercase tracking-wider text-gray-400">Type</span>
+              <span class="text-sm font-mono text-gray-900">{{ inst.instanceType }}</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+              <span class="text-xs uppercase tracking-wider text-gray-400">Private IP</span>
+              <span class="text-sm font-mono text-gray-900">{{ inst.privateIpAddress || '—' }}</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b border-green-100/50">
+              <span class="text-xs uppercase tracking-wider text-gray-400">Subnet</span>
+              <span class="text-sm font-mono text-gray-900">{{ inst.subnetId }}</span>
+            </div>
+            <div class="flex items-center justify-between py-2">
+              <span class="text-xs uppercase tracking-wider text-gray-400">Launched At</span>
+              <span class="text-sm font-medium text-gray-900">{{ formatDate(inst.launchTime) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="px-6 sm:px-8 py-5 border-t border-green-100 flex flex-col sm:flex-row items-center justify-between gap-3 bg-green-50/50">
+        <button (click)="resetForm()" class="text-xs uppercase tracking-wider text-gray-500 hover:text-black transition flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+          </svg>
+          Launch Another
+        </button>
+        <button (click)="goBack()" class="px-8 py-3 text-sm font-medium bg-black text-white hover:bg-gray-800 transition active:scale-[0.98]">
+          {{ backLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="formState === 'error'" class="max-w-4xl mx-auto animate-fadeIn">
+    <div class="border border-red-200 bg-red-50/30 p-8 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+        <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        </svg>
+      </div>
+      <h2 class="text-xl font-serif font-bold text-gray-900 mb-2">Launch Failed</h2>
+      <p class="text-sm text-gray-500 mb-6">{{ errorMessage }}</p>
+      <div class="flex items-center justify-center gap-4">
+        <button (click)="resetForm()" class="px-6 py-2.5 text-sm border border-gray-300 text-gray-700 hover:border-black hover:text-black transition">
+          Try Again
+        </button>
+        <button (click)="goBack()" class="px-6 py-2.5 text-sm bg-black text-white hover:bg-gray-800 transition">
+          {{ backLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

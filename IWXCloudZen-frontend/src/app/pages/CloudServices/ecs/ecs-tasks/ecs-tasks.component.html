@@ -1,0 +1,520 @@
+<!-- ── ECS Tasks Dashboard ── -->
+<div class="min-h-screen bg-gray-50/50">
+
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-100">
+    <div class="container-lux py-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <a routerLink="/dashboard/ecs" class="text-gray-400 hover:text-black transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/>
+              </svg>
+            </a>
+            <span class="text-gray-300">|</span>
+            <div class="p-2 bg-gray-50 rounded-xl">
+              <svg class="w-6 h-6 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+              </svg>
+            </div>
+            <div>
+              <h1 class="font-serif text-3xl md:text-5xl font-bold text-black tracking-tight">ECS Tasks</h1>
+              <p class="text-gray-500 mt-1 text-sm">Task instances across all clusters</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 flex-wrap">
+          <a routerLink="/dashboard/ecs/run-task" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-xs uppercase tracking-wider hover:bg-gray-800 transition active:scale-[0.98]">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/>
+            </svg>
+            Run Task
+          </a>
+          <button (click)="syncAllTasks()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-green-600 bg-green-600 text-white text-xs uppercase tracking-wider hover:bg-green-700 hover:border-green-700 transition" [disabled]="syncing">
+            <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Sync
+          </button>
+          <a routerLink="/dashboard/ecs" class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-xs uppercase tracking-wider hover:bg-black hover:text-white hover:border-black transition">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+            </svg>
+            ECS
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-lux py-8">
+
+    <!-- Toast -->
+    <div *ngIf="toastMessage" class="mb-6 px-5 py-3 flex items-center gap-3 text-sm border rounded-xl animate-fade-in"
+         [ngClass]="toastType === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'">
+      <svg *ngIf="toastType === 'success'" class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+      </svg>
+      <svg *ngIf="toastType === 'error'" class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+      </svg>
+      <span>{{ toastMessage }}</span>
+    </div>
+
+    <!-- Metrics -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      <div *ngFor="let m of metrics; let i = index"
+           class="metric-card bg-white rounded-2xl border border-gray-100 p-6 animate-fade-in"
+           [class]="'metric-card bg-white rounded-2xl border border-gray-100 p-6 animate-fade-in stagger-' + (i + 1)">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">{{ m.label }}</span>
+          <svg class="w-5 h-5" [class]="m.color" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="m.icon"/>
+          </svg>
+        </div>
+        <div class="text-3xl font-bold text-black font-serif">{{ m.value }}</div>
+      </div>
+    </div>
+
+    <!-- Status Distribution -->
+    <div *ngIf="!loading && tasks.length > 0" class="bg-white rounded-2xl border border-gray-100 p-5 mb-8 animate-fade-in">
+      <div class="flex flex-wrap items-center gap-6">
+        <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Status Distribution</span>
+        <div *ngFor="let st of uniqueStatuses" class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full" [ngClass]="getStatusDotClass(st)"></span>
+          <span class="text-sm text-gray-600 capitalize">{{ st }}: <strong class="text-black">{{ (tasks | filter:'lastStatus':st).length || 0 }}</strong></span>
+        </div>
+        <div class="ml-auto flex items-center gap-3">
+          <span *ngFor="let cl of uniqueClusters" class="text-xs px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-lg text-gray-600">{{ cl }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-2xl border border-gray-100 p-5 mb-6 animate-fade-in stagger-3">
+      <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+        <div class="relative flex-1">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+          </svg>
+          <input type="text" [(ngModel)]="searchQuery" placeholder="Search tasks by ARN, cluster, group, reason..."
+                 class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-300 transition-all"/>
+        </div>
+        <select [(ngModel)]="selectedStatus" class="px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 bg-white">
+          <option value="all">All Statuses</option>
+          <option *ngFor="let s of uniqueStatuses" [value]="s">{{ s | titlecase }}</option>
+        </select>
+        <select [(ngModel)]="selectedCluster" class="px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 bg-white">
+          <option value="all">All Clusters</option>
+          <option *ngFor="let c of uniqueClusters" [value]="c">{{ c }}</option>
+        </select>
+        <select [(ngModel)]="selectedLaunchType" class="px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 bg-white">
+          <option value="all">All Launch Types</option>
+          <option *ngFor="let lt of uniqueLaunchTypes" [value]="lt">{{ lt }}</option>
+        </select>
+        <select *ngIf="accounts.length > 1" [(ngModel)]="selectedAccount" class="px-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 bg-white">
+          <option value="all">All Accounts</option>
+          <option *ngFor="let a of accounts" [value]="a.id">{{ a.accountName }}</option>
+        </select>
+      </div>
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
+        <div class="flex items-center gap-3">
+          <span class="text-xs text-gray-400">{{ filteredTasks.length }} of {{ tasks.length }} tasks</span>
+          <button *ngIf="hasActiveFilters" (click)="clearFilters()" class="text-xs text-gray-500 hover:text-black transition-colors underline underline-offset-2">Clear filters</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button (click)="setViewMode('list')" class="p-2 rounded-lg transition-colors"
+                  [class]="viewMode === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black hover:bg-gray-50'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+            </svg>
+          </button>
+          <button (click)="setViewMode('grid')" class="p-2 rounded-lg transition-colors"
+                  [class]="viewMode === 'grid' ? 'bg-black text-white' : 'text-gray-400 hover:text-black hover:bg-gray-50'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="flex flex-col items-center justify-center py-24">
+      <div class="w-8 h-8 border-2 border-gray-200 border-t-black rounded-full animate-spin mb-4"></div>
+      <p class="text-sm text-gray-400">Loading tasks…</p>
+    </div>
+
+    <!-- Empty -->
+    <div *ngIf="!loading && filteredTasks.length === 0" class="text-center py-24 animate-fade-in">
+      <svg class="w-16 h-16 text-gray-200 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+      </svg>
+      <p class="text-gray-400 font-medium">No tasks found</p>
+      <p class="text-gray-300 text-sm mt-1" *ngIf="hasActiveFilters">Try adjusting your filters</p>
+      <a *ngIf="!hasActiveFilters" routerLink="/dashboard/ecs/run-task" class="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-black text-white text-xs uppercase tracking-wider hover:bg-gray-800 transition">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/>
+        </svg>
+        Run a Task
+      </a>
+    </div>
+
+    <!-- ════ LIST VIEW ════ -->
+    <div *ngIf="!loading && filteredTasks.length > 0 && viewMode === 'list'" class="bg-white rounded-2xl border border-gray-100 overflow-hidden animate-fade-in">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-gray-100">
+              <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Task ID</th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider sort-header" (click)="toggleSort('clusterName')">
+                Cluster <span *ngIf="sortField === 'clusterName'" class="ml-1">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider sort-header" (click)="toggleSort('lastStatus')">
+                Status <span *ngIf="sortField === 'lastStatus'" class="ml-1">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Desired</th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider sort-header" (click)="toggleSort('launchType')">
+                Launch <span *ngIf="sortField === 'launchType'" class="ml-1">{{ sortDir === 'asc' ? '↑' : '↓' }}</span>
+              </th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">CPU / Mem</th>
+              <th class="text-left px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Group</th>
+              <th class="text-right px-6 py-4 text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let task of filteredTasks" class="task-row border-b border-gray-50 cursor-pointer" (click)="openDetail(task)">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <div class="p-1.5 bg-gray-50 rounded-lg">
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+                    </svg>
+                  </div>
+                  <span class="text-sm font-mono text-black">{{ getShortTaskId(task.taskArn) }}…</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600">{{ task.clusterName || '—' }}</td>
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" [class]="getStatusClass(task.lastStatus)">
+                  <span class="w-1.5 h-1.5 rounded-full" [class]="getStatusDotClass(task.lastStatus)"></span>
+                  {{ task.lastStatus || '—' }}
+                </span>
+              </td>
+              <td class="px-6 py-4">
+                <span class="text-xs text-gray-500">{{ task.desiredStatus || '—' }}</span>
+              </td>
+              <td class="px-6 py-4">
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium" [class]="getLaunchTypeClass(task.launchType)">{{ task.launchType || '—' }}</span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-600 font-mono">{{ task.cpu }} / {{ task.memory }}</td>
+              <td class="px-6 py-4 text-sm text-gray-500 truncate max-w-[160px]">{{ task.group || '—' }}</td>
+              <td class="px-6 py-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <button *ngIf="task.lastStatus.toLowerCase() !== 'stopped'"
+                          (click)="openStopDialog(task, $event)"
+                          class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition" title="Stop Task">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z"/>
+                    </svg>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ════ GRID VIEW ════ -->
+    <div *ngIf="!loading && filteredTasks.length > 0 && viewMode === 'grid'"
+         class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 animate-fade-in">
+      <div *ngFor="let task of filteredTasks"
+           class="task-grid-card bg-white rounded-2xl border border-gray-100 p-6 cursor-pointer"
+           (click)="openDetail(task)">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-gray-50 rounded-xl">
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-mono text-sm font-medium text-black">{{ getShortTaskId(task.taskArn) }}…</h3>
+              <span class="text-xs text-gray-400">{{ task.clusterName }}</span>
+            </div>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium" [class]="getStatusClass(task.lastStatus)">
+            <span class="w-1.5 h-1.5 rounded-full" [class]="getStatusDotClass(task.lastStatus)"></span>
+            {{ task.lastStatus || '—' }}
+          </span>
+        </div>
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-400">Desired</span>
+            <span class="text-gray-700 font-medium">{{ task.desiredStatus || '—' }}</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-400">Launch Type</span>
+            <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium" [class]="getLaunchTypeClass(task.launchType)">{{ task.launchType }}</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-400">CPU / Memory</span>
+            <span class="text-gray-700 font-mono text-xs">{{ task.cpu }} / {{ task.memory }} MiB</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-gray-400">Group</span>
+            <span class="text-gray-600 text-xs truncate ml-3 max-w-[140px]">{{ task.group || '—' }}</span>
+          </div>
+          <div *ngIf="task.stoppedReason" class="text-xs text-red-500 mt-2 p-2 bg-red-50 rounded-lg truncate" [title]="task.stoppedReason">{{ task.stoppedReason }}</div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
+          <span class="text-xs text-gray-300">{{ formatRelativeTime(task.createdAt) }}</span>
+          <div class="flex items-center gap-2">
+            <button *ngIf="task.lastStatus.toLowerCase() !== 'stopped'"
+                    (click)="openStopDialog(task, $event)"
+                    class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition" title="Stop">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z"/>
+              </svg>
+            </button>
+            <svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ CLUSTER BREAKDOWN ════ -->
+    <div *ngIf="!loading && tasks.length > 0" class="mt-12 animate-fade-in">
+      <h2 class="font-serif text-xl font-bold text-black mb-5">By Cluster</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div *ngFor="let cn of uniqueClusters" class="bg-white rounded-2xl border border-gray-100 p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="p-2 bg-gray-50 rounded-xl">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-medium text-black text-sm">{{ cn }}</h3>
+              <span class="text-xs text-gray-400">{{ (tasks | filter:'clusterName':cn).length || 0 }} tasks</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-3">
+            <div class="text-center p-2 bg-green-50 border border-green-100 rounded-lg">
+              <p class="text-lg font-bold text-green-600 font-serif">{{ (tasks | filter:'clusterName':cn | filter:'lastStatus':'RUNNING').length || (tasks | filter:'clusterName':cn | filter:'desiredStatus':'RUNNING').length || 0 }}</p>
+              <p class="text-[9px] text-green-600 uppercase tracking-wider">Running</p>
+            </div>
+            <div class="text-center p-2 bg-red-50 border border-red-100 rounded-lg">
+              <p class="text-lg font-bold text-red-500 font-serif">{{ (tasks | filter:'clusterName':cn | filter:'lastStatus':'STOPPED').length || 0 }}</p>
+              <p class="text-[9px] text-red-500 uppercase tracking-wider">Stopped</p>
+            </div>
+            <div class="text-center p-2 bg-yellow-50 border border-yellow-100 rounded-lg">
+              <p class="text-lg font-bold text-yellow-600 font-serif">{{ (tasks | filter:'clusterName':cn | filter:'lastStatus':'PENDING').length || 0 }}</p>
+              <p class="text-[9px] text-yellow-600 uppercase tracking-wider">Pending</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════ DETAIL SLIDE-OVER ════ -->
+<div *ngIf="selectedTask" class="fixed inset-0 z-50 flex justify-end">
+  <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" (click)="closeDetail()"></div>
+  <div class="relative bg-white w-full max-w-xl h-full flex flex-col shadow-2xl border-l border-gray-100 overflow-hidden"
+       [class]="showDetailPanel ? 'detail-panel-enter' : 'detail-panel-exit'">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-100 flex-shrink-0">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <h2 class="font-mono text-sm font-bold text-black truncate">{{ getFullTaskId(selectedTask.taskArn) }}</h2>
+          <p class="text-xs text-gray-400 uppercase tracking-wider">Task Details</p>
+        </div>
+      </div>
+      <button (click)="closeDetail()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition flex-shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="flex-1 overflow-y-auto detail-panel-body px-6 sm:px-8 py-6">
+
+      <!-- Status Banner -->
+      <div class="flex items-center gap-3 mb-6 p-4 border rounded-xl" [ngClass]="getStatusBgClass(selectedTask.lastStatus)">
+        <div class="w-3 h-3 rounded-full flex-shrink-0" [ngClass]="getStatusDotClass(selectedTask.lastStatus)"></div>
+        <div>
+          <p class="text-sm font-semibold" [ngClass]="getStatusTextClass(selectedTask.lastStatus)">{{ selectedTask.lastStatus }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Last Status</p>
+        </div>
+        <div class="ml-auto text-right">
+          <p class="text-xs font-medium text-gray-600">{{ selectedTask.desiredStatus }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Desired</p>
+        </div>
+      </div>
+
+      <!-- General Information -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">General Information</h4>
+        <div class="space-y-0">
+          <div class="detail-row">
+            <span class="detail-label">Cluster</span>
+            <span class="detail-value font-semibold">{{ selectedTask.clusterName }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Group</span>
+            <span class="detail-value font-mono text-xs">{{ selectedTask.group || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Launch Type</span>
+            <span class="detail-value"><span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium" [ngClass]="getLaunchTypeClass(selectedTask.launchType)">{{ selectedTask.launchType }}</span></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">CPU</span>
+            <span class="detail-value font-mono">{{ selectedTask.cpu }} units</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Memory</span>
+            <span class="detail-value font-mono">{{ selectedTask.memory }} MiB</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Connectivity</span>
+            <span class="detail-value" [ngClass]="selectedTask.connectivity === 'CONNECTED' ? 'text-green-600' : 'text-gray-500'">{{ selectedTask.connectivity || '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Account</span>
+            <span class="detail-value">{{ getAccountName(selectedTask.cloudAccountId) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stop Information -->
+      <div class="mb-8" *ngIf="selectedTask.stopCode || selectedTask.stoppedReason">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Stop Information</h4>
+        <div class="p-4 bg-red-50 border border-red-200 rounded-xl space-y-3">
+          <div *ngIf="selectedTask.stopCode">
+            <p class="text-[10px] uppercase tracking-widest text-red-400 mb-1">Stop Code</p>
+            <p class="text-sm font-medium text-red-700">{{ selectedTask.stopCode }}</p>
+          </div>
+          <div *ngIf="selectedTask.stoppedReason">
+            <p class="text-[10px] uppercase tracking-widest text-red-400 mb-1">Reason</p>
+            <p class="text-xs text-red-600 leading-relaxed">{{ selectedTask.stoppedReason }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task Definition -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Task Definition</h4>
+        <div class="p-4 bg-gray-50 border border-gray-100 rounded-xl">
+          <p class="text-xs font-mono text-gray-700 break-all select-all leading-relaxed">{{ selectedTask.taskDefinitionArn }}</p>
+        </div>
+      </div>
+
+      <!-- Resource Identifiers -->
+      <div class="mb-8">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Resource Identifiers</h4>
+        <div class="space-y-3">
+          <div class="p-4 bg-gray-50 border border-gray-100 rounded-xl">
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Task ARN</p>
+            <p class="text-xs font-mono text-gray-700 break-all select-all leading-relaxed">{{ selectedTask.taskArn }}</p>
+          </div>
+          <div class="p-4 bg-gray-50 border border-gray-100 rounded-xl">
+            <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Cluster ARN</p>
+            <p class="text-xs font-mono text-gray-700 break-all select-all leading-relaxed">{{ selectedTask.clusterArn }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timestamps -->
+      <div class="mb-4">
+        <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Timestamps</h4>
+        <div class="space-y-0">
+          <div class="detail-row">
+            <span class="detail-label">Created</span>
+            <span class="detail-value">{{ formatDateTime(selectedTask.createdAt) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedTask.startedAt">
+            <span class="detail-label">Started</span>
+            <span class="detail-value">{{ formatDateTime(selectedTask.startedAt) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedTask.stoppedAt">
+            <span class="detail-label">Stopped</span>
+            <span class="detail-value">{{ formatDateTime(selectedTask.stoppedAt) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedTask.pullStartedAt">
+            <span class="detail-label">Pull Started</span>
+            <span class="detail-value">{{ formatDateTime(selectedTask.pullStartedAt) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedTask.pullStoppedAt">
+            <span class="detail-label">Pull Completed</span>
+            <span class="detail-value">{{ formatDateTime(selectedTask.pullStoppedAt) }}</span>
+          </div>
+          <div class="detail-row" *ngIf="selectedTask.updatedAt">
+            <span class="detail-label">Last Updated</span>
+            <span class="detail-value">{{ formatDateTime(selectedTask.updatedAt) }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 sm:px-8 py-4 border-t border-gray-200 flex-shrink-0 flex items-center justify-between bg-gray-50">
+      <span class="text-xs text-gray-400">{{ selectedTask.clusterName }}</span>
+      <div class="flex items-center gap-3">
+        <button *ngIf="selectedTask.lastStatus.toLowerCase() !== 'stopped'"
+                (click)="openStopDialog(selectedTask)"
+                class="inline-flex items-center gap-2 px-4 py-2 text-sm border border-red-200 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z"/>
+          </svg>
+          Stop
+        </button>
+        <button (click)="closeDetail()" class="px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ STOP TASK DIALOG ════ -->
+<div *ngIf="showStopDialog && stopTarget" class="fixed inset-0 z-[60] flex items-center justify-center">
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" (click)="closeStopDialog()"></div>
+  <div class="relative bg-white rounded-2xl shadow-2xl border border-gray-100 w-full max-w-md p-8 animate-fade-in">
+    <div class="flex justify-center mb-5">
+      <div class="w-14 h-14 rounded-full bg-yellow-50 flex items-center justify-center">
+        <svg class="w-7 h-7 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 017.5 5.25h9a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25v-9z"/>
+        </svg>
+      </div>
+    </div>
+    <h3 class="text-lg font-serif font-bold text-center mb-2">Stop Task</h3>
+    <p class="text-sm text-gray-500 text-center mb-4">
+      Stop task <strong class="text-black font-mono text-xs">{{ getShortTaskId(stopTarget.taskArn) }}</strong>?
+    </p>
+    <div class="mb-6">
+      <label class="block text-xs uppercase tracking-widest text-gray-400 font-medium mb-2">Reason (optional)</label>
+      <input type="text" [(ngModel)]="stopReason" placeholder="e.g., Stopping for maintenance"
+             class="w-full px-4 py-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-300"/>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="closeStopDialog()" class="flex-1 px-4 py-2.5 text-sm border border-gray-200 rounded-xl hover:bg-gray-50 transition">Cancel</button>
+      <button (click)="confirmStop()" class="flex-1 px-4 py-2.5 text-sm bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition" [disabled]="stoppingTask">
+        {{ stoppingTask ? 'Stopping...' : 'Stop Task' }}
+      </button>
+    </div>
+  </div>
+</div>

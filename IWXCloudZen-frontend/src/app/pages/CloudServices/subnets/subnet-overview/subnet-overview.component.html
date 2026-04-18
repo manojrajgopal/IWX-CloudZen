@@ -1,0 +1,1406 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="loading" class="space-y-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-gray-100 rounded-lg animate-pulse"></div>
+      <div>
+        <div class="h-8 w-64 bg-gray-100 rounded animate-pulse mb-2"></div>
+        <div class="h-4 w-40 bg-gray-100 rounded animate-pulse"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div *ngFor="let i of [1,2,3,4]" class="border border-gray-200 p-6 animate-pulse">
+        <div class="h-4 w-20 bg-gray-100 rounded mb-3"></div>
+        <div class="h-8 w-16 bg-gray-100 rounded"></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <div class="xl:col-span-2 space-y-8">
+        <div *ngFor="let i of [1,2,3]" class="border border-gray-200 p-8 animate-pulse">
+          <div class="h-5 w-48 bg-gray-100 rounded mb-6"></div>
+          <div class="space-y-4">
+            <div class="h-4 w-full bg-gray-100 rounded"></div>
+            <div class="h-4 w-3/4 bg-gray-100 rounded"></div>
+            <div class="h-4 w-1/2 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-8">
+        <div *ngFor="let i of [1,2]" class="border border-gray-200 p-8 animate-pulse">
+          <div class="h-4 w-32 bg-gray-100 rounded mb-4"></div>
+          <div class="space-y-3">
+            <div class="h-4 w-full bg-gray-100 rounded"></div>
+            <div class="h-4 w-2/3 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- ERROR STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && error" class="text-center py-20">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">{{ error }}</h2>
+    <p class="text-gray-500 mb-6">The requested subnet could not be loaded.</p>
+    <a routerLink="/dashboard/subnets" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+      </svg>
+      Back to Subnets
+    </a>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && !error && subnet">
+
+    <!-- ─── Breadcrumb & Header ─── -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-10 gap-6">
+      <div class="flex-1 min-w-0">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+          <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <a routerLink="/dashboard/subnets" class="hover:text-black transition">Subnets</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span class="text-black font-medium truncate max-w-[200px]">{{ getDisplayName(subnet) }}</span>
+        </nav>
+
+        <!-- Title Row -->
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-lg bg-black text-white flex items-center justify-center flex-shrink-0">
+            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zm0 9.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-serif font-bold tracking-tight truncate">{{ getDisplayName(subnet) }}</h1>
+            <div class="flex items-center gap-3 mt-2 flex-wrap">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getProviderBgClass(subnet.provider)">
+                {{ getProviderShort(subnet.provider) }}
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getStateBgClass(subnet.state)">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStateDotClass(subnet.state)"></span>
+                {{ subnet.state }}
+              </span>
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm"
+                    [ngClass]="getSubnetTypeBgClass(subnet)">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path *ngIf="subnet.mapPublicIpOnLaunch" stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3"/>
+                  <path *ngIf="!subnet.mapPublicIpOnLaunch" stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/>
+                </svg>
+                {{ getSubnetType(subnet) }}
+              </span>
+              <span *ngIf="subnet.isDefault" class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-medium uppercase tracking-wider border rounded-sm bg-yellow-50 border-yellow-200 text-yellow-700">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+                Default
+              </span>
+              <span class="text-xs text-gray-400 font-mono">{{ subnet.subnetId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <button (click)="refreshData()" class="btn-overview-icon" title="Refresh">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+        <a routerLink="/dashboard/subnets" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-black hover:bg-black hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          All Subnets
+        </a>
+        <button *ngIf="parentVpc" (click)="navigateToVpc()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-blue-600 hover:bg-blue-600 hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          View VPC
+        </button>
+        <button (click)="openUpdatePanel()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-blue-600 bg-blue-600 text-white text-sm uppercase tracking-wider hover:bg-blue-700 hover:border-blue-700 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+          </svg>
+          Update
+        </button>
+        <button (click)="openDeleteConfirm()" class="inline-flex items-center gap-2 px-4 py-2.5 border border-red-600 bg-red-600 text-white text-sm uppercase tracking-wider hover:bg-red-700 hover:border-red-700 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/>
+          </svg>
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- KEY METRICS CARDS -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+      <!-- State -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <span class="w-3 h-3 rounded-full" [ngClass]="getStateDotClass(subnet.state)"></span>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">State</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold capitalize">{{ subnet.state || '—' }}</p>
+        <p class="text-xs text-gray-400 mt-1">Current state</p>
+      </div>
+
+      <!-- Available IPs -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Available IPs</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold text-blue-700">{{ subnet.availableIpAddressCount | number }}</p>
+        <p class="text-xs text-gray-400 mt-1">of {{ getUsableIpCount() | number }} usable</p>
+      </div>
+
+      <!-- CIDR -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">CIDR</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold font-mono">{{ getCidrPrefix(subnet.cidrBlock) }}</p>
+        <p class="text-xs text-gray-400 mt-1">{{ getCidrIpCount(subnet.cidrBlock) }} total addresses</p>
+      </div>
+
+      <!-- Uptime -->
+      <div class="overview-metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Uptime</span>
+        </div>
+        <p class="text-2xl md:text-3xl font-serif font-bold">{{ getUptime(subnet.createdAt) }}</p>
+        <p class="text-xs text-gray-400 mt-1">Since creation</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- STATUS OVERVIEW BANNER -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="mb-10 p-6 border rounded-sm flex flex-col sm:flex-row sm:items-center gap-4"
+         [ngClass]="getStateBgClass(subnet.state)">
+      <div class="flex items-center gap-3 flex-1">
+        <div class="w-12 h-12 rounded-full bg-white/80 flex items-center justify-center flex-shrink-0">
+          <span class="w-4 h-4 rounded-full" [ngClass]="getStateDotClass(subnet.state)"></span>
+        </div>
+        <div>
+          <p class="text-lg font-serif font-bold capitalize" [ngClass]="getStateTextClass(subnet.state)">
+            Subnet is {{ subnet.state }}
+          </p>
+          <p class="text-xs mt-0.5" [ngClass]="getStateTextClass(subnet.state)" style="opacity: 0.7">
+            Last checked {{ formatRelativeTime(subnet.updatedAt || subnet.createdAt) }}
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6">
+        <div class="text-right">
+          <p class="text-xs uppercase tracking-widest mb-1" [ngClass]="getStateTextClass(subnet.state)" style="opacity: 0.6">Type</p>
+          <p class="text-sm font-medium" [ngClass]="getStateTextClass(subnet.state)">{{ getSubnetType(subnet) }} Subnet</p>
+        </div>
+        <div class="text-right">
+          <p class="text-xs uppercase tracking-widest mb-1" [ngClass]="getStateTextClass(subnet.state)" style="opacity: 0.6">Created</p>
+          <p class="text-sm font-medium" [ngClass]="getStateTextClass(subnet.state)">{{ formatDate(subnet.createdAt) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- MAIN TWO-COLUMN LAYOUT -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8 mb-10">
+
+      <!-- ─── LEFT COLUMN (2/3) ─── -->
+      <div class="xl:col-span-2 space-y-8">
+
+        <!-- ▸ General Information Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('general')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">General Information</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('general')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('general')">
+            <div class="overview-grid">
+              <div class="overview-field">
+                <span class="overview-field-label">Subnet Name</span>
+                <span class="overview-field-value font-semibold">{{ subnet.name || '(unnamed)' }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Subnet ID</span>
+                <span class="overview-field-value font-mono text-sm">{{ subnet.subnetId }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Internal ID</span>
+                <span class="overview-field-value font-mono text-sm">{{ subnet.id }}</span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Cloud Provider</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="getProviderBgClass(subnet.provider)">
+                    {{ getProviderLabel(subnet.provider) }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Current State</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium capitalize border rounded-sm"
+                        [ngClass]="getStateBgClass(subnet.state)">
+                    <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStateDotClass(subnet.state)"></span>
+                    {{ subnet.state }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Subnet Type</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="getSubnetTypeBgClass(subnet)">
+                    {{ getSubnetType(subnet) }} Subnet
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Default Subnet</span>
+                <span class="overview-field-value">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium border rounded-sm"
+                        [ngClass]="subnet.isDefault ? 'bg-yellow-50 border-yellow-200 text-yellow-700' : 'bg-gray-50 border-gray-200 text-gray-500'">
+                    {{ subnet.isDefault ? 'Yes — Default Subnet' : 'No — Custom Subnet' }}
+                  </span>
+                </span>
+              </div>
+              <div class="overview-field">
+                <span class="overview-field-label">Cloud Account</span>
+                <span class="overview-field-value">{{ account?.accountName || ('Account #' + subnet.cloudAccountId) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Network Configuration Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('network')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Network Configuration</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('network')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('network')">
+            <!-- CIDR Breakdown Card -->
+            <div class="p-5 bg-gray-50 border border-gray-100 rounded-sm mb-5">
+              <div class="flex items-start justify-between gap-4 mb-4">
+                <div>
+                  <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">IPv4 CIDR Block</p>
+                  <p class="font-mono text-lg font-bold text-gray-900 select-all">{{ subnet.cidrBlock }}</p>
+                </div>
+                <button (click)="copyToClipboard(subnet.cidrBlock, 'cidr')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition"
+                        title="Copy CIDR">
+                  <svg *ngIf="copiedField !== 'cidr'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'cidr'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+              <div *ngIf="subnet.ipv6CidrBlock" class="mt-3 pt-3 border-t border-gray-200">
+                <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">IPv6 CIDR Block</p>
+                <p class="font-mono text-sm font-bold text-gray-900 select-all">{{ subnet.ipv6CidrBlock }}</p>
+              </div>
+            </div>
+
+            <!-- CIDR Details Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm text-center">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Network</p>
+                <p class="text-sm font-mono font-bold">{{ getCidrNetwork(subnet.cidrBlock) }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm text-center">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Prefix Length</p>
+                <p class="text-sm font-mono font-bold">{{ getCidrPrefix(subnet.cidrBlock) }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm text-center">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Total Addresses</p>
+                <p class="text-sm font-bold">{{ getCidrIpCount(subnet.cidrBlock) }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm text-center">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Network Class</p>
+                <p class="text-sm font-bold">{{ getCidrClass(subnet.cidrBlock) }}</p>
+              </div>
+            </div>
+
+            <!-- VPC Info Card -->
+            <div class="p-5 border border-gray-100 rounded-sm">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-xs uppercase tracking-widest text-gray-400">Parent VPC</p>
+                <button *ngIf="parentVpc" (click)="navigateToVpc()"
+                        class="text-xs text-blue-600 hover:text-blue-800 transition font-medium">
+                  View VPC →
+                </button>
+              </div>
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-semibold truncate">{{ parentVpc ? getVpcDisplayName(parentVpc) : subnet.vpcId }}</p>
+                  <p class="text-xs font-mono text-gray-400">{{ subnet.vpcId }}</p>
+                </div>
+                <button (click)="copyToClipboard(subnet.vpcId, 'vpcId')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition" title="Copy VPC ID">
+                  <svg *ngIf="copiedField !== 'vpcId'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'vpcId'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+              <div *ngIf="parentVpc" class="mt-3 pt-3 border-t border-gray-100 grid grid-cols-2 gap-3">
+                <div>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">VPC CIDR</p>
+                  <p class="text-sm font-mono font-medium">{{ parentVpc.cidrBlock }}</p>
+                </div>
+                <div>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">VPC State</p>
+                  <p class="text-sm font-medium capitalize">{{ parentVpc.state }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Availability Zone Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('az')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Availability Zone</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('az')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('az')">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="p-5 border border-gray-100 rounded-sm">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-lg font-serif font-bold text-indigo-700">{{ subnet.availabilityZone }}</p>
+                    <p class="text-xs text-indigo-500">Availability Zone</p>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">The physical location where this subnet's resources are deployed.</p>
+              </div>
+              <div class="p-5 border border-gray-100 rounded-sm">
+                <div class="flex items-center gap-3 mb-3">
+                  <div class="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-lg font-serif font-bold">{{ subnet.availabilityZoneId }}</p>
+                    <p class="text-xs text-gray-400">Zone ID</p>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">The unique, consistent identifier for this Availability Zone across accounts.</p>
+              </div>
+            </div>
+            <!-- Region Banner -->
+            <div class="mt-4 p-4 bg-gray-50 border border-gray-100 rounded-sm flex items-center gap-3">
+              <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3"/>
+              </svg>
+              <div>
+                <p class="text-sm font-medium">{{ account?.region || '—' }}</p>
+                <p class="text-[10px] uppercase tracking-wider text-gray-400">AWS Region</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ IP Address Configuration Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('ipconfig')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">IP Address Configuration</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('ipconfig')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('ipconfig')">
+            <!-- IP Assignment Settings -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+              <div class="p-5 border rounded-sm flex items-center gap-4"
+                   [ngClass]="subnet.mapPublicIpOnLaunch ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                     [ngClass]="subnet.mapPublicIpOnLaunch ? 'bg-blue-100' : 'bg-gray-200'">
+                  <svg class="w-6 h-6" [ngClass]="subnet.mapPublicIpOnLaunch ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path *ngIf="subnet.mapPublicIpOnLaunch" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path *ngIf="!subnet.mapPublicIpOnLaunch" stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-lg font-serif font-bold" [ngClass]="subnet.mapPublicIpOnLaunch ? 'text-blue-700' : 'text-gray-600'">
+                    {{ subnet.mapPublicIpOnLaunch ? 'Enabled' : 'Disabled' }}
+                  </p>
+                  <p class="text-xs mt-0.5" [ngClass]="subnet.mapPublicIpOnLaunch ? 'text-blue-500' : 'text-gray-400'">
+                    Auto-assign Public IPv4
+                  </p>
+                </div>
+              </div>
+              <div class="p-5 border rounded-sm flex items-center gap-4"
+                   [ngClass]="subnet.assignIpv6AddressOnCreation ? 'bg-indigo-50 border-indigo-200' : 'bg-gray-50 border-gray-200'">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+                     [ngClass]="subnet.assignIpv6AddressOnCreation ? 'bg-indigo-100' : 'bg-gray-200'">
+                  <svg class="w-6 h-6" [ngClass]="subnet.assignIpv6AddressOnCreation ? 'text-indigo-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path *ngIf="subnet.assignIpv6AddressOnCreation" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <path *ngIf="!subnet.assignIpv6AddressOnCreation" stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-lg font-serif font-bold" [ngClass]="subnet.assignIpv6AddressOnCreation ? 'text-indigo-700' : 'text-gray-600'">
+                    {{ subnet.assignIpv6AddressOnCreation ? 'Enabled' : 'Disabled' }}
+                  </p>
+                  <p class="text-xs mt-0.5" [ngClass]="subnet.assignIpv6AddressOnCreation ? 'text-indigo-500' : 'text-gray-400'">
+                    Auto-assign IPv6
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- IP Utilization -->
+            <div class="p-5 bg-gray-50 border border-gray-100 rounded-sm">
+              <div class="flex items-center justify-between mb-4">
+                <p class="text-xs uppercase tracking-widest text-gray-400">IP Address Utilization</p>
+                <span class="text-sm font-bold" [ngClass]="getIpUtilization() > 80 ? 'text-red-600' : getIpUtilization() > 50 ? 'text-yellow-600' : 'text-green-600'">
+                  {{ getIpUtilization() }}%
+                </span>
+              </div>
+              <!-- Progress bar -->
+              <div class="w-full h-3 bg-gray-200 rounded-full overflow-hidden mb-4">
+                <div class="h-full rounded-full transition-all duration-500"
+                     [ngClass]="getIpUtilization() > 80 ? 'bg-red-500' : getIpUtilization() > 50 ? 'bg-yellow-500' : 'bg-green-500'"
+                     [style.width.%]="getIpUtilization()"></div>
+              </div>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                  <p class="text-lg font-bold text-gray-900">{{ getCidrIpCount(subnet.cidrBlock) }}</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Total IPs</p>
+                </div>
+                <div class="text-center">
+                  <p class="text-lg font-bold text-blue-600">{{ subnet.availableIpAddressCount | number }}</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Available</p>
+                </div>
+                <div class="text-center">
+                  <p class="text-lg font-bold text-gray-600">{{ getUsedIpCount() | number }}</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Used</p>
+                </div>
+              </div>
+              <p class="text-[10px] text-gray-400 mt-3 text-center">AWS reserves 5 IP addresses per subnet (first 4 and last 1)</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Subnet Identifier Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('subnetid')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Subnet Identifier</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('subnetid')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('subnetid')">
+            <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm mb-4">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="text-xs uppercase tracking-widest text-gray-400 mb-1">AWS Subnet ID</p>
+                  <p class="font-mono text-lg font-bold text-gray-900 select-all leading-relaxed">{{ subnet.subnetId }}</p>
+                </div>
+                <button (click)="copyToClipboard(subnet.subnetId, 'subnetId')"
+                        class="flex-shrink-0 p-2 hover:bg-gray-200 rounded transition"
+                        title="Copy Subnet ID">
+                  <svg *ngIf="copiedField !== 'subnetId'" class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                  </svg>
+                  <svg *ngIf="copiedField === 'subnetId'" class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- ID Breakdown -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Prefix</p>
+                <p class="text-sm font-medium font-mono">subnet-</p>
+              </div>
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Identifier</p>
+                <p class="text-sm font-medium font-mono">{{ subnet.subnetId.replace('subnet-', '') }}</p>
+              </div>
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Region</p>
+                <p class="text-sm font-medium font-mono">{{ account?.region || '—' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Timestamps & Lifecycle Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('timeline')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Timestamps & Lifecycle</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('timeline')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('timeline')">
+            <!-- Timeline -->
+            <div class="relative pl-8 border-l-2 border-gray-200 space-y-8">
+              <!-- Created -->
+              <div class="relative">
+                <div class="absolute -left-[calc(2rem+5px)] w-3 h-3 rounded-full bg-black border-2 border-white"></div>
+                <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Created</p>
+                    <p class="text-xs text-gray-400">{{ formatRelativeTime(subnet.createdAt) }}</p>
+                  </div>
+                  <p class="text-sm font-semibold">{{ formatDateTime(subnet.createdAt) }}</p>
+                </div>
+              </div>
+
+              <!-- Updated -->
+              <div class="relative">
+                <div class="absolute -left-[calc(2rem+5px)] w-3 h-3 rounded-full border-2 border-white"
+                     [ngClass]="subnet.updatedAt ? 'bg-blue-500' : 'bg-gray-300'"></div>
+                <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Last Updated</p>
+                    <p class="text-xs text-gray-400">{{ subnet.updatedAt ? formatRelativeTime(subnet.updatedAt) : '—' }}</p>
+                  </div>
+                  <p class="text-sm font-semibold">{{ subnet.updatedAt ? formatDateTime(subnet.updatedAt) : 'Never updated' }}</p>
+                </div>
+              </div>
+
+              <!-- Uptime -->
+              <div class="relative">
+                <div class="absolute -left-[calc(2rem+5px)] w-3 h-3 rounded-full bg-green-500 border-2 border-white"></div>
+                <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="text-xs uppercase tracking-widest text-gray-400">Total Uptime</p>
+                    <p class="text-xs text-green-600 font-medium capitalize">{{ subnet.state }}</p>
+                  </div>
+                  <p class="text-sm font-semibold">{{ getUptime(subnet.createdAt) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Date Comparison -->
+            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="p-4 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Date Created (Short)</p>
+                <p class="text-lg font-serif font-bold">{{ formatDate(subnet.createdAt) }}</p>
+              </div>
+              <div class="p-4 border border-gray-100 rounded-sm">
+                <p class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Date Updated (Short)</p>
+                <p class="text-lg font-serif font-bold">{{ subnet.updatedAt ? formatDate(subnet.updatedAt) : '—' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Related Subnets in VPC Section -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('related')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Related Subnets in VPC</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('related')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('related')">
+            <!-- VPC Selector -->
+            <div class="mb-5">
+              <label class="text-xs uppercase tracking-widest text-gray-400 mb-2 block">Filter by VPC</label>
+              <select [(ngModel)]="selectedVpcFilter" (ngModelChange)="onVpcFilterChange()"
+                      class="w-full px-4 py-2.5 border border-gray-200 bg-white text-sm focus:outline-none focus:border-black transition appearance-none cursor-pointer"
+                      [disabled]="loadingVpcs">
+                <option *ngFor="let vpc of vpcs" [value]="vpc.vpcId">
+                  {{ vpc.name || vpc.vpcId }} — {{ vpc.cidrBlock }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Loading -->
+            <div *ngIf="loadingRelated" class="space-y-3">
+              <div *ngFor="let i of [1,2,3]" class="p-4 border border-gray-100 rounded-sm animate-pulse">
+                <div class="h-4 w-48 bg-gray-100 rounded mb-2"></div>
+                <div class="h-3 w-32 bg-gray-100 rounded"></div>
+              </div>
+            </div>
+
+            <!-- No related subnets -->
+            <div *ngIf="!loadingRelated && relatedSubnets.length === 0" class="text-center py-8">
+              <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z"/>
+              </svg>
+              <p class="text-sm text-gray-400">No other subnets in this VPC</p>
+            </div>
+
+            <!-- Related subnets list -->
+            <div *ngIf="!loadingRelated && relatedSubnets.length > 0" class="space-y-3">
+              <div *ngFor="let rs of relatedSubnets"
+                   (click)="navigateToSubnet(rs.id)"
+                   class="p-4 border border-gray-100 rounded-sm hover:border-gray-300 hover:shadow-sm transition cursor-pointer group">
+                <div class="flex items-center justify-between gap-4">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <p class="text-sm font-semibold truncate group-hover:text-black transition">{{ rs.name || rs.subnetId }}</p>
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider border rounded-sm"
+                            [ngClass]="rs.mapPublicIpOnLaunch ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-purple-50 border-purple-200 text-purple-600'">
+                        {{ rs.mapPublicIpOnLaunch ? 'Public' : 'Private' }}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-3 text-xs text-gray-400">
+                      <span class="font-mono">{{ rs.cidrBlock }}</span>
+                      <span>{{ rs.availabilityZone }}</span>
+                      <span class="inline-flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStateDotClass(rs.state)"></span>
+                        {{ rs.state }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <p class="text-sm font-bold">{{ rs.availableIpAddressCount | number }}</p>
+                    <p class="text-[10px] text-gray-400 uppercase">IPs avail.</p>
+                  </div>
+                  <svg class="w-4 h-4 text-gray-300 group-hover:text-black transition flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ─── RIGHT COLUMN (1/3) ─── -->
+      <div class="space-y-8">
+
+        <!-- ▸ Quick Summary Card -->
+        <div class="overview-section">
+          <div class="p-6">
+            <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-5">Quick Summary</h4>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Name</span>
+                <span class="text-sm font-medium truncate ml-4 max-w-[180px]">{{ subnet.name || '(unnamed)' }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Subnet ID</span>
+                <span class="text-sm font-mono font-medium truncate ml-4 max-w-[180px]">{{ subnet.subnetId }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Provider</span>
+                <span class="text-sm font-medium">{{ getProviderShort(subnet.provider) }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">State</span>
+                <span class="inline-flex items-center gap-1.5 text-sm font-medium capitalize">
+                  <span class="w-2 h-2 rounded-full" [ngClass]="getStateDotClass(subnet.state)"></span>
+                  {{ subnet.state }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Type</span>
+                <span class="text-sm font-medium" [ngClass]="subnet.mapPublicIpOnLaunch ? 'text-blue-600' : 'text-purple-600'">
+                  {{ getSubnetType(subnet) }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">CIDR</span>
+                <span class="text-sm font-mono font-medium">{{ subnet.cidrBlock }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Avail. IPs</span>
+                <span class="text-sm font-bold text-blue-600">{{ subnet.availableIpAddressCount | number }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">AZ</span>
+                <span class="text-sm font-medium">{{ subnet.availabilityZone }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Default</span>
+                <span class="text-sm font-medium" [ngClass]="subnet.isDefault ? 'text-yellow-600' : 'text-gray-400'">
+                  {{ subnet.isDefault ? 'Yes' : 'No' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Account</span>
+                <span class="text-sm font-medium">{{ account?.accountName || '—' }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Region</span>
+                <span class="text-sm font-mono font-medium">{{ account?.region || '—' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Cloud Account Card -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('account')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Cloud Account</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('account')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('account')">
+            <div *ngIf="account" class="space-y-3">
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Account Name</span>
+                <span class="text-sm font-medium">{{ account.accountName }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Provider</span>
+                <span class="text-sm font-medium">{{ account.provider }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Region</span>
+                <span class="text-sm font-mono font-medium">{{ account.region }}</span>
+              </div>
+              <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Default</span>
+                <span class="text-sm font-medium" [ngClass]="account.isDefault ? 'text-green-600' : 'text-gray-400'">
+                  {{ account.isDefault ? 'Yes' : 'No' }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between py-2">
+                <span class="text-xs text-gray-500 uppercase tracking-wider">Last Validated</span>
+                <span class="text-sm font-medium">{{ formatDate(account.lastValidatedAt) }}</span>
+              </div>
+            </div>
+            <div *ngIf="!account" class="text-center py-4 text-gray-400 text-sm">
+              Account details unavailable
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Resource Identifiers Card -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('identifiers')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Identifiers</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('identifiers')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('identifiers')">
+            <div class="space-y-3">
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Internal ID</p>
+                  <button (click)="copyToClipboard(subnet.id.toString(), 'id')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy ID">
+                    <svg *ngIf="copiedField !== 'id'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'id'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ subnet.id }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">AWS Subnet ID</p>
+                  <button (click)="copyToClipboard(subnet.subnetId, 'subnetId2')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy Subnet ID">
+                    <svg *ngIf="copiedField !== 'subnetId2'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'subnetId2'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ subnet.subnetId }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">VPC ID</p>
+                  <button (click)="copyToClipboard(subnet.vpcId, 'vpcId2')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy VPC ID">
+                    <svg *ngIf="copiedField !== 'vpcId2'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'vpcId2'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ subnet.vpcId }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Cloud Account ID</p>
+                  <button (click)="copyToClipboard(subnet.cloudAccountId.toString(), 'accountId')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy Account ID">
+                    <svg *ngIf="copiedField !== 'accountId'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'accountId'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ subnet.cloudAccountId }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">CIDR Block</p>
+                  <button (click)="copyToClipboard(subnet.cidrBlock, 'cidr2')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy CIDR">
+                    <svg *ngIf="copiedField !== 'cidr2'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'cidr2'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ subnet.cidrBlock }}</p>
+              </div>
+
+              <div class="p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <div class="flex items-center justify-between mb-1">
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">Availability Zone ID</p>
+                  <button (click)="copyToClipboard(subnet.availabilityZoneId, 'azId')"
+                          class="p-1 hover:bg-gray-200 rounded transition" title="Copy AZ ID">
+                    <svg *ngIf="copiedField !== 'azId'" class="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <svg *ngIf="copiedField === 'azId'" class="w-3.5 h-3.5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    </svg>
+                  </button>
+                </div>
+                <p class="font-mono text-sm font-semibold">{{ subnet.availabilityZoneId }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ▸ Configuration Summary Card -->
+        <div class="overview-section">
+          <button class="overview-section-header" (click)="toggleSection('config')">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+              </div>
+              <h3 class="text-base font-serif font-bold">Configuration</h3>
+            </div>
+            <svg class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                 [class.rotate-180]="!isSectionCollapsed('config')" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div class="overview-section-body" *ngIf="!isSectionCollapsed('config')">
+            <div class="space-y-3">
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6z"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Subnet</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">{{ getProviderLabel(subnet.provider) }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">CIDR Range</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 font-mono">{{ subnet.cidrBlock }} · {{ getCidrIpCount(subnet.cidrBlock) }} IPs</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 flex-shrink-0" [ngClass]="subnet.mapPublicIpOnLaunch ? 'text-blue-500' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Public IP Assignment</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">
+                    Auto-assign {{ subnet.mapPublicIpOnLaunch ? 'Enabled' : 'Disabled' }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 flex-shrink-0" [ngClass]="subnet.assignIpv6AddressOnCreation ? 'text-indigo-500' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">IPv6 Assignment</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">
+                    Auto-assign {{ subnet.assignIpv6AddressOnCreation ? 'Enabled' : 'Disabled' }}
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Subnet Type</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400">{{ subnet.isDefault ? 'Default Subnet' : 'Custom Subnet' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Availability Zone</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 font-mono">{{ subnet.availabilityZone }} ({{ subnet.availabilityZoneId }})</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 p-3 bg-gray-50 border border-gray-100 rounded-sm">
+                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <div>
+                  <p class="text-sm font-medium">Parent VPC</p>
+                  <p class="text-[10px] uppercase tracking-wider text-gray-400 font-mono">{{ subnet.vpcId }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- UPDATE SUBNET PANEL -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div *ngIf="showUpdatePanel" id="updatePanel" class="overview-section mb-10 border-blue-200 animate-fadeIn">
+      <div class="px-6 py-5 border-b border-blue-100 bg-blue-50/30 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-md bg-blue-600 text-white flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-serif font-bold">Update Subnet</h3>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider">Modify subnet settings</p>
+          </div>
+        </div>
+        <button (click)="closeUpdatePanel()" class="text-gray-400 hover:text-gray-600 transition p-1">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Update Form Body -->
+      <div class="px-6 py-6 space-y-6">
+        <!-- Success Message -->
+        <div *ngIf="updateSuccess" class="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-sm text-xs text-green-700 animate-fadeIn">
+          <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+          {{ updateSuccess }}
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="updateError" class="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-sm text-xs text-red-700 animate-fadeIn">
+          <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+          {{ updateError }}
+        </div>
+
+        <!-- Subnet Name -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Subnet Name</label>
+          <input type="text"
+                 [(ngModel)]="updateFields.name"
+                 placeholder="Enter subnet name"
+                 class="w-full px-4 py-3 border border-gray-200 text-sm focus:outline-none focus:border-black transition bg-white">
+          <p class="text-xs text-gray-400 mt-2">
+            Currently: <span class="font-medium text-gray-600">{{ subnet.name || '(unnamed)' }}</span>
+          </p>
+        </div>
+
+        <!-- Map Public IP on Launch Toggle -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Auto-assign Public IPv4</label>
+          <div class="flex gap-3">
+            <button (click)="updateFields.mapPublicIpOnLaunch = true"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.mapPublicIpOnLaunch === true ? 'border-blue-500 bg-blue-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.mapPublicIpOnLaunch === true ? 'bg-blue-100' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.mapPublicIpOnLaunch === true ? 'text-blue-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.mapPublicIpOnLaunch === true ? 'text-blue-700' : 'text-gray-600'">Enable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">Public IP On</p>
+            </button>
+            <button (click)="updateFields.mapPublicIpOnLaunch = false"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.mapPublicIpOnLaunch === false ? 'border-gray-500 bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.mapPublicIpOnLaunch === false ? 'bg-gray-200' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.mapPublicIpOnLaunch === false ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.mapPublicIpOnLaunch === false ? 'text-gray-700' : 'text-gray-600'">Disable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">Public IP Off</p>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">
+            Currently: <span class="font-medium" [ngClass]="subnet.mapPublicIpOnLaunch ? 'text-blue-600' : 'text-gray-500'">{{ subnet.mapPublicIpOnLaunch ? 'Enabled' : 'Disabled' }}</span>
+          </p>
+        </div>
+
+        <!-- Assign IPv6 on Creation Toggle -->
+        <div>
+          <label class="block text-xs uppercase tracking-widest text-gray-400 mb-3">Auto-assign IPv6 Address</label>
+          <div class="flex gap-3">
+            <button (click)="updateFields.assignIpv6AddressOnCreation = true"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.assignIpv6AddressOnCreation === true ? 'border-indigo-500 bg-indigo-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.assignIpv6AddressOnCreation === true ? 'bg-indigo-100' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.assignIpv6AddressOnCreation === true ? 'text-indigo-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.assignIpv6AddressOnCreation === true ? 'text-indigo-700' : 'text-gray-600'">Enable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">IPv6 On</p>
+            </button>
+            <button (click)="updateFields.assignIpv6AddressOnCreation = false"
+                    class="flex-1 p-4 border rounded-sm text-center transition-all duration-200"
+                    [ngClass]="updateFields.assignIpv6AddressOnCreation === false ? 'border-gray-500 bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-lg flex items-center justify-center"
+                   [ngClass]="updateFields.assignIpv6AddressOnCreation === false ? 'bg-gray-200' : 'bg-gray-100'">
+                <svg class="w-5 h-5" [ngClass]="updateFields.assignIpv6AddressOnCreation === false ? 'text-gray-600' : 'text-gray-400'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+              <p class="text-sm font-semibold" [ngClass]="updateFields.assignIpv6AddressOnCreation === false ? 'text-gray-700' : 'text-gray-600'">Disable</p>
+              <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">IPv6 Off</p>
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">
+            Currently: <span class="font-medium" [ngClass]="subnet.assignIpv6AddressOnCreation ? 'text-indigo-600' : 'text-gray-500'">{{ subnet.assignIpv6AddressOnCreation ? 'Enabled' : 'Disabled' }}</span>
+          </p>
+        </div>
+
+        <!-- Pending Changes Preview -->
+        <div *ngIf="(updateFields.name !== null && updateFields.name !== subnet.name) ||
+                     (updateFields.mapPublicIpOnLaunch !== null && updateFields.mapPublicIpOnLaunch !== subnet.mapPublicIpOnLaunch) ||
+                     (updateFields.assignIpv6AddressOnCreation !== null && updateFields.assignIpv6AddressOnCreation !== subnet.assignIpv6AddressOnCreation)"
+             class="p-4 bg-yellow-50 border border-yellow-200 rounded-sm animate-fadeIn">
+          <p class="text-[10px] text-yellow-600 uppercase tracking-wider mb-2 font-medium">Pending Changes</p>
+          <div class="space-y-2">
+            <div *ngIf="updateFields.name !== null && updateFields.name !== subnet.name"
+                 class="flex items-center justify-between text-xs">
+              <span class="text-gray-600">Subnet Name</span>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-400 line-through">{{ subnet.name || '(unnamed)' }}</span>
+                <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                <span class="font-medium text-gray-800">{{ updateFields.name || '(empty)' }}</span>
+              </div>
+            </div>
+            <div *ngIf="updateFields.mapPublicIpOnLaunch !== null && updateFields.mapPublicIpOnLaunch !== subnet.mapPublicIpOnLaunch"
+                 class="flex items-center justify-between text-xs">
+              <span class="text-gray-600">Auto-assign Public IP</span>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-400 line-through">{{ subnet.mapPublicIpOnLaunch ? 'Enabled' : 'Disabled' }}</span>
+                <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                <span class="font-medium" [ngClass]="updateFields.mapPublicIpOnLaunch ? 'text-blue-600' : 'text-gray-600'">{{ updateFields.mapPublicIpOnLaunch ? 'Enabled' : 'Disabled' }}</span>
+              </div>
+            </div>
+            <div *ngIf="updateFields.assignIpv6AddressOnCreation !== null && updateFields.assignIpv6AddressOnCreation !== subnet.assignIpv6AddressOnCreation"
+                 class="flex items-center justify-between text-xs">
+              <span class="text-gray-600">Auto-assign IPv6</span>
+              <div class="flex items-center gap-2">
+                <span class="text-gray-400 line-through">{{ subnet.assignIpv6AddressOnCreation ? 'Enabled' : 'Disabled' }}</span>
+                <svg class="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                <span class="font-medium" [ngClass]="updateFields.assignIpv6AddressOnCreation ? 'text-indigo-600' : 'text-gray-600'">{{ updateFields.assignIpv6AddressOnCreation ? 'Enabled' : 'Disabled' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Update Actions -->
+      <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <button (click)="closeUpdatePanel()" class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition">
+          Cancel
+        </button>
+        <button (click)="updateSubnet()"
+                [disabled]="updating"
+                class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-all duration-200"
+                [ngClass]="updating ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98]'">
+          <svg *ngIf="updating" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a10 10 0 100 10h-4a8 8 0 01-8-8z"/>
+          </svg>
+          {{ updating ? 'Updating...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- DELETE CONFIRMATION MODAL -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div *ngIf="showDeleteConfirm"
+         class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         style="animation: fadeIn 0.2s ease-out forwards">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeDeleteConfirm()"></div>
+
+      <!-- Dialog -->
+      <div class="relative bg-white w-full max-w-md border border-gray-200 shadow-2xl" style="animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards">
+        <!-- Header -->
+        <div class="px-6 py-5 border-b border-red-100 bg-red-50/50">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-serif font-bold text-gray-900">Delete Subnet</h3>
+              <p class="text-xs text-gray-500 mt-0.5">This action cannot be undone</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Body -->
+        <div class="px-6 py-5">
+          <p class="text-sm text-gray-600 mb-4">
+            Are you sure you want to delete the subnet
+            <span class="font-semibold text-gray-900 font-mono">{{ getDisplayName(subnet) }}</span>?
+            This will permanently remove the subnet from AWS.
+          </p>
+
+          <!-- Subnet Info -->
+          <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Name</span>
+              <span class="font-medium text-gray-900">{{ getDisplayName(subnet) }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Subnet ID</span>
+              <span class="font-medium text-gray-900 font-mono">{{ subnet.subnetId }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">CIDR Block</span>
+              <span class="font-medium text-gray-900 font-mono">{{ subnet.cidrBlock }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">VPC</span>
+              <span class="font-medium text-gray-900 font-mono">{{ subnet.vpcId }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Availability Zone</span>
+              <span class="font-medium text-gray-900">{{ subnet.availabilityZone }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">Type</span>
+              <span class="font-medium" [ngClass]="subnet.mapPublicIpOnLaunch ? 'text-blue-600' : 'text-purple-600'">{{ getSubnetType(subnet) }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-gray-500">State</span>
+              <span class="font-medium capitalize" [ngClass]="getStateTextClass(subnet.state)">{{ subnet.state }}</span>
+            </div>
+            <div class="flex items-center justify-between text-xs" *ngIf="account">
+              <span class="text-gray-500">Account</span>
+              <span class="font-medium text-gray-900">{{ account.accountName }}</span>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="deleteError" class="mt-4 flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-sm text-xs text-red-700 animate-fadeIn">
+            <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+            </svg>
+            {{ deleteError }}
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+          <button (click)="closeDeleteConfirm()" class="px-5 py-2.5 text-sm border border-gray-200 text-gray-700 hover:border-black hover:text-black transition">
+            Cancel
+          </button>
+          <button (click)="deleteSubnet()"
+                  [disabled]="deleting"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-medium transition-all duration-200"
+                  [ngClass]="deleting ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-red-600 text-white hover:bg-red-700 active:scale-[0.98]'">
+            <svg *ngIf="deleting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a10 10 0 100 10h-4a8 8 0 01-8-8z"/>
+            </svg>
+            {{ deleting ? 'Deleting...' : 'Delete Subnet' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- FOOTER -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <div class="border-t border-gray-200 pt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-md bg-black text-white flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zm0 9.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-sm font-serif font-bold">{{ getDisplayName(subnet) }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-widest">Subnet Dashboard &middot; {{ getProviderLabel(subnet.provider) }}</p>
+        </div>
+      </div>
+      <a routerLink="/dashboard/subnets" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to All Subnets
+      </a>
+    </div>
+
+  </div>
+</div>

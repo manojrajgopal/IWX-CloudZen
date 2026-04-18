@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import testimonialsData from '../../../data/testimonials.json';
 
@@ -7,7 +7,8 @@ import testimonialsData from '../../../data/testimonials.json';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './testimonials.component.html',
-  styleUrls: ['./testimonials.component.css']
+  styleUrls: ['./testimonials.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TestimonialsComponent implements OnInit {
   testimonials: any[] = [];

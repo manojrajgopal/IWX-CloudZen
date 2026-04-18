@@ -25,6 +25,19 @@ export interface CreateBucketRequest {
   bucketName: string;
 }
 
+export interface CreateClusterRequest {
+  clusterName: string;
+}
+
+export interface UpdateClusterRequest {
+  enableContainerInsights?: boolean;
+}
+
+export interface DeleteClusterResponse {
+  clusterArn: string;
+  status: string;
+}
+
 export interface Vpc {
   id: number;
   name: string;
@@ -38,6 +51,31 @@ export interface Vpc {
   cloudAccountId: number;
   createdAt: string;
   updatedAt: string | null;
+}
+
+export interface CreateVpcRequest {
+  vpcName: string;
+  cidrBlock: string;
+  enableDnsSupport: boolean;
+  enableDnsHostnames: boolean;
+}
+
+export interface UpdateVpcRequest {
+  enableDnsSupport?: boolean;
+  enableDnsHostnames?: boolean;
+  amazonProvidedIpv6CidrBlock?: boolean;
+}
+
+export interface DeleteVpcResponse {
+  vpcId: string;
+  status: string;
+}
+
+export interface VpcSyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  vpcs: Vpc[];
 }
 
 export interface EcrRepository {
@@ -70,6 +108,95 @@ export interface EcsService {
   serviceCreatedAt: string;
   createdAt: string;
   updatedAt: string | null;
+}
+
+export interface EcsTaskDefinition {
+  id: number;
+  family: string;
+  taskDefinitionArn: string;
+  revision: number;
+  status: string;
+  cpu: string;
+  memory: string;
+  networkMode: string;
+  executionRoleArn: string;
+  taskRoleArn: string | null;
+  requiresCompatibilities: string;
+  osFamily: string;
+  containerCount: number;
+  containerDefinitionsJson: string;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface EcsTask {
+  id: number;
+  taskArn: string;
+  clusterName: string;
+  clusterArn: string;
+  taskDefinitionArn: string;
+  group: string;
+  lastStatus: string;
+  desiredStatus: string;
+  cpu: string;
+  memory: string;
+  launchType: string;
+  connectivity: string | null;
+  stopCode: string | null;
+  stoppedReason: string | null;
+  startedAt: string | null;
+  stoppedAt: string | null;
+  pullStartedAt: string | null;
+  pullStoppedAt: string | null;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface EcsTaskDefinitionsResponse {
+  totalCount: number;
+  familyFilter: string | null;
+  taskDefinitions: EcsTaskDefinition[];
+}
+
+export interface EcsTasksResponse {
+  clusterName: string;
+  totalCount: number;
+  tasks: EcsTask[];
+}
+
+export interface EcsSyncTaskDefinitionsResult {
+  added: number;
+  updated: number;
+  removed: number;
+  taskDefinitions: EcsTaskDefinition[];
+}
+
+export interface EcsSyncClusterServicesResult {
+  clusterName: string;
+  added: number;
+  updated: number;
+  removed: number;
+  services: EcsService[];
+}
+
+export interface EcsSyncClusterTasksResult {
+  clusterName: string;
+  added: number;
+  updated: number;
+  removed: number;
+  tasks: any[];
+}
+
+export interface EcsSyncResponse {
+  taskDefinitions: EcsSyncTaskDefinitionsResult;
+  servicesByCluster: EcsSyncClusterServicesResult[];
+  tasksByCluster: EcsSyncClusterTasksResult[];
+  clustersSynced: string[];
+  syncedAt: string;
 }
 
 export interface Subnet {
@@ -160,6 +287,56 @@ export interface Ec2Instance {
   updatedAt: string | null;
 }
 
+export interface LaunchEc2InstanceRequest {
+  instanceName: string;
+  imageId: string;
+  instanceType: string;
+  keyName: string;
+  subnetId: string;
+  securityGroupIds: string[];
+  minCount: number;
+  maxCount: number;
+  ebsOptimized: boolean;
+  userData: string;
+  tags: { [key: string]: string };
+}
+
+export interface UpdateEc2InstanceRequest {
+  instanceName?: string;
+  platform?: string;
+  securityGroupIds?: string[];
+  tags?: { [key: string]: string };
+}
+
+export interface Ec2SyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  instances: Ec2Instance[];
+}
+
+export interface KeyPair {
+  id: number;
+  keyPairId: string;
+  keyName: string;
+  keyFingerprint: string;
+  keyType: string;
+  isImported: boolean;
+  hasPrivateKey: boolean;
+  publicKeyMaterial: string;
+  privateKeyMaterial: string;
+  tags: { [key: string]: string };
+  awsCreatedAt: string;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface KeyPairsResponse {
+  keyPairs: KeyPair[];
+}
+
 // Cloud Storage Sync Response
 export interface CloudFileResponse {
   id: number;
@@ -203,11 +380,260 @@ export interface BucketFileSyncResponse {
 
 // API response wrappers
 export interface ClustersResponse { clusters: Cluster[]; }
+export interface ClusterSyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  clusters: Cluster[];
+}
 export interface BucketsResponse { buckets: S3Bucket[]; }
 export interface VpcsResponse { vpcs: Vpc[]; }
+export interface VpcSyncResponseWrapper { added: number; updated: number; removed: number; vpcs: Vpc[]; }
 export interface EcrRepositoriesResponse { totalRepositories: number; repositories: EcrRepository[]; }
 export interface EcsServicesResponse { clusterName: string; totalCount: number; services: EcsService[]; }
 export interface SubnetsResponse { totalCount: number; vpcIdFilter: string | null; subnets: Subnet[]; }
+export interface SubnetSyncResponse { added: number; updated: number; removed: number; subnets: Subnet[]; }
+export interface CreateSubnetRequest { name: string; vpcId: string; cidrBlock: string; availabilityZone: string; mapPublicIpOnLaunch: boolean; ipv6CidrBlock: string | null; }
+export interface UpdateSubnetRequest { name?: string; mapPublicIpOnLaunch?: boolean; assignIpv6AddressOnCreation?: boolean; }
+export interface DeleteSubnetResponse { message: string; }
 export interface SecurityGroupsResponse { totalCount: number; vpcIdFilter: string | null; securityGroups: SecurityGroup[]; }
+export interface SecurityGroupSyncResponse { added: number; updated: number; removed: number; securityGroups: SecurityGroup[]; }
+export interface CreateSecurityGroupRuleRequest { protocol: string; fromPort: number; toPort: number; ipv4Ranges: string[]; ipv6Ranges: string[]; referencedGroupIds: string[]; description: string | null; }
+export interface CreateSecurityGroupRequest { groupName: string; description: string; vpcId: string; inboundRules: CreateSecurityGroupRuleRequest[]; outboundRules: CreateSecurityGroupRuleRequest[]; }
+export interface UpdateSecurityGroupRequest { groupName: string; description: string; vpcId: string; inboundRules: CreateSecurityGroupRuleRequest[]; outboundRules: CreateSecurityGroupRuleRequest[]; }
+export interface DeleteSecurityGroupResponse { message: string; }
+export interface AddRulesRequest { rules: CreateSecurityGroupRuleRequest[]; }
+export interface RemoveRulesRequest { ruleIds: string[]; }
 export interface LogGroupsResponse { logGroups: LogGroup[]; }
 export interface Ec2InstancesResponse { instances: Ec2Instance[]; }
+
+// ECS Create requests
+export interface CreateEcsServiceNetworkConfig {
+  subnets: string[];
+  securityGroups: string[];
+  assignPublicIp: boolean;
+}
+
+export interface CreateEcsServiceRequest {
+  serviceName: string;
+  clusterName: string;
+  taskDefinition: string;
+  desiredCount: number;
+  launchType: string;
+  schedulingStrategy: string;
+  networkConfiguration: CreateEcsServiceNetworkConfig;
+}
+
+export interface UpdateEcsServiceRequest {
+  desiredCount: number;
+  taskDefinition: string;
+}
+
+export interface ContainerPortMapping {
+  containerPort: number;
+  hostPort: number;
+  protocol: string;
+}
+
+export interface ContainerEnvironment {
+  name: string;
+  value: string;
+}
+
+export interface ContainerLogConfiguration {
+  logDriver: string;
+  options: Record<string, string>;
+}
+
+export interface CreateContainerDefinition {
+  name: string;
+  image: string;
+  cpu: number;
+  memory: number;
+  memoryReservation: number | null;
+  essential: boolean;
+  portMappings: ContainerPortMapping[];
+  environment: ContainerEnvironment[];
+  logConfiguration: ContainerLogConfiguration | null;
+}
+
+export interface CreateTaskDefinitionRequest {
+  family: string;
+  cpu: string;
+  memory: string;
+  networkMode: string;
+  executionRoleArn: string;
+  taskRoleArn: string | null;
+  requiresCompatibilities: string[];
+  osFamily: string;
+  containerDefinitions: CreateContainerDefinition[];
+}
+
+// ── ECS Run Task ──
+
+export interface RunTaskNetworkConfig {
+  subnets: string[];
+  securityGroups: string[];
+  assignPublicIp: boolean;
+}
+
+export interface RunTaskEnvironmentOverride {
+  containerName: string;
+  environment: { name: string; value: string }[];
+}
+
+export interface RunTaskRequest {
+  clusterName: string;
+  taskDefinition: string;
+  launchType: string;
+  count: number;
+  networkConfiguration: RunTaskNetworkConfig;
+  environmentOverrides: RunTaskEnvironmentOverride[];
+}
+
+// ── ECS Sync Results ──
+
+export interface SyncEcsServicesResult {
+  clusterName: string;
+  added: number;
+  updated: number;
+  removed: number;
+  services: EcsService[];
+}
+
+export interface SyncEcsTasksResult {
+  clusterName: string;
+  added: number;
+  updated: number;
+  removed: number;
+  tasks: EcsTask[];
+}
+
+export interface SyncTaskDefinitionsResult {
+  added: number;
+  updated: number;
+  removed: number;
+  taskDefinitions: EcsTaskDefinition[];
+}
+
+// ── ECS Stop Task ──
+
+export interface StopTaskRequest {
+  reason: string;
+}
+
+// ── Permissions / IAM ──
+
+export interface CheckPermissionRequest {
+  actions: string[];
+  resourceArns: string[];
+}
+
+export interface CheckPermissionResult {
+  action: string;
+  resource: string;
+  evalDecision: string;
+  isAllowed: boolean;
+}
+
+export interface PermissionCheckResponse {
+  allowedCount: number;
+  deniedCount: number;
+  results: CheckPermissionResult[];
+}
+
+// ── Permission Summary ──
+
+export interface PermissionSummaryPolicy {
+  policyArn: string;
+  policyName: string;
+  type: string;
+  attachedVia: string;
+}
+
+export interface PermissionSummaryResponse {
+  userName: string;
+  userArn: string;
+  attachedManagedPoliciesCount: number;
+  inlinePoliciesCount: number;
+  groupPoliciesCount: number;
+  groups: string[];
+  policies: PermissionSummaryPolicy[];
+}
+
+// ── Permission Policies ──
+
+export interface PolicyStatement {
+  effect?: string;
+  action?: string[];
+  resource?: string[];
+}
+
+export interface PolicyDetail {
+  policyArn: string;
+  policyName: string;
+  policyType: string;
+  attachedVia: string;
+  statements: PolicyStatement[];
+}
+
+export interface PoliciesResponse {
+  userName: string;
+  userArn: string;
+  totalPolicies: number;
+  policies: PolicyDetail[];
+}
+
+// ── Available Policies (Browse) ──
+
+export interface AvailablePolicy {
+  policyArn: string;
+  policyName: string;
+  description: string;
+  scope: string;
+}
+
+export interface AvailablePoliciesResponse {
+  totalCount: number;
+  policies: AvailablePolicy[];
+}
+
+// ── Attach / Detach Policy ──
+
+export interface AttachPolicyRequest {
+  policyArn: string;
+}
+
+export interface PolicyActionResponse {
+  message: string;
+}
+
+// ── Sync Policies ──
+
+export interface SyncedPolicy {
+  id: number;
+  policyArn: string;
+  policyName: string;
+  policyType: string;
+  attachedVia: string;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface SyncPoliciesResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  policies: SyncedPolicy[];
+}
+
+// ── List Policies (DB) ──
+
+export interface ListPoliciesResponse {
+  userName: string;
+  totalPolicies: number;
+  policies: SyncedPolicy[];
+}
+

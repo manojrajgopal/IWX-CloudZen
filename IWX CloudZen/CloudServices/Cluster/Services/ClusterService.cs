@@ -3,6 +3,7 @@ using IWX_CloudZen.CloudServices.Cluster.DTOs;
 using IWX_CloudZen.CloudServices.Cluster.Entities;
 using IWX_CloudZen.CloudServices.Cluster.Factory;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace IWX_CloudZen.CloudServices.Cluster.Services
@@ -42,6 +43,8 @@ namespace IWX_CloudZen.CloudServices.Cluster.Services
 
         public async Task<ClusterResponse> CreateCluster(string user, int accountId, string clusterName)
         {
+            clusterName = CloudResourceNameNormalizer.NormalizeGeneralName(clusterName);
+
             var account = await _accounts.ResolveCredentialsAsync(user, accountId)
                 ?? throw new InvalidOperationException("Cloud account not found.");
 

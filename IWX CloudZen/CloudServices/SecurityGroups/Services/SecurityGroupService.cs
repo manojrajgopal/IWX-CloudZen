@@ -4,6 +4,7 @@ using IWX_CloudZen.CloudServices.SecurityGroups.Entities;
 using IWX_CloudZen.CloudServices.SecurityGroups.Factory;
 using IWX_CloudZen.CloudServices.SecurityGroups.Interfaces;
 using IWX_CloudZen.Data;
+using IWX_CloudZen.Utilities;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
@@ -119,6 +120,8 @@ namespace IWX_CloudZen.CloudServices.SecurityGroups.Services
         public async Task<SecurityGroupResponse> CreateSecurityGroup(
             string user, int accountId, CreateSecurityGroupRequest request)
         {
+            request.GroupName = CloudResourceNameNormalizer.NormalizeGeneralName(request.GroupName);
+
             // Duplicate guard — prevent double-create if same name+VPC already tracked
             var existing = await _db.SecurityGroupRecords.FirstOrDefaultAsync(x =>
                 x.CloudAccountId == accountId &&
