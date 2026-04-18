@@ -542,3 +542,98 @@ export interface PermissionCheckResponse {
   results: CheckPermissionResult[];
 }
 
+// ── Permission Summary ──
+
+export interface PermissionSummaryPolicy {
+  policyArn: string;
+  policyName: string;
+  type: string;
+  attachedVia: string;
+}
+
+export interface PermissionSummaryResponse {
+  userName: string;
+  userArn: string;
+  attachedManagedPoliciesCount: number;
+  inlinePoliciesCount: number;
+  groupPoliciesCount: number;
+  groups: string[];
+  policies: PermissionSummaryPolicy[];
+}
+
+// ── Permission Policies ──
+
+export interface PolicyStatement {
+  effect?: string;
+  action?: string[];
+  resource?: string[];
+}
+
+export interface PolicyDetail {
+  policyArn: string;
+  policyName: string;
+  policyType: string;
+  attachedVia: string;
+  statements: PolicyStatement[];
+}
+
+export interface PoliciesResponse {
+  userName: string;
+  userArn: string;
+  totalPolicies: number;
+  policies: PolicyDetail[];
+}
+
+// ── Available Policies (Browse) ──
+
+export interface AvailablePolicy {
+  policyArn: string;
+  policyName: string;
+  description: string;
+  scope: string;
+}
+
+export interface AvailablePoliciesResponse {
+  totalCount: number;
+  policies: AvailablePolicy[];
+}
+
+// ── Attach / Detach Policy ──
+
+export interface AttachPolicyRequest {
+  policyArn: string;
+}
+
+export interface PolicyActionResponse {
+  message: string;
+}
+
+// ── Sync Policies ──
+
+export interface SyncedPolicy {
+  id: number;
+  policyArn: string;
+  policyName: string;
+  policyType: string;
+  attachedVia: string;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface SyncPoliciesResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  policies: SyncedPolicy[];
+}
+
+// ── List Policies (DB) ──
+
+export interface ListPoliciesResponse {
+  userName: string;
+  totalPolicies: number;
+  policies: SyncedPolicy[];
+}
+

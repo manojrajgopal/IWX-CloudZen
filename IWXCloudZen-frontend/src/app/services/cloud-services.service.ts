@@ -60,7 +60,14 @@ import {
   SyncEcsTasksResult,
   SyncTaskDefinitionsResult,
   CheckPermissionRequest,
-  PermissionCheckResponse
+  PermissionCheckResponse,
+  PermissionSummaryResponse,
+  PoliciesResponse,
+  AvailablePoliciesResponse,
+  AttachPolicyRequest,
+  PolicyActionResponse,
+  SyncPoliciesResponse,
+  ListPoliciesResponse
 } from '../models/cloud-services.model';
 
 @Injectable({
@@ -526,10 +533,55 @@ export class CloudServicesService {
 
   // ── Permissions ──
 
+  getPermissionSummary(accountId: number): Observable<PermissionSummaryResponse> {
+    return this.http.get<PermissionSummaryResponse>(
+      `${this.apiUrl}/api/permissions/aws/summary?accountId=${accountId}`
+    );
+  }
+
+  getPermissionPolicies(accountId: number): Observable<PoliciesResponse> {
+    return this.http.get<PoliciesResponse>(
+      `${this.apiUrl}/api/permissions/aws/policies?accountId=${accountId}`
+    );
+  }
+
+  browseAvailablePolicies(accountId: number, scope: string, search: string): Observable<AvailablePoliciesResponse> {
+    let url = `${this.apiUrl}/api/permissions/aws/policies/available?accountId=${accountId}`;
+    if (scope) url += `&scope=${encodeURIComponent(scope)}`;
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    return this.http.get<AvailablePoliciesResponse>(url);
+  }
+
+  attachPolicy(accountId: number, request: AttachPolicyRequest): Observable<PolicyActionResponse> {
+    return this.http.post<PolicyActionResponse>(
+      `${this.apiUrl}/api/permissions/aws/policies/attach?accountId=${accountId}`,
+      request
+    );
+  }
+
+  detachPolicy(accountId: number, policyArn: string): Observable<PolicyActionResponse> {
+    return this.http.delete<PolicyActionResponse>(
+      `${this.apiUrl}/api/permissions/aws/policies/detach?accountId=${accountId}&policyArn=${encodeURIComponent(policyArn)}`
+    );
+  }
+
   checkPermissions(accountId: number, request: CheckPermissionRequest): Observable<PermissionCheckResponse> {
     return this.http.post<PermissionCheckResponse>(
       `${this.apiUrl}/api/permissions/aws/check?accountId=${accountId}`,
       request
+    );
+  }
+
+  syncPermissionPolicies(accountId: number): Observable<SyncPoliciesResponse> {
+    return this.http.post<SyncPoliciesResponse>(
+      `${this.apiUrl}/api/permissions/aws/sync?accountId=${accountId}`,
+      null
+    );
+  }
+
+  listPermissionPolicies(accountId: number): Observable<ListPoliciesResponse> {
+    return this.http.get<ListPoliciesResponse>(
+      `${this.apiUrl}/api/permissions/aws/list?accountId=${accountId}`
     );
   }
 }
