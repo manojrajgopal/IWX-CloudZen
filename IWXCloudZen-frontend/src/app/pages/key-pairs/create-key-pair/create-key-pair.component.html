@@ -1,0 +1,205 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- LOADING STATE -->
+  <div *ngIf="formState === 'loading'" class="space-y-8">
+    <div class="h-8 w-64 bg-gray-100 rounded animate-pulse"></div>
+    <div class="space-y-6">
+      <div class="h-24 bg-gray-100 rounded animate-pulse"></div>
+      <div class="h-12 bg-gray-100 rounded animate-pulse"></div>
+      <div class="h-20 bg-gray-100 rounded animate-pulse"></div>
+    </div>
+  </div>
+
+  <!-- FORM STATE -->
+  <div *ngIf="formState === 'form'" style="animation: fadeIn 0.3s ease">
+    <!-- Header -->
+    <div class="mb-10">
+      <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+        <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <a routerLink="/dashboard/key-pairs" class="hover:text-black transition">Key Pairs</a>
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <span class="text-black font-medium">Create</span>
+      </nav>
+      <h1 class="text-4xl md:text-5xl font-serif font-bold tracking-tight">Create Key Pair</h1>
+      <p class="text-gray-500 mt-2 text-sm">Generate a new SSH key pair for your cloud account</p>
+    </div>
+
+    <div class="max-w-3xl space-y-10">
+
+      <!-- Step 1: Account Selection -->
+      <div>
+        <h2 class="text-sm font-bold uppercase tracking-wider mb-1">Select Cloud Account</h2>
+        <p class="text-xs text-gray-400 mb-4">Choose the account where the key pair will be created</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let account of accounts"
+               class="account-card border p-5 cursor-pointer transition-all"
+               [ngClass]="selectedAccountId === account.id ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-400'"
+               (click)="selectAccount(account.id)">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                   [ngClass]="selectedAccountId === account.id ? 'bg-black text-white' : 'bg-gray-100 text-gray-400'">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-medium truncate">{{ account.accountName }}</p>
+                <p class="text-xs text-gray-400">{{ account.provider }}</p>
+              </div>
+              <div *ngIf="selectedAccountId === account.id" class="ml-auto flex-shrink-0">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="accounts.length === 0" class="text-sm text-gray-400 py-6 text-center border border-dashed border-gray-300">No cloud accounts available</div>
+      </div>
+
+      <!-- Step 2: Key Name -->
+      <div>
+        <h2 class="text-sm font-bold uppercase tracking-wider mb-1">Key Pair Name</h2>
+        <p class="text-xs text-gray-400 mb-4">A unique name to identify this key pair</p>
+        <input type="text" [(ngModel)]="keyName" (blur)="keyNameTouched = true" placeholder="e.g., my-production-key" maxlength="255"
+               class="w-full px-4 py-3 border text-sm focus:outline-none transition"
+               [ngClass]="keyNameTouched && !keyName.trim() ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-black'" />
+        <p *ngIf="keyNameTouched && !keyName.trim()" class="text-xs text-red-500 mt-1">Key name is required</p>
+      </div>
+
+      <!-- Step 3: Key Type -->
+      <div>
+        <h2 class="text-sm font-bold uppercase tracking-wider mb-1">Key Type</h2>
+        <p class="text-xs text-gray-400 mb-4">Select the encryption algorithm</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div *ngFor="let opt of keyTypeOptions"
+               class="key-type-card border p-5 cursor-pointer transition-all"
+               [ngClass]="selectedKeyType === opt.value ? 'border-black bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-400'"
+               (click)="selectKeyType(opt.value)">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm font-bold uppercase">{{ opt.label }}</p>
+                <p class="text-xs text-gray-400 mt-1">{{ opt.desc }}</p>
+              </div>
+              <div *ngIf="selectedKeyType === opt.value" class="flex-shrink-0 ml-3">
+                <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Tags (Optional) -->
+      <div>
+        <h2 class="text-sm font-bold uppercase tracking-wider mb-1">Tags <span class="font-normal text-gray-400">(optional)</span></h2>
+        <p class="text-xs text-gray-400 mb-4">Add key-value tags for organization</p>
+        <div class="space-y-3 mb-3">
+          <div *ngFor="let entry of tagEntries; let i = index" class="flex items-center gap-3">
+            <input type="text" [(ngModel)]="entry.key" placeholder="Key" class="flex-1 px-3 py-2 border border-gray-200 text-sm focus:border-black focus:outline-none transition" />
+            <input type="text" [(ngModel)]="entry.value" placeholder="Value" class="flex-1 px-3 py-2 border border-gray-200 text-sm focus:border-black focus:outline-none transition" />
+            <button (click)="removeTag(i)" class="p-2 text-gray-400 hover:text-red-600 transition">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+        <button (click)="addTag()" class="text-sm text-gray-500 hover:text-black inline-flex items-center gap-1 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Add Tag
+        </button>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-4 pt-6 border-t border-gray-200">
+        <button (click)="createKeyPair()" [disabled]="!isFormValid"
+                class="inline-flex items-center gap-2 px-8 py-3 text-sm uppercase tracking-wider transition"
+                [ngClass]="isFormValid ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+          Create Key Pair
+        </button>
+        <button (click)="goBack()" class="px-6 py-3 text-sm uppercase tracking-wider border border-gray-200 hover:border-black transition">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CREATING STATE -->
+  <div *ngIf="formState === 'creating'" class="text-center py-20" style="animation: fadeIn 0.3s ease">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-gray-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-black animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">Creating Key Pair</h2>
+    <p class="text-gray-500 text-sm mb-8">Generating your SSH key pair...</p>
+    <div class="max-w-sm mx-auto">
+      <div class="h-1 bg-gray-200 rounded-full overflow-hidden">
+        <div class="h-full bg-black rounded-full transition-all duration-300 loading-bar" [style.width.%]="progressPercent"></div>
+      </div>
+      <p class="text-xs text-gray-400 mt-3">{{ progressPercent | number:'1.0-0' }}% complete</p>
+    </div>
+  </div>
+
+  <!-- SUCCESS STATE -->
+  <div *ngIf="formState === 'success' && createdKeyPair" class="text-center py-20" style="animation: fadeIn 0.3s ease">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-green-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <h2 class="text-3xl font-serif font-bold mb-2">Key Pair Created</h2>
+    <p class="text-gray-500 text-sm mb-8">Your SSH key pair has been generated successfully.</p>
+
+    <div class="max-w-md mx-auto text-left border border-gray-200 p-6 mb-8">
+      <div class="space-y-3">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Name</span>
+          <span class="font-medium">{{ createdKeyPair.keyName }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Type</span>
+          <span class="font-medium uppercase">{{ createdKeyPair.keyType }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">ID</span>
+          <span class="font-medium font-mono text-xs">{{ createdKeyPair.keyPairId }}</span>
+        </div>
+        <div class="flex justify-between text-sm" *ngIf="createdKeyPair.hasPrivateKey">
+          <span class="text-gray-400">Private Key</span>
+          <span class="text-green-600 font-medium">Available</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Important notice about private key -->
+    <div *ngIf="createdKeyPair.hasPrivateKey" class="max-w-md mx-auto mb-8 p-4 bg-yellow-50 border border-yellow-200 text-left">
+      <div class="flex gap-3">
+        <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+        <div>
+          <p class="text-sm font-medium text-yellow-800">Save your private key</p>
+          <p class="text-xs text-yellow-700 mt-1">The private key is only available for a limited time. Download it now before it expires.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-center gap-4 flex-wrap">
+      <button *ngIf="createdKeyPair.hasPrivateKey" (click)="viewSensitiveData()" class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white text-sm uppercase tracking-wider hover:bg-green-700 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+        View &amp; Download Private Key
+      </button>
+      <button (click)="goToOverview()" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+        View Key Pair
+      </button>
+      <button (click)="goBack()" class="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 text-sm uppercase tracking-wider hover:border-black transition">
+        Back to Key Pairs
+      </button>
+    </div>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div *ngIf="formState === 'error'" class="text-center py-20" style="animation: fadeIn 0.3s ease">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">Creation Failed</h2>
+    <p class="text-gray-500 text-sm mb-2">{{ errorMessage || 'An unexpected error occurred.' }}</p>
+    <div class="flex items-center justify-center gap-4 mt-8">
+      <button (click)="retryCreate()" class="px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">Try Again</button>
+      <button (click)="goBack()" class="px-6 py-3 border border-gray-200 text-sm uppercase tracking-wider hover:border-black transition">Back to Key Pairs</button>
+    </div>
+  </div>
+
+</div>

@@ -37,6 +37,12 @@ import {
   UpdateEc2InstanceRequest,
   Ec2SyncResponse,
   KeyPairsResponse,
+  KeyPair,
+  CreateKeyPairRequest,
+  UpdateKeyPairTagsRequest,
+  KeyPairDeleteResponse,
+  DownloadPrivateKeyResponse,
+  KeyPairSyncResponse,
   FullSyncResult,
   FileListResponse,
   BucketFileSyncResponse,
@@ -394,6 +400,45 @@ export class CloudServicesService {
   getKeyPairs(accountId: number): Observable<KeyPairsResponse> {
     return this.http.get<KeyPairsResponse>(
       `${this.apiUrl}/api/cloud/services/keypair/aws/list?accountId=${accountId}`
+    );
+  }
+
+  getKeyPairById(keyPairId: number, accountId: number): Observable<KeyPair> {
+    return this.http.get<KeyPair>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/get/${keyPairId}?accountId=${accountId}`
+    );
+  }
+
+  createKeyPair(accountId: number, request: CreateKeyPairRequest): Observable<KeyPair> {
+    return this.http.post<KeyPair>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/create?accountId=${accountId}`,
+      request
+    );
+  }
+
+  updateKeyPairTags(keyPairId: number, accountId: number, request: UpdateKeyPairTagsRequest): Observable<KeyPair> {
+    return this.http.put<KeyPair>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/update/${keyPairId}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deleteKeyPair(keyPairId: number, accountId: number): Observable<KeyPairDeleteResponse> {
+    return this.http.delete<KeyPairDeleteResponse>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/delete/${keyPairId}?accountId=${accountId}`
+    );
+  }
+
+  downloadPrivateKey(keyPairId: number, accountId: number): Observable<DownloadPrivateKeyResponse> {
+    return this.http.get<DownloadPrivateKeyResponse>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/download-private-key/${keyPairId}?accountId=${accountId}`
+    );
+  }
+
+  syncKeyPairs(accountId: number): Observable<KeyPairSyncResponse> {
+    return this.http.post<KeyPairSyncResponse>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/sync?accountId=${accountId}`,
+      null
     );
   }
 

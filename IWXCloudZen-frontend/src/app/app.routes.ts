@@ -30,6 +30,10 @@ import { SubnetOverviewComponent } from './pages/CloudServices/subnets/subnet-ov
 import { SecurityGroupOverviewComponent } from './pages/CloudServices/security-groups/security-group-overview/security-group-overview.component';
 import { Ec2OverviewComponent } from './pages/CloudServices/ec2-instances/ec2-overview/ec2-overview.component';
 import { PermissionsComponent } from './pages/CloudServices/permissions/permissions.component';
+import { KeyPairsComponent } from './pages/key-pairs/key-pairs.component';
+import { KeyPairOverviewComponent } from './pages/key-pairs/key-pair-overview/key-pair-overview.component';
+import { CreateKeyPairComponent } from './pages/key-pairs/create-key-pair/create-key-pair.component';
+import { SensitiveDataViewerComponent } from './pages/key-pairs/sensitive-data-viewer/sensitive-data-viewer.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -62,6 +66,10 @@ export const routes: Routes = [
   { path: 'dashboard/ec2-instances/:id', component: Ec2OverviewComponent },
   { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },
   { path: 'dashboard/permissions', component: PermissionsComponent },
+  { path: 'dashboard/key-pairs/create', component: CreateKeyPairComponent },
+  { path: 'dashboard/key-pairs/:id/private-key', component: SensitiveDataViewerComponent },
+  { path: 'dashboard/key-pairs/:id', component: KeyPairOverviewComponent },
+  { path: 'dashboard/key-pairs', component: KeyPairsComponent },
   { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }
 ];

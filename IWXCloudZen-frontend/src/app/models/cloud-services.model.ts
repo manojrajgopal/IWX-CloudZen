@@ -337,6 +337,39 @@ export interface KeyPairsResponse {
   keyPairs: KeyPair[];
 }
 
+export interface CreateKeyPairRequest {
+  keyName: string;
+  keyType: string;
+  tags?: { [key: string]: string };
+}
+
+export interface UpdateKeyPairTagsRequest {
+  tags: { [key: string]: string };
+}
+
+export interface ImportKeyPairRequest {
+  keyName: string;
+  publicKeyMaterial: string;
+  tags?: { [key: string]: string };
+}
+
+export interface KeyPairDeleteResponse {
+  message: string;
+}
+
+export interface DownloadPrivateKeyResponse {
+  id: number;
+  keyName: string;
+  privateKeyMaterial: string;
+}
+
+export interface KeyPairSyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  keyPairs: KeyPair[];
+}
+
 // Cloud Storage Sync Response
 export interface CloudFileResponse {
   id: number;
