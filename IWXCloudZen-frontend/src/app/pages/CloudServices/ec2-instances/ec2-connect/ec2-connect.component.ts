@@ -10,6 +10,7 @@ import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../../services/cloud-services.service';
 import { Ec2ConnectionService } from '../../../../services/ec2-connection.service';
+import { ThemeService } from '../../../../services/theme.service';
 import { CloudAccount } from '../../../../models/cloud-account.model';
 import { Ec2Instance } from '../../../../models/cloud-services.model';
 import {
@@ -153,7 +154,8 @@ export class Ec2ConnectComponent implements OnInit, OnDestroy, AfterViewChecked 
     private cloudAccountService: CloudAccountService,
     private cloudServicesService: CloudServicesService,
     private ec2ConnectionService: Ec2ConnectionService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit(): void {
@@ -174,6 +176,8 @@ export class Ec2ConnectComponent implements OnInit, OnDestroy, AfterViewChecked 
     if (this.session && this.account) {
       this.ec2ConnectionService.disconnect(this.account.id, this.session.sessionId).subscribe();
     }
+    // Restore theme if we auto-switched to dark on connect
+    this.themeService.restoreFromSession();
   }
 
   ngAfterViewChecked(): void {
@@ -285,6 +289,7 @@ export class Ec2ConnectComponent implements OnInit, OnDestroy, AfterViewChecked 
             this.bootMessages.push('System ready.');
             setTimeout(() => {
               this.phase = 'connected';
+              this.themeService.enableDarkForSession();
               this.initTerminal();
               if (this.viewMode === 'explorer') {
                 this.navigateExplorer(this.currentWorkingDir || '/');
@@ -298,6 +303,7 @@ export class Ec2ConnectComponent implements OnInit, OnDestroy, AfterViewChecked 
             this.bootMessages.push('Connected (system info unavailable).');
             setTimeout(() => {
               this.phase = 'connected';
+              this.themeService.enableDarkForSession();
               this.initTerminal();
             }, 400);
           }
