@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { ThemeService } from '../../../services/theme.service';
 import { Subscription } from 'rxjs';
 
 export interface MenuItem {
@@ -79,7 +80,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   ];
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    public themeService: ThemeService
+  ) {}
 
   ngOnInit(): void {
     this.userSub = this.authService.currentUser$.subscribe(user => {

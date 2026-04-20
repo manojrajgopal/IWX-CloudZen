@@ -92,3 +92,102 @@
 .rotate-180 {
   transform: rotate(180deg);
 }
+
+/* ---- Dark mode toggle button (header icon) ---- */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid #d1d5db;
+  background: transparent;
+  color: #374151;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: #f3f4f6;
+}
+
+:host-context(html.dark) .theme-toggle {
+  border-color: #3a3a3a;
+  color: #e8e8e8;
+}
+
+:host-context(html.dark) .theme-toggle:hover {
+  background: #1e1e1e;
+}
+
+/* ---- Toggle pill (dropdown + mobile) ---- */
+.theme-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  width: 2.5rem;
+  height: 1.375rem;
+  border-radius: 9999px;
+  background: #d1d5db;
+  position: relative;
+  transition: background 0.25s;
+  flex-shrink: 0;
+}
+
+.theme-toggle-pill.on {
+  background: #111111;
+}
+
+.theme-toggle-pill .thumb {
+  position: absolute;
+  left: 3px;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-pill.on .thumb {
+  transform: translateX(1.125rem);
+}
+
+/* ---- Dropdown dark overrides (component-scoped) ---- */
+:host-context(html.dark) .dropdown-panel {
+  background: #1a1a1a;
+  border-color: #2a2a2a;
+}
+
+:host-context(html.dark) .dropdown-item {
+  color: #a0a0a0;
+}
+
+:host-context(html.dark) .dropdown-item:hover,
+:host-context(html.dark) .dropdown-item-row:hover {
+  background: #222222;
+  color: #e8e8e8;
+}
+
+/* ---- Header dark overrides ---- */
+:host-context(html.dark) header {
+  background-color: #0a0a0a !important;
+  border-bottom: 1px solid #252525;
+}
+
+/* Mobile drawer dark */
+:host-context(html.dark) .fixed.top-0.right-0.h-screen {
+  background: #111111;
+}
+
+:host-context(html.dark) .border-b.border-gray-200 {
+  border-color: #2a2a2a;
+}
+
+:host-context(html.dark) .text-gray-700 { color: #a0a0a0; }
+:host-context(html.dark) .text-gray-600 { color: #888888; }
+:host-context(html.dark) .text-gray-500 { color: #666666; }
+:host-context(html.dark) .hover\:bg-gray-100:hover { background: #1e1e1e !important; }
+
+/* Profile dropdown dark */
+:host-context(html.dark) .text-gray-800 { color: #e8e8e8; }
+:host-context(html.dark) .bg-white.shadow-lg { background: #1a1a1a !important; }
