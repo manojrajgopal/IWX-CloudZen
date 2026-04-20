@@ -60,6 +60,38 @@ namespace IWX_CloudZen.CloudServices.EC2Connection.Controllers
         }
 
         // ==============================
+        // CONNECT MANUAL (no DB record required)
+        // ==============================
+
+        /// <summary>
+        /// Connect to any SSH host by providing IP, OS user, and PEM key directly.
+        /// Does not require the instance to be in the database.
+        /// </summary>
+        [HttpPost("aws/connect-manual")]
+        [Authorize]
+        public async Task<IActionResult> ConnectManual(
+            [FromQuery] int accountId,
+            [FromBody] ManualConnectionRequest request)
+        {
+            try
+            {
+                var user = CurrentUser;
+                if (user is null) return Unauthorized();
+
+                var result = await _service.ConnectManual(user, accountId, request);
+                return Ok(result);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Manual connection failed: " + ex.Message });
+            }
+        }
+
+        // ==============================
         // EXECUTE COMMAND
         // ==============================
 

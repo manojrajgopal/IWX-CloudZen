@@ -21,7 +21,8 @@ import {
   FileDownloadResponse,
   FileSearchRequest,
   FileSearchResponse,
-  SystemInfoResponse
+  SystemInfoResponse,
+  ManualConnectionRequest
 } from '../models/ec2-connection.model';
 
 @Injectable({ providedIn: 'root' })
@@ -35,6 +36,11 @@ export class Ec2ConnectionService {
   connect(accountId: number, request: StartConnectionRequest): Observable<StartConnectionResponse> {
     return this.http.post<StartConnectionResponse>(
       `${this.base}/aws/connect?accountId=${accountId}`, request);
+  }
+
+  connectManual(accountId: number, request: ManualConnectionRequest): Observable<StartConnectionResponse> {
+    return this.http.post<StartConnectionResponse>(
+      `${this.base}/aws/connect-manual?accountId=${accountId}`, request);
   }
 
   execute(accountId: number, request: ExecuteCommandRequest): Observable<ExecuteCommandResponse> {

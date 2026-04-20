@@ -375,6 +375,113 @@ namespace IWX_CloudZen.CloudServices.EC2Connection.Services
         }
 
         // ====================================================================
+        // CONNECT MANUAL — connect to any SSH host by providing details directly
+        // ====================================================================
+
+        public async Task<StartConnectionResponse> ConnectManual(
+            string user, int accountId, ManualConnectionRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.IpAddress))
+                throw new InvalidOperationException("IP address is required.");
+            if (string.IsNullOrWhiteSpace(request.OsUser))
+                throw new InvalidOperationException("OS username is required.");
+            if (string.IsNullOrWhiteSpace(request.PrivateKeyContent))
+                throw new InvalidOperationException("Private key (PEM) content is required.");
+
+            var ip = request.IpAddress.Trim();
+            var osUser = request.OsUser.Trim();
+            var label = string.IsNullOrWhiteSpace(request.Label) ? ip : request.Label.Trim();
+            var port = request.Port > 0 && request.Port <= 65535 ? request.Port : 22;
+
+            var sessionId = Guid.NewGuid().ToString("N");
+            SshClient? sshClient = null;
+            ShellStream? shellStream = null;
+
+            try
+            {
+                var keyBytes = Encoding.UTF8.GetBytes(request.PrivateKeyContent);
+                using var keyStream = new MemoryStream(keyBytes);
+                var privateKeyFile = new PrivateKeyFile(keyStream);
+
+                var connectionInfo = new Renci.SshNet.ConnectionInfo(
+                    ip, port, osUser,
+                    new PrivateKeyAuthenticationMethod(osUser, privateKeyFile))
+                {
+                    Timeout = TimeSpan.FromSeconds(20)
+                };
+
+                sshClient = new SshClient(connectionInfo);
+                _logger.LogInformation(
+                    "Manual SSH connect: attempting {OsUser}@{Ip}:{Port}", osUser, ip, port);
+
+                sshClient.Connect();
+
+                if (!sshClient.IsConnected)
+                    throw new InvalidOperationException("SSH connection could not be established.");
+
+                shellStream = sshClient.CreateShellStream("xterm", 200, 50, 800, 600, 4096);
+                await Task.Delay(500);
+                DrainShellStream(shellStream);
+
+                var session = new SshSession
+                {
+                    SessionId = sessionId,
+                    User = user,
+                    AccountId = accountId,
+                    InstanceId = label,          // use the label as the "instance ID" for display
+                    IpAddress = ip,
+                    OsUser = osUser,
+                    ConnectionMethod = "SSH",
+                    ConnectedAt = DateTime.UtcNow,
+                    CurrentWorkingDirectory = $"/home/{osUser}",
+                    Client = sshClient,
+                    ShellStream = shellStream
+                };
+
+                _sessions[sessionId] = session;
+
+                _logger.LogInformation(
+                    "Manual SSH session {SessionId} connected to {Ip}:{Port} as '{OsUser}'",
+                    sessionId, ip, port, osUser);
+
+                return new StartConnectionResponse
+                {
+                    SessionId = sessionId,
+                    Status = "Connected",
+                    ConnectionMethod = "SSH",
+                    InstanceId = label,
+                    IpAddress = ip,
+                    OsUser = osUser,
+                    ConnectedAt = session.ConnectedAt
+                };
+            }
+            catch (SshConnectionException ex)
+            {
+                shellStream?.Dispose();
+                sshClient?.Dispose();
+                throw new InvalidOperationException(
+                    $"SSH connection refused at {ip}:{port}. " +
+                    $"Ensure the instance is running, port {port} is open, and the IP is correct. " +
+                    $"Detail: {ex.Message}");
+            }
+            catch (SshAuthenticationException ex)
+            {
+                shellStream?.Dispose();
+                sshClient?.Dispose();
+                throw new InvalidOperationException(
+                    $"SSH authentication failed for user '{osUser}' at {ip}:{port}. " +
+                    $"Verify the OS username and that the private key matches the instance's authorized key. " +
+                    $"Detail: {ex.Message}");
+            }
+            catch (Exception)
+            {
+                shellStream?.Dispose();
+                sshClient?.Dispose();
+                throw;
+            }
+        }
+
+        // ====================================================================
         // EXECUTE COMMAND — routes to SSM or SSH based on session method
         // ====================================================================
 

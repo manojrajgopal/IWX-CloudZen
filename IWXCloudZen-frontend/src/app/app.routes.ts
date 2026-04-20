@@ -30,6 +30,7 @@ import { SubnetOverviewComponent } from './pages/CloudServices/subnets/subnet-ov
 import { SecurityGroupOverviewComponent } from './pages/CloudServices/security-groups/security-group-overview/security-group-overview.component';
 import { Ec2OverviewComponent } from './pages/CloudServices/ec2-instances/ec2-overview/ec2-overview.component';
 import { Ec2ConnectComponent } from './pages/CloudServices/ec2-instances/ec2-connect/ec2-connect.component';
+import { Ec2QuickConnectComponent } from './pages/CloudServices/ec2-instances/ec2-quick-connect/ec2-quick-connect.component';
 import { PermissionsComponent } from './pages/CloudServices/permissions/permissions.component';
 import { KeyPairsComponent } from './pages/key-pairs/key-pairs.component';
 import { KeyPairOverviewComponent } from './pages/key-pairs/key-pair-overview/key-pair-overview.component';
@@ -65,6 +66,7 @@ export const routes: Routes = [
   { path: 'dashboard/cloudwatch-logs', component: CloudWatchLogsComponent },
   { path: 'dashboard/ec2-instances/create', component: LaunchInstanceComponent },
   { path: 'dashboard/ec2-instances/:id/connect', component: Ec2ConnectComponent },
+  { path: 'dashboard/quick-connect', component: Ec2QuickConnectComponent },
   { path: 'dashboard/ec2-instances/:id', component: Ec2OverviewComponent },
   { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },
   { path: 'dashboard/permissions', component: PermissionsComponent },

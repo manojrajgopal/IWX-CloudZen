@@ -34,3 +34,33 @@
   border-color: var(--border-color);
 }
 :host-context(html.dark) :is(.divider, hr) { border-color: var(--border-color); }
+
+/* ─── Loader: dark mode ─── */
+
+/* Default strokes so the SVG still works when no dark class is present */
+.cloud-stroke { stroke: #000; }
+
+/* Background */
+:host-context(html.dark) .loader-root {
+  background: #0a0a0a;
+}
+
+/* Cloud / wave SVG strokes */
+:host-context(html.dark) .cloud-stroke {
+  stroke: #e5e7eb;
+}
+
+/* Progress bar track */
+:host-context(html.dark) .progress-track {
+  background: #1e2533;
+}
+
+/* Progress bar fill */
+:host-context(html.dark) .progress-fill {
+  background: #e5e7eb;
+}
+
+/* Caption text */
+:host-context(html.dark) .loader-caption {
+  color: #9ca3af;
+}

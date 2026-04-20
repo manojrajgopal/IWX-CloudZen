@@ -7,6 +7,14 @@ export interface StartConnectionRequest {
   privateKeyContent?: string;
 }
 
+export interface ManualConnectionRequest {
+  ipAddress: string;
+  osUser: string;
+  privateKeyContent: string;
+  label?: string;
+  port?: number;
+}
+
 export interface StartConnectionResponse {
   sessionId: string;
   status: string;
