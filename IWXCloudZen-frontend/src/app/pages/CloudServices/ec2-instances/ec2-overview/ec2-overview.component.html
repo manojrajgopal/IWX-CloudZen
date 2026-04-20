@@ -118,6 +118,16 @@
           </svg>
         </button>
 
+        <!-- ── CONNECT TO INSTANCE ── -->
+        <a *ngIf="isRunning"
+           [routerLink]="['/dashboard/ec2-instances', instance.id, 'connect']"
+           class="connect-btn" title="Connect to Instance">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z"/>
+          </svg>
+          Connect
+        </a>
+
         <!-- Sync -->
         <button (click)="syncInstance()" [disabled]="syncing" class="inline-flex items-center justify-center w-9 h-9 border border-green-600 bg-green-600 text-white hover:bg-green-700 hover:border-green-700 transition disabled:opacity-50" title="Sync">
           <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

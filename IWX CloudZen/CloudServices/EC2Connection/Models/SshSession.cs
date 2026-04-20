@@ -22,6 +22,9 @@ namespace IWX_CloudZen.CloudServices.EC2Connection.Models
         /// <summary>Connection method: "SSH" or "SSM".</summary>
         public string ConnectionMethod { get; set; } = "SSM";
 
+        /// <summary>Tracks the current working directory across commands.</summary>
+        public string CurrentWorkingDirectory { get; set; } = string.Empty;
+
         /// <summary>The underlying SSH.NET client. Null for SSM sessions or after disposal.</summary>
         public SshClient? Client { get; set; }
 
