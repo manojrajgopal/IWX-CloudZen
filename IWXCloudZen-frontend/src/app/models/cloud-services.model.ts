@@ -337,6 +337,39 @@ export interface KeyPairsResponse {
   keyPairs: KeyPair[];
 }
 
+export interface CreateKeyPairRequest {
+  keyName: string;
+  keyType: string;
+  tags?: { [key: string]: string };
+}
+
+export interface UpdateKeyPairTagsRequest {
+  tags: { [key: string]: string };
+}
+
+export interface ImportKeyPairRequest {
+  keyName: string;
+  publicKeyMaterial: string;
+  tags?: { [key: string]: string };
+}
+
+export interface KeyPairDeleteResponse {
+  message: string;
+}
+
+export interface DownloadPrivateKeyResponse {
+  id: number;
+  keyName: string;
+  privateKeyMaterial: string;
+}
+
+export interface KeyPairSyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  keyPairs: KeyPair[];
+}
+
 // Cloud Storage Sync Response
 export interface CloudFileResponse {
   id: number;
@@ -635,5 +668,148 @@ export interface ListPoliciesResponse {
   userName: string;
   totalPolicies: number;
   policies: SyncedPolicy[];
+}
+
+// ── Internet Gateway ──
+
+export interface InternetGateway {
+  id: number;
+  internetGatewayId: string;
+  name: string;
+  attachedVpcId: string | null;
+  state: string;
+  ownerId: string;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface InternetGatewaysResponse {
+  internetGateways: InternetGateway[];
+}
+
+export interface InternetGatewayVpcResponse {
+  hasInternetGateway: boolean;
+  internetGateway: InternetGateway | null;
+}
+
+export interface CreateInternetGatewayRequest {
+  name: string;
+  vpcId: string;
+}
+
+export interface UpdateInternetGatewayRequest {
+  name: string;
+}
+
+export interface InternetGatewayDeleteResponse {
+  message: string;
+}
+
+export interface AttachInternetGatewayRequest {
+  vpcId: string;
+}
+
+export interface DetachInternetGatewayRequest {
+  vpcId: string;
+}
+
+export interface InternetGatewaySyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  internetGateways: InternetGateway[];
+}
+
+// ── Resource Dependency Graph ──
+
+export interface GraphNode {
+  resourceType: string;
+  resourceId: string;
+  name: string;
+  state: string;
+  dbId: number;
+  provider: string;
+  metadata: Record<string, any>;
+  children: GraphNode[];
+  totalDescendants: number;
+}
+
+export interface GraphEdge {
+  sourceType: string;
+  sourceId: string;
+  sourceName: string;
+  targetType: string;
+  targetId: string;
+  targetName: string;
+  relationship: string;
+}
+
+export interface GraphSummary {
+  [resourceType: string]: number;
+}
+
+export interface FullGraphResponse {
+  graph: GraphNode[];
+  edges: GraphEdge[];
+  summary: GraphSummary;
+  totalResources: number;
+}
+
+export interface VpcTreeResponse {
+  vpcTree: GraphNode;
+  allResources: FlatResource[];
+  edges: GraphEdge[];
+  summary: GraphSummary;
+  hasInternetGateway: boolean;
+  totalResources: number;
+}
+
+export interface FlatResource {
+  resourceType: string;
+  resourceId: string;
+  name: string;
+  state: string;
+  dbId: number;
+  provider: string;
+  parentResourceId: string | null;
+  parentResourceType: string | null;
+}
+
+export interface DependencyResponse {
+  resource: FlatResource;
+  dependsOn: FlatResource[];
+  dependedBy: FlatResource[];
+  edges: GraphEdge[];
+}
+
+export interface DeletionBlockersResponse {
+  resource: FlatResource;
+  canDelete: boolean;
+  blockers: FlatResource[];
+  deletionOrder: FlatResource[];
+  messages: string[];
+}
+
+export interface MappedAddressesResponse {
+  vpcId: string;
+  hasMappedAddresses: boolean;
+  count: number;
+  mappedAddresses: any[];
+  message: string;
+}
+
+export interface NetworkInterfacesResponse {
+  vpcId: string;
+  count: number;
+  networkInterfaces: FlatResource[];
+}
+
+export interface SyncGraphResponse {
+  totalResources: number;
+  resourceCounts: GraphSummary;
+  totalEdges: number;
+  graph: FullGraphResponse;
 }
 

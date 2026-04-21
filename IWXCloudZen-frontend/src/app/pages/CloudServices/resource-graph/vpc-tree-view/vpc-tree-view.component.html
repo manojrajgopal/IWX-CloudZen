@@ -1,0 +1,207 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="space-y-6">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-gray-100 rounded-lg animate-pulse"></div>
+      <div>
+        <div class="h-7 w-48 bg-gray-100 rounded animate-pulse mb-2"></div>
+        <div class="h-4 w-32 bg-gray-100 rounded animate-pulse"></div>
+      </div>
+    </div>
+    <div class="space-y-3">
+      <div *ngFor="let i of [1,2,3,4,5]" class="h-12 bg-gray-100 rounded animate-pulse" [style.width]="(100 - i * 10) + '%'"></div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="!loading && error" class="text-center py-20">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/>
+      </svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">{{ error }}</h2>
+    <a routerLink="/dashboard/resource-graph" class="mt-4 inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+      ← Back to Graph Dashboard
+    </a>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && !error && vpcTree">
+
+    <!-- Header -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-10 gap-6">
+      <div class="flex-1 min-w-0">
+        <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+          <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <a routerLink="/dashboard/resource-graph" class="hover:text-black transition">Resource Graph</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span class="text-black font-medium truncate max-w-[200px]">{{ vpcDisplayName }}</span>
+        </nav>
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0" style="background: #7c3aed;">
+            <svg class="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-3xl md:text-4xl font-serif font-bold tracking-tight">VPC Tree: {{ vpcDisplayName }}</h1>
+            <p class="text-sm text-gray-500 mt-1 font-mono">{{ vpcId }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-3 flex-shrink-0 flex-wrap">
+        <a routerLink="/dashboard/resource-graph" [queryParams]="{ accountId: accountId }"
+           class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-black hover:bg-black hover:text-white transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+          Full Graph
+        </a>
+        <button (click)="loadNetworkInfo()" [disabled]="loadingNetInfo"
+                class="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-sm uppercase tracking-wider hover:bg-blue-700 transition"
+                [class.opacity-50]="loadingNetInfo">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z"/></svg>
+          {{ loadingNetInfo ? 'Loading...' : 'Network Info' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      <div class="metric-card">
+        <span class="text-[10px] uppercase tracking-widest text-gray-400">Total Resources</span>
+        <p class="text-3xl font-serif font-bold mt-2">{{ totalResources }}</p>
+      </div>
+      <div class="metric-card">
+        <span class="text-[10px] uppercase tracking-widest text-gray-400">Direct Children</span>
+        <p class="text-3xl font-serif font-bold mt-2">{{ vpcTree.children.length || 0 }}</p>
+      </div>
+      <div class="metric-card">
+        <span class="text-[10px] uppercase tracking-widest text-gray-400">Edges</span>
+        <p class="text-3xl font-serif font-bold mt-2">{{ edges.length }}</p>
+      </div>
+      <div class="metric-card">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">Internet Gateway</span>
+        </div>
+        <p class="text-3xl font-serif font-bold mt-2" [ngClass]="hasInternetGateway ? 'text-green-600' : 'text-yellow-600'">
+          {{ hasInternetGateway ? 'Yes' : 'No' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Data Source Toggle -->
+    <div class="mb-6 flex items-center gap-4">
+      <span class="text-[10px] uppercase tracking-widest text-gray-400">Data Source</span>
+      <div class="flex items-center border border-gray-200">
+        <button (click)="switchDataSource('db')" class="px-4 py-2 text-xs uppercase tracking-wider transition"
+                [ngClass]="dataSource === 'db' ? 'bg-black text-white' : 'text-gray-500 hover:text-black'">
+          Database
+        </button>
+        <button (click)="switchDataSource('live')" class="px-4 py-2 text-xs uppercase tracking-wider transition"
+                [ngClass]="dataSource === 'live' ? 'bg-black text-white' : 'text-gray-500 hover:text-black'">
+          Live (AWS)
+        </button>
+      </div>
+      <div class="flex items-center gap-2 ml-auto">
+        <button (click)="expandAll()" class="text-xs uppercase tracking-wider text-gray-500 hover:text-black px-3 py-2 border border-gray-200 hover:border-black transition">Expand All</button>
+        <button (click)="collapseAll()" class="text-xs uppercase tracking-wider text-gray-500 hover:text-black px-3 py-2 border border-gray-200 hover:border-black transition">Collapse All</button>
+      </div>
+    </div>
+
+    <!-- Resource Summary -->
+    <div class="mb-6 flex flex-wrap gap-2">
+      <div *ngFor="let entry of summaryEntries"
+           class="inline-flex items-center gap-1.5 px-2.5 py-1.5 border rounded-sm text-xs"
+           [style.border-color]="entry.config.color" [style.color]="entry.config.color">
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="entry.config.icon"/>
+        </svg>
+        {{ entry.config.label }}: <span class="font-bold">{{ entry.count }}</span>
+      </div>
+    </div>
+
+    <!-- Tree -->
+    <div class="graph-container mb-10">
+      <app-graph-tree
+        [nodes]="treeAsArray"
+        [expandedNodes]="expandedNodes"
+        [selectedNodeId]="selectedNodeId"
+        [searchQuery]="searchQuery"
+        [collapsedTypes]="collapsedTypes"
+        [accountId]="accountId"
+        (nodeSelected)="onNodeSelected($event)"
+        (nodeToggled)="onNodeToggled($event)"
+        (navigateGraph)="onNavigateGraph($event)">
+      </app-graph-tree>
+    </div>
+
+    <!-- Network Info Panel -->
+    <div *ngIf="mappedAddresses || networkInterfaces" class="space-y-6 mb-10 animate-fadeIn">
+      <!-- Mapped Addresses -->
+      <div *ngIf="mappedAddresses" class="border border-gray-200 p-6">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Mapped Public Addresses (Elastic IPs)</p>
+        <div class="p-4 rounded-sm" [ngClass]="mappedAddresses.hasMappedAddresses ? 'bg-yellow-50 border border-yellow-200' : 'bg-green-50 border border-green-200'">
+          <p class="text-sm font-medium" [ngClass]="mappedAddresses.hasMappedAddresses ? 'text-yellow-700' : 'text-green-700'">
+            {{ mappedAddresses.message }}
+          </p>
+          <p class="text-xs mt-1" [ngClass]="mappedAddresses.hasMappedAddresses ? 'text-yellow-600' : 'text-green-600'">
+            Count: {{ mappedAddresses.count }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Network Interfaces -->
+      <div *ngIf="networkInterfaces" class="border border-gray-200 p-6">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Network Interfaces ({{ networkInterfaces.count }})</p>
+        <div class="space-y-2">
+          <div *ngFor="let eni of networkInterfaces.networkInterfaces"
+               class="flex items-center gap-3 p-3 border border-gray-100 hover:border-gray-300 transition">
+            <div class="w-7 h-7 rounded flex items-center justify-center bg-indigo-100">
+              <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0"/>
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium truncate">{{ eni.name || eni.resourceId }}</p>
+              <p class="text-xs text-gray-400 font-mono">{{ eni.resourceId }}</p>
+            </div>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase border rounded-sm"
+                  [ngClass]="getStateClass(eni.state).bg">
+              <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStateClass(eni.state).dot"></span>
+              {{ eni.state }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- All Resources Flat List -->
+    <div class="border border-gray-200 p-6 mb-10">
+      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-4">All Resources in VPC ({{ allResources.length }})</p>
+      <div class="space-y-1 max-h-96 overflow-y-auto">
+        <div *ngFor="let res of allResources"
+             class="flex items-center gap-3 p-2.5 hover:bg-gray-50 transition rounded-sm">
+          <div class="w-6 h-6 rounded flex items-center justify-center" [style.background]="getResourceConfig(res.resourceType).color">
+            <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getResourceConfig(res.resourceType).icon"/>
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium truncate">{{ res.name || res.resourceId }}</p>
+            <p class="text-[10px] text-gray-400">{{ getResourceConfig(res.resourceType).label }}</p>
+          </div>
+          <span *ngIf="res.state" class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] border rounded-sm" [ngClass]="getStateClass(res.state).bg">
+            <span class="w-1 h-1 rounded-full" [ngClass]="getStateClass(res.state).dot"></span>
+            {{ res.state }}
+          </span>
+          <a *ngIf="getResourceRoute(res.resourceType, res.dbId)" [routerLink]="getResourceRoute(res.resourceType, res.dbId)"
+             class="text-blue-600 hover:text-blue-800 text-[10px] uppercase tracking-wider">View →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

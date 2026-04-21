@@ -1,0 +1,19 @@
+
+
+/* ===== DARK MODE OVERRIDES ===== */
+:host-context(html.dark) :is(section, .section, .wrapper, .container) {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+:host-context(html.dark) :is(h1, h2, h3, h4, h5, h6) { color: var(--text-primary); }
+:host-context(html.dark) p { color: var(--text-secondary); }
+:host-context(html.dark) :is(.card, .feature-card, .stat-card, .testimonial-card) {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+}
+:host-context(html.dark) :is(input, textarea, select) {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+:host-context(html.dark) :is(.divider, hr) { border-color: var(--border-color); }

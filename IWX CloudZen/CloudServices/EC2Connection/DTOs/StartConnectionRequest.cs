@@ -20,6 +20,14 @@ namespace IWX_CloudZen.CloudServices.EC2Connection.DTOs
         /// SSM uses AWS Systems Manager — works through the AWS API, no port 22 needed.
         /// SSH uses direct SSH — requires port 22 open and key pair with stored private key.
         /// </summary>
-        string ConnectionMethod = "SSM"
+        string ConnectionMethod = "SSM",
+
+        /// <summary>
+        /// Optional PEM private key content for SSH connections.
+        /// If provided, this takes precedence over the private key stored in the database.
+        /// Useful when the key pair was created outside this application (e.g. AWS Console)
+        /// and the private key is not stored in the database.
+        /// </summary>
+        string? PrivateKeyContent = null
     );
 }

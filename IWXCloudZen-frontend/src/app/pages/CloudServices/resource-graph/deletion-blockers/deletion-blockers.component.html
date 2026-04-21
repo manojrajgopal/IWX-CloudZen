@@ -1,0 +1,271 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- Loading -->
+  <div *ngIf="initialLoading" class="loading-overlay-inline">
+    <div class="loader-bars">
+      <div class="loader-bar"></div>
+      <div class="loader-bar"></div>
+      <div class="loader-bar"></div>
+    </div>
+    <p class="loader-text">Loading Deletion Analyzer</p>
+  </div>
+
+  <div *ngIf="!initialLoading">
+
+    <!-- Header -->
+    <div class="mb-10">
+      <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+        <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <a routerLink="/dashboard/resource-graph" class="hover:text-black transition">Resource Graph</a>
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <span class="text-black font-medium">Deletion Analyzer</span>
+      </nav>
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-lg bg-red-600 text-white flex items-center justify-center flex-shrink-0">
+          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-3xl md:text-4xl font-serif font-bold tracking-tight">Deletion Analyzer</h1>
+          <p class="text-sm text-gray-500 mt-1">Analyze blockers and safe deletion order for any resource</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step Progress -->
+    <div class="flex items-center gap-2 mb-10">
+      <div class="step-indicator" [class.active]="step === 'account'" [class.done]="step !== 'account' && selectedAccountId">
+        <span class="step-number">1</span><span class="step-label">Account</span>
+      </div>
+      <div class="step-line" [class.active]="step !== 'account'"></div>
+      <div class="step-indicator" [class.active]="step === 'type'" [class.done]="selectedType && step !== 'type'">
+        <span class="step-number">2</span><span class="step-label">Type</span>
+      </div>
+      <div class="step-line" [class.active]="step === 'resource' || step === 'result'"></div>
+      <div class="step-indicator" [class.active]="step === 'resource'" [class.done]="selectedResource && step === 'result'">
+        <span class="step-number">3</span><span class="step-label">Resource</span>
+      </div>
+      <div class="step-line" [class.active]="step === 'result'"></div>
+      <div class="step-indicator" [class.active]="step === 'result'">
+        <span class="step-number">4</span><span class="step-label">Result</span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="mb-6 p-5 border border-red-200 bg-red-50">
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-red-800">{{ error }}</span>
+        <button (click)="error = null" class="text-red-400 hover:text-red-600">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 1: Account -->
+    <div *ngIf="step === 'account'" class="animate-fadeIn">
+      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-4">Select Cloud Account</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let account of accounts" (click)="selectAccount(account)"
+             class="select-card cursor-pointer p-5 border border-gray-200 hover:border-black transition-all duration-200">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center">
+              <span class="text-xs font-bold text-orange-600">{{ account.provider }}</span>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold truncate">{{ account.accountName }}</p>
+              <p class="text-xs text-gray-400 font-mono">Account #{{ account.id }}</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Type -->
+    <div *ngIf="step === 'type'" class="animate-fadeIn">
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400">Select Resource Type</p>
+        <button (click)="goToStep('account')" class="text-xs text-gray-500 hover:text-black uppercase tracking-wider">← Back</button>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div *ngFor="let t of resourceTypes" (click)="selectType(t.key)"
+             class="select-card cursor-pointer p-4 border border-gray-200 hover:border-black transition-all duration-200 text-center">
+          <div class="w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center" [style.background]="t.color">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="t.icon"/>
+            </svg>
+          </div>
+          <p class="text-xs font-semibold">{{ t.label }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Resource -->
+    <div *ngIf="step === 'resource'" class="animate-fadeIn">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <p class="text-[10px] uppercase tracking-widest text-gray-400">Select {{ getResourceConfig(selectedType!).label }}</p>
+          <span class="text-xs text-gray-400">({{ allResources.length }} found)</span>
+        </div>
+        <button (click)="goToStep('type')" class="text-xs text-gray-500 hover:text-black uppercase tracking-wider">← Back</button>
+      </div>
+
+      <div *ngIf="loadingResources" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div *ngFor="let i of [1,2,3,4]" class="h-16 bg-gray-100 animate-pulse rounded-sm"></div>
+      </div>
+
+      <div *ngIf="!loadingResources">
+        <div class="relative mb-4 max-w-md" *ngIf="allResources.length > 6">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+          </svg>
+          <input type="text" [(ngModel)]="resourceSearchQuery" (ngModelChange)="filterResources()" placeholder="Search..."
+                 class="w-full pl-10 pr-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-black transition">
+        </div>
+
+        <div *ngIf="filteredResources.length === 0" class="text-center py-12">
+          <p class="text-gray-500">No {{ getResourceConfig(selectedType!).label }} resources found</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div *ngFor="let res of filteredResources" (click)="selectResource(res)"
+               class="select-card cursor-pointer p-4 border border-gray-200 hover:border-black transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded flex items-center justify-center" [style.background]="getResourceConfig(res.resourceType).color">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getResourceConfig(res.resourceType).icon"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold truncate">{{ res.name || '(unnamed)' }}</p>
+                <p class="text-xs text-gray-400 font-mono truncate">{{ res.resourceId }}</p>
+              </div>
+              <span *ngIf="res.state" class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] uppercase border rounded-sm" [ngClass]="getStateClass(res.state).bg">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStateClass(res.state).dot"></span>
+                {{ res.state }}
+              </span>
+              <svg class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: Result -->
+    <div *ngIf="step === 'result'" class="animate-fadeIn">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded flex items-center justify-center" *ngIf="selectedResource" [style.background]="getResourceConfig(selectedResource.resourceType).color">
+            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getResourceConfig(selectedResource.resourceType).icon"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-lg font-serif font-bold">{{ selectedResource?.name || selectedResource?.resourceId }}</p>
+            <p class="text-xs text-gray-400 font-mono">{{ selectedResource?.resourceId }}</p>
+          </div>
+        </div>
+        <button (click)="goToStep('resource')" class="text-xs text-gray-500 hover:text-black uppercase tracking-wider px-3 py-2 border border-gray-200 hover:border-black transition">
+          ← Choose Another
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loadingBlockers" class="space-y-3">
+        <div *ngFor="let i of [1,2,3]" class="h-14 bg-gray-100 rounded animate-pulse" [style.width]="(100 - i * 15) + '%'"></div>
+      </div>
+
+      <!-- Result -->
+      <div *ngIf="!loadingBlockers && result" class="space-y-6">
+
+        <!-- Can Delete Banner -->
+        <div class="p-6 border-2 rounded-sm" [ngClass]="result.canDelete ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'">
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0" [ngClass]="result.canDelete ? 'bg-green-100' : 'bg-red-100'">
+              <svg *ngIf="result.canDelete" class="w-7 h-7 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <svg *ngIf="!result.canDelete" class="w-7 h-7 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-2xl font-serif font-bold" [ngClass]="result.canDelete ? 'text-green-800' : 'text-red-800'">
+                {{ result.canDelete ? 'Safe to Delete' : 'Cannot Delete' }}
+              </h2>
+              <p class="text-sm mt-1" [ngClass]="result.canDelete ? 'text-green-600' : 'text-red-600'">
+                {{ result.canDelete ? 'This resource has no blockers and can be safely deleted.' : 'This resource has blocking dependencies that must be removed first.' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div *ngIf="result.messages && result.messages.length > 0" class="space-y-2">
+          <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Messages</p>
+          <div *ngFor="let msg of result.messages" class="p-3 border border-gray-200 bg-gray-50 text-sm">
+            {{ msg }}
+          </div>
+        </div>
+
+        <!-- Blockers -->
+        <div *ngIf="result.blockers && result.blockers.length > 0">
+          <p class="text-[10px] uppercase tracking-widest text-red-500 mb-3">Blocking Resources ({{ result.blockers.length }})</p>
+          <div class="space-y-2">
+            <div *ngFor="let blocker of result.blockers"
+                 class="flex items-center gap-3 p-4 border border-red-200 bg-red-50 hover:border-red-400 transition">
+              <div class="w-8 h-8 rounded flex items-center justify-center" [style.background]="getResourceConfig(blocker.resourceType).color">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getResourceConfig(blocker.resourceType).icon"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium">{{ blocker.name || blocker.resourceId }}</p>
+                <p class="text-xs text-gray-500">{{ getResourceConfig(blocker.resourceType).label }} · <span class="font-mono">{{ blocker.resourceId }}</span></p>
+              </div>
+              <span *ngIf="blocker.state" class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] uppercase border rounded-sm" [ngClass]="getStateClass(blocker.state).bg">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStateClass(blocker.state).dot"></span>
+                {{ blocker.state }}
+              </span>
+              <button (click)="navigateToDependencies(blocker)" class="text-violet-600 hover:text-violet-800 text-[10px] uppercase tracking-wider px-2 py-1 border border-violet-200 hover:border-violet-400 transition">
+                View Deps
+              </button>
+              <a *ngIf="getResourceRoute(blocker.resourceType, blocker.dbId)" [routerLink]="getResourceRoute(blocker.resourceType, blocker.dbId)"
+                 class="text-blue-600 hover:text-blue-800 text-[10px] uppercase tracking-wider px-2 py-1 border border-blue-200 hover:border-blue-400 transition">
+                View →
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deletion Order -->
+        <div *ngIf="result.deletionOrder && result.deletionOrder.length > 0">
+          <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Recommended Deletion Order</p>
+          <div class="space-y-1">
+            <div *ngFor="let item of result.deletionOrder; let i = index"
+                 class="flex items-center gap-3 p-3 border border-gray-200 hover:border-gray-400 transition">
+              <div class="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center flex-shrink-0 text-xs font-bold">
+                {{ i + 1 }}
+              </div>
+              <div class="w-7 h-7 rounded flex items-center justify-center" [style.background]="getResourceConfig(item.resourceType).color">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getResourceConfig(item.resourceType).icon"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium truncate">{{ item.name || item.resourceId }}</p>
+                <p class="text-[10px] text-gray-400">{{ getResourceConfig(item.resourceType).label }}</p>
+              </div>
+              <a *ngIf="getResourceRoute(item.resourceType, item.dbId)" [routerLink]="getResourceRoute(item.resourceType, item.dbId)"
+                 class="text-blue-600 hover:text-blue-800 text-[10px] uppercase tracking-wider">View →</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

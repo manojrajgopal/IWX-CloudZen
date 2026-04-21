@@ -1,0 +1,29 @@
+
+/* Footer intentionally keeps light mode styles in both themes */
+
+/* Counteract any global dark mode overrides — footer is always dark/black */
+:host-context(html.dark) footer {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+:host-context(html.dark) footer h4,
+:host-context(html.dark) footer h5,
+:host-context(html.dark) footer h6 {
+  color: #ffffff !important;
+}
+
+:host-context(html.dark) footer p,
+:host-context(html.dark) footer .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+:host-context(html.dark) footer a.hover\:text-white:hover {
+  color: #ffffff !important;
+}
+
+:host-context(html.dark) footer input {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #3a3a3a !important;
+}

@@ -1,0 +1,275 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- Loading -->
+  <div *ngIf="initialLoading" class="loading-overlay-inline">
+    <div class="loader-bars">
+      <div class="loader-bar"></div>
+      <div class="loader-bar"></div>
+      <div class="loader-bar"></div>
+    </div>
+    <p class="loader-text">Loading Dependencies Explorer</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!initialLoading">
+
+    <!-- Header -->
+    <div class="mb-10">
+      <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+        <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <a routerLink="/dashboard/resource-graph" class="hover:text-black transition">Resource Graph</a>
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <span class="text-black font-medium">Dependencies Explorer</span>
+      </nav>
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-lg bg-violet-600 text-white flex items-center justify-center flex-shrink-0">
+          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-3xl md:text-4xl font-serif font-bold tracking-tight">Dependencies Explorer</h1>
+          <p class="text-sm text-gray-500 mt-1">Select a resource to view its full dependency tree</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step Progress -->
+    <div class="flex items-center gap-2 mb-10">
+      <div class="step-indicator" [class.active]="step === 'account'" [class.done]="step !== 'account' && selectedAccountId">
+        <span class="step-number">1</span>
+        <span class="step-label">Account</span>
+      </div>
+      <div class="step-line" [class.active]="step !== 'account'"></div>
+      <div class="step-indicator" [class.active]="step === 'type'" [class.done]="selectedType && step !== 'type'">
+        <span class="step-number">2</span>
+        <span class="step-label">Type</span>
+      </div>
+      <div class="step-line" [class.active]="step === 'resource' || step === 'result'"></div>
+      <div class="step-indicator" [class.active]="step === 'resource'" [class.done]="selectedResource && step === 'result'">
+        <span class="step-number">3</span>
+        <span class="step-label">Resource</span>
+      </div>
+      <div class="step-line" [class.active]="step === 'result'"></div>
+      <div class="step-indicator" [class.active]="step === 'result'">
+        <span class="step-number">4</span>
+        <span class="step-label">Result</span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="error" class="mb-6 p-5 border border-red-200 bg-red-50">
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-red-800">{{ error }}</span>
+        <button (click)="error = null" class="text-red-400 hover:text-red-600">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- STEP 1: Account Selection -->
+    <!-- ═══════════════════════════════════════ -->
+    <div *ngIf="step === 'account'" class="animate-fadeIn">
+      <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-4">Select Cloud Account</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div *ngFor="let account of accounts"
+             (click)="selectAccount(account)"
+             class="account-card cursor-pointer p-5 border border-gray-200 hover:border-black transition-all duration-200">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-orange-50 border border-orange-200 flex items-center justify-center">
+              <span class="text-xs font-bold text-orange-600">{{ account.provider }}</span>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-semibold truncate">{{ account.accountName }}</p>
+              <p class="text-xs text-gray-400 font-mono">Account #{{ account.id }}</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- STEP 2: Resource Type Selection -->
+    <!-- ═══════════════════════════════════════ -->
+    <div *ngIf="step === 'type'" class="animate-fadeIn">
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400">Select Resource Type</p>
+        <button (click)="goToStep('account')" class="text-xs text-gray-500 hover:text-black uppercase tracking-wider">← Back</button>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div *ngFor="let t of resourceTypes"
+             (click)="selectType(t.key)"
+             class="type-card cursor-pointer p-4 border border-gray-200 hover:border-black transition-all duration-200 text-center">
+          <div class="w-10 h-10 rounded-lg mx-auto mb-3 flex items-center justify-center" [style.background]="t.color">
+            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="t.icon"/>
+            </svg>
+          </div>
+          <p class="text-xs font-semibold">{{ t.label }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- STEP 3: Resource Selection -->
+    <!-- ═══════════════════════════════════════ -->
+    <div *ngIf="step === 'resource'" class="animate-fadeIn">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <p class="text-[10px] uppercase tracking-widest text-gray-400">
+            Select {{ getResourceConfig(selectedType!).label }}
+          </p>
+          <span class="text-xs text-gray-400">({{ allResources.length }} found)</span>
+        </div>
+        <button (click)="goToStep('type')" class="text-xs text-gray-500 hover:text-black uppercase tracking-wider">← Back</button>
+      </div>
+
+      <!-- Loading skeleton -->
+      <div *ngIf="loadingResources" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div *ngFor="let i of [1,2,3,4]" class="h-16 bg-gray-100 animate-pulse rounded-sm"></div>
+      </div>
+
+      <!-- Resources list -->
+      <div *ngIf="!loadingResources">
+        <!-- Search -->
+        <div class="relative mb-4 max-w-md" *ngIf="allResources.length > 6">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/>
+          </svg>
+          <input type="text" [(ngModel)]="resourceSearchQuery" (ngModelChange)="filterResources()" placeholder="Search by name or ID..."
+                 class="w-full pl-10 pr-4 py-2.5 border border-gray-200 text-sm focus:outline-none focus:border-black transition">
+        </div>
+
+        <!-- Empty -->
+        <div *ngIf="filteredResources.length === 0" class="text-center py-12">
+          <p class="text-gray-500">No {{ getResourceConfig(selectedType!).label }} resources found</p>
+        </div>
+
+        <!-- Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div *ngFor="let res of filteredResources"
+               (click)="selectResource(res)"
+               class="resource-card cursor-pointer p-4 border border-gray-200 hover:border-black transition-all duration-200">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded flex items-center justify-center" [style.background]="getResourceConfig(res.resourceType).color">
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getResourceConfig(res.resourceType).icon"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold truncate">{{ res.name || '(unnamed)' }}</p>
+                <p class="text-xs text-gray-400 font-mono truncate">{{ res.resourceId }}</p>
+              </div>
+              <span *ngIf="res.state" class="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] uppercase border rounded-sm" [ngClass]="getStateClass(res.state).bg">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStateClass(res.state).dot"></span>
+                {{ res.state }}
+              </span>
+              <svg class="w-5 h-5 text-gray-300 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════ -->
+    <!-- STEP 4: Dependency Result -->
+    <!-- ═══════════════════════════════════════ -->
+    <div *ngIf="step === 'result'" class="animate-fadeIn">
+      <!-- Result Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded flex items-center justify-center" *ngIf="selectedResource" [style.background]="getResourceConfig(selectedResource.resourceType).color">
+            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getResourceConfig(selectedResource.resourceType).icon"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-lg font-serif font-bold">{{ selectedResource?.name || selectedResource?.resourceId }}</p>
+            <p class="text-xs text-gray-400 font-mono">{{ selectedResource?.resourceId }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button (click)="goToStep('resource')" class="text-xs text-gray-500 hover:text-black uppercase tracking-wider px-3 py-2 border border-gray-200 hover:border-black transition">
+            ← Choose Another
+          </button>
+          <a *ngIf="selectedResource && getResourceRoute(selectedResource.resourceType, selectedResource.dbId)"
+             [routerLink]="getResourceRoute(selectedResource.resourceType, selectedResource.dbId)"
+             class="inline-flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs uppercase tracking-wider hover:bg-blue-700 transition">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+            </svg>
+            View Resource
+          </a>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="loadingDeps" class="space-y-3">
+        <div *ngFor="let i of [1,2,3,4]" class="h-12 bg-gray-100 rounded animate-pulse" [style.width]="(100 - i * 12) + '%'"></div>
+      </div>
+
+      <!-- Dependencies Info -->
+      <div *ngIf="!loadingDeps && dependencies" class="space-y-6">
+        <!-- Metrics -->
+        <div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="metric-card">
+            <span class="text-[10px] uppercase tracking-widest text-gray-400">Direct Dependencies</span>
+            <p class="text-3xl font-serif font-bold mt-2">{{ dependencies.dependsOn.length }}</p>
+          </div>
+          <div class="metric-card">
+            <span class="text-[10px] uppercase tracking-widest text-gray-400">Total Dependencies</span>
+            <p class="text-3xl font-serif font-bold mt-2">{{ dependencies.dependsOn.length + dependencies.dependedBy.length }}</p>
+          </div>
+          <div class="metric-card">
+            <span class="text-[10px] uppercase tracking-widest text-gray-400">Edges</span>
+            <p class="text-3xl font-serif font-bold mt-2">{{ depEdges.length }}</p>
+          </div>
+        </div>
+
+        <!-- Dependency Types -->
+        <div *ngIf="(depTypes | keyvalue).length" class="flex flex-wrap gap-2">
+          <div *ngFor="let dt of depTypes | keyvalue"
+               class="inline-flex items-center gap-1.5 px-2.5 py-1.5 border rounded-sm text-xs"
+               [style.border-color]="getResourceConfig(dt.key).color" [style.color]="getResourceConfig(dt.key).color">
+            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getResourceConfig(dt.key).icon"/>
+            </svg>
+            {{ getResourceConfig(dt.key).label }}: <span class="font-bold">{{ dt.value }}</span>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="flex items-center gap-2">
+          <button (click)="expandAll()" class="text-xs uppercase tracking-wider text-gray-500 hover:text-black px-3 py-2 border border-gray-200 hover:border-black transition">Expand All</button>
+          <button (click)="collapseAll()" class="text-xs uppercase tracking-wider text-gray-500 hover:text-black px-3 py-2 border border-gray-200 hover:border-black transition">Collapse All</button>
+        </div>
+
+        <!-- Tree -->
+        <div class="graph-container">
+          <div *ngIf="depTree.length === 0" class="text-center py-12">
+            <p class="text-gray-500">No dependencies found for this resource</p>
+          </div>
+          <app-graph-tree
+            *ngIf="depTree.length > 0"
+            [nodes]="depTree"
+            [expandedNodes]="expandedNodes"
+            [selectedNodeId]="selectedNodeId"
+            [searchQuery]="''"
+            [collapsedTypes]="collapsedTypes"
+            [accountId]="selectedAccountId!"
+            (nodeSelected)="onNodeSelected($event)"
+            (nodeToggled)="onNodeToggled($event)"
+            (navigateGraph)="onNavigateGraph($event)">
+          </app-graph-tree>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

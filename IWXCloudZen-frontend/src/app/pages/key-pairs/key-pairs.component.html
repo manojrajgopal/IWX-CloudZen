@@ -1,0 +1,414 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- Toast Messages -->
+  <div *ngIf="syncMessage" class="fixed top-6 right-6 z-50 px-6 py-3 text-sm font-medium shadow-lg border"
+       [ngClass]="syncMessageType === 'success' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'"
+       style="animation: slideInRight 0.3s ease-out">
+    {{ syncMessage }}
+  </div>
+  <div *ngIf="deleteMessage" class="fixed top-6 right-6 z-50 px-6 py-3 text-sm font-medium shadow-lg border"
+       [ngClass]="deleteMessageType === 'success' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'"
+       style="animation: slideInRight 0.3s ease-out">
+    {{ deleteMessage }}
+  </div>
+
+  <!-- Page Header -->
+  <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between mb-10 gap-6">
+    <div>
+      <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+        <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+        <span class="text-black font-medium">Key Pairs</span>
+      </nav>
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-serif font-bold tracking-tight">Key Pairs</h1>
+      <p class="text-gray-500 mt-2 text-sm">Manage your SSH key pairs across cloud accounts</p>
+    </div>
+    <div class="flex items-center gap-3 flex-shrink-0 flex-wrap">
+      <button (click)="refreshData()" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-black hover:bg-black hover:text-white transition" [disabled]="loading">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Refresh
+      </button>
+      <button (click)="syncData()" class="inline-flex items-center gap-2 px-5 py-2.5 border border-gray-200 text-sm uppercase tracking-wider hover:border-black hover:bg-black hover:text-white transition" [disabled]="syncing">
+        <svg *ngIf="!syncing" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182"/></svg>
+        <svg *ngIf="syncing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+        {{ syncing ? 'Syncing...' : 'Sync' }}
+      </button>
+      <a routerLink="/dashboard/key-pairs/create" class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+        Create Key Pair
+      </a>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="space-y-6">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5">
+      <div *ngFor="let i of [1,2,3,4]" class="border border-gray-200 p-6 animate-pulse">
+        <div class="h-3 w-20 bg-gray-100 rounded mb-3"></div>
+        <div class="h-8 w-16 bg-gray-100 rounded"></div>
+      </div>
+    </div>
+    <div class="border border-gray-200 p-6 animate-pulse space-y-4">
+      <div *ngFor="let i of [1,2,3,4,5]" class="h-12 bg-gray-100 rounded"></div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div *ngIf="!loading">
+
+    <!-- Metrics -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-5 mb-10">
+      <div *ngFor="let m of metrics" class="metric-card">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+            <svg class="w-5 h-5" [ngClass]="m.color" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" [attr.d]="m.icon"/></svg>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-gray-400">{{ m.label }}</span>
+        </div>
+        <p class="text-3xl font-serif font-bold">{{ m.value }}</p>
+      </div>
+    </div>
+
+    <!-- Sync Report -->
+    <div *ngIf="showSyncReport" class="mb-8 border border-green-200 bg-green-50 p-6" style="animation: fadeIn 0.3s ease">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-green-800">Sync Report</h3>
+        <button (click)="closeSyncReport()" class="text-green-600 hover:text-green-800">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div class="text-center p-3 bg-white/60 rounded">
+          <p class="text-2xl font-serif font-bold text-green-700">{{ getTotalSyncAdded() }}</p>
+          <p class="text-green-600 text-xs uppercase tracking-wider mt-1">Added</p>
+        </div>
+        <div class="text-center p-3 bg-white/60 rounded">
+          <p class="text-2xl font-serif font-bold text-yellow-700">{{ getTotalSyncUpdated() }}</p>
+          <p class="text-yellow-600 text-xs uppercase tracking-wider mt-1">Updated</p>
+        </div>
+        <div class="text-center p-3 bg-white/60 rounded">
+          <p class="text-2xl font-serif font-bold text-red-700">{{ getTotalSyncRemoved() }}</p>
+          <p class="text-red-600 text-xs uppercase tracking-wider mt-1">Removed</p>
+        </div>
+        <div class="text-center p-3 bg-white/60 rounded">
+          <p class="text-2xl font-serif font-bold text-black">{{ getTotalSyncKeys() }}</p>
+          <p class="text-gray-600 text-xs uppercase tracking-wider mt-1">Total</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="flex flex-col lg:flex-row gap-4 mb-6">
+      <div class="flex-1 relative">
+        <svg class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Search key pairs..." class="w-full pl-11 pr-4 py-3 border border-gray-200 text-sm focus:border-black focus:outline-none transition" />
+      </div>
+      <select [(ngModel)]="selectedAccount" class="px-4 py-3 border border-gray-200 text-sm focus:border-black focus:outline-none transition bg-white">
+        <option value="all">All Accounts</option>
+        <option *ngFor="let a of accounts" [value]="a.id">{{ a.accountName }}</option>
+      </select>
+      <select [(ngModel)]="selectedKeyType" class="px-4 py-3 border border-gray-200 text-sm focus:border-black focus:outline-none transition bg-white">
+        <option *ngFor="let t of keyTypeOptions" [value]="t.value">{{ t.label }}</option>
+      </select>
+      <select [(ngModel)]="selectedPrivateKey" class="px-4 py-3 border border-gray-200 text-sm focus:border-black focus:outline-none transition bg-white">
+        <option *ngFor="let o of privateKeyOptions" [value]="o.value">{{ o.label }}</option>
+      </select>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-gray-400 uppercase tracking-wider">{{ filteredKeyPairs.length }} key pair{{ filteredKeyPairs.length !== 1 ? 's' : '' }}</span>
+        <button *ngIf="hasActiveFilters" (click)="clearFilters()" class="text-xs text-red-500 hover:text-red-700 underline">Clear filters</button>
+      </div>
+      <div class="flex items-center gap-2">
+        <button (click)="setViewMode('list')" class="p-2 border transition" [ngClass]="viewMode === 'list' ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-400 hover:border-black hover:text-black'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
+        </button>
+        <button (click)="setViewMode('grid')" class="p-2 border transition" [ngClass]="viewMode === 'grid' ? 'border-black bg-black text-white' : 'border-gray-200 text-gray-400 hover:border-black hover:text-black'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- LIST VIEW -->
+    <div *ngIf="viewMode === 'list'" class="border border-gray-200 overflow-hidden mb-10">
+      <!-- Table Header -->
+      <div class="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50 text-[10px] uppercase tracking-widest text-gray-400 border-b border-gray-200">
+        <div class="col-span-3 cursor-pointer hover:text-black transition flex items-center gap-1" (click)="toggleSort('keyName')">
+          Key Name
+          <svg *ngIf="sortField === 'keyName'" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" [attr.d]="sortDir === 'asc' ? 'M4.5 15.75l7.5-7.5 7.5 7.5' : 'M19.5 8.25l-7.5 7.5-7.5-7.5'"/></svg>
+        </div>
+        <div class="col-span-2">Key Type</div>
+        <div class="col-span-2">Private Key</div>
+        <div class="col-span-2 cursor-pointer hover:text-black transition flex items-center gap-1" (click)="toggleSort('awsCreatedAt')">
+          AWS Created
+          <svg *ngIf="sortField === 'awsCreatedAt'" class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" [attr.d]="sortDir === 'asc' ? 'M4.5 15.75l7.5-7.5 7.5 7.5' : 'M19.5 8.25l-7.5 7.5-7.5-7.5'"/></svg>
+        </div>
+        <div class="col-span-2">Account</div>
+        <div class="col-span-1 text-right">Actions</div>
+      </div>
+      <!-- Table Rows -->
+      <div *ngFor="let kp of filteredKeyPairs" class="kp-row grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 items-center cursor-pointer hover:bg-gray-50 transition" (click)="openDetail(kp)">
+        <div class="col-span-3">
+          <p class="text-sm font-medium truncate">{{ kp.keyName }}</p>
+          <p class="text-xs text-gray-400 font-mono truncate">{{ truncateFingerprint(kp.keyFingerprint) }}</p>
+        </div>
+        <div class="col-span-2">
+          <span class="inline-flex px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider border rounded-sm" [ngClass]="getKeyTypeClass(kp.keyType)">{{ kp.keyType }}</span>
+        </div>
+        <div class="col-span-2">
+          <span *ngIf="kp.hasPrivateKey" class="inline-flex items-center gap-1 text-xs text-green-700">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Available
+          </span>
+          <span *ngIf="!kp.hasPrivateKey" class="inline-flex items-center gap-1 text-xs text-gray-400">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            Not available
+          </span>
+        </div>
+        <div class="col-span-2 text-xs text-gray-500">{{ formatDate(kp.awsCreatedAt) }}</div>
+        <div class="col-span-2 text-xs text-gray-500 truncate">{{ getAccountName(kp.cloudAccountId) }}</div>
+        <div class="col-span-1 flex justify-end gap-1" (click)="$event.stopPropagation()">
+          <button *ngIf="kp.hasPrivateKey" (click)="downloadPrivateKey(kp)" class="p-1.5 text-gray-400 hover:text-green-600 transition" title="View Private Key">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+          </button>
+          <button (click)="confirmDelete(kp)" class="p-1.5 text-gray-400 hover:text-red-600 transition" title="Delete">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Empty -->
+      <div *ngIf="filteredKeyPairs.length === 0" class="px-6 py-16 text-center text-gray-400 text-sm">
+        <svg class="w-10 h-10 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+        <p>{{ hasActiveFilters ? 'No key pairs match your filters' : 'No key pairs found. Sync or create a new key pair.' }}</p>
+      </div>
+    </div>
+
+    <!-- GRID VIEW -->
+    <div *ngIf="viewMode === 'grid'" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mb-10">
+      <div *ngFor="let kp of filteredKeyPairs" class="kp-grid-card border border-gray-200 p-5 cursor-pointer hover:shadow-lg transition" (click)="openDetail(kp)">
+        <div class="flex items-start justify-between mb-4">
+          <div class="min-w-0 flex-1">
+            <h3 class="text-sm font-bold truncate">{{ kp.keyName }}</h3>
+            <p class="text-xs text-gray-400 font-mono truncate mt-0.5">{{ kp.keyPairId }}</p>
+          </div>
+          <span class="inline-flex px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider border rounded-sm flex-shrink-0 ml-3" [ngClass]="getKeyTypeClass(kp.keyType)">{{ kp.keyType }}</span>
+        </div>
+        <div class="space-y-2 mb-4">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gray-400">Private Key</span>
+            <span *ngIf="kp.hasPrivateKey" class="text-green-600 font-medium">Available</span>
+            <span *ngIf="!kp.hasPrivateKey" class="text-gray-400">Not available</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gray-400">Created</span>
+            <span class="text-gray-600">{{ formatDate(kp.awsCreatedAt) }}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-gray-400">Account</span>
+            <span class="text-gray-600 truncate ml-2">{{ getAccountName(kp.cloudAccountId) }}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs" *ngIf="getTagCount(kp) > 0">
+            <span class="text-gray-400">Tags</span>
+            <span class="text-gray-600">{{ getTagCount(kp) }}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 pt-3 border-t border-gray-100" (click)="$event.stopPropagation()">
+          <button (click)="goToOverview(kp)" class="flex-1 py-1.5 text-[10px] uppercase tracking-wider border border-gray-200 hover:border-black hover:bg-black hover:text-white transition text-center">View</button>
+          <button *ngIf="kp.hasPrivateKey" (click)="downloadPrivateKey(kp)" class="flex-1 py-1.5 text-[10px] uppercase tracking-wider border border-gray-200 hover:border-green-600 hover:bg-green-600 hover:text-white transition text-center">Private Key</button>
+          <button (click)="confirmDelete(kp)" class="py-1.5 px-3 text-[10px] uppercase tracking-wider border border-gray-200 hover:border-red-600 hover:bg-red-600 hover:text-white transition">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Empty Grid -->
+      <div *ngIf="filteredKeyPairs.length === 0" class="col-span-full text-center py-16 text-gray-400 text-sm">
+        <svg class="w-10 h-10 mx-auto mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+        <p>{{ hasActiveFilters ? 'No key pairs match your filters' : 'No key pairs found' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL SLIDE-OVER PANEL -->
+  <div *ngIf="selectedKeyPair" class="fixed inset-0 z-50 flex justify-end">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeDetail()"></div>
+    <div class="relative bg-white w-full max-w-xl h-full flex flex-col shadow-2xl border-l border-gray-200 overflow-hidden"
+         [class]="showDetailPanel ? 'detail-panel-enter' : 'detail-panel-exit'">
+
+      <!-- Panel Header -->
+      <div class="flex items-center justify-between px-6 sm:px-8 py-5 border-b border-gray-200 flex-shrink-0">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-lg bg-black text-white flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h2 class="font-serif text-lg font-bold text-black truncate">{{ selectedKeyPair.keyName }}</h2>
+            <p class="text-xs text-gray-400 uppercase tracking-wider">Key Pair Details</p>
+          </div>
+        </div>
+        <button (click)="closeDetail()" class="w-10 h-10 flex items-center justify-center hover:bg-gray-100 rounded-lg transition flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Panel Body -->
+      <div class="flex-1 overflow-y-auto detail-panel-body px-6 sm:px-8 py-6">
+
+        <!-- Status Banner -->
+        <div class="flex items-center gap-3 mb-6 p-4 border border-gray-100 rounded-sm">
+          <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/>
+            </svg>
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-semibold text-black truncate">{{ selectedKeyPair.keyName }}</p>
+            <p class="text-xs font-mono text-gray-400 truncate">{{ selectedKeyPair.keyPairId }}</p>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0 flex-wrap">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border" [ngClass]="getKeyTypeClass(selectedKeyPair.keyType)">
+              {{ selectedKeyPair.keyType }}
+            </span>
+            <span *ngIf="selectedKeyPair.hasPrivateKey" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-50 text-green-700">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Private Key
+            </span>
+          </div>
+        </div>
+
+        <!-- General Information -->
+        <div class="mb-8">
+          <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">General Information</h4>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">Key Name</span>
+              <span class="detail-value font-medium">{{ selectedKeyPair.keyName }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Key Pair ID</span>
+              <span class="detail-value font-mono text-xs break-all">{{ selectedKeyPair.keyPairId }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Key Type</span>
+              <span class="detail-value uppercase">{{ selectedKeyPair.keyType }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Provider</span>
+              <span class="detail-value">{{ selectedKeyPair.provider }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Cloud Account</span>
+              <span class="detail-value">{{ getAccountName(selectedKeyPair.cloudAccountId) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Imported</span>
+              <span class="detail-value">{{ selectedKeyPair.isImported ? 'Yes' : 'No' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Private Key</span>
+              <span class="detail-value" [ngClass]="selectedKeyPair.hasPrivateKey ? 'text-green-600' : 'text-gray-400'">
+                {{ selectedKeyPair.hasPrivateKey ? 'Available' : 'Not Available' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fingerprint -->
+        <div class="mb-8">
+          <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Fingerprint</h4>
+          <div class="p-4 bg-gray-50 border border-gray-100 rounded-sm">
+            <p class="text-xs font-mono text-gray-700 break-all select-all leading-relaxed">{{ selectedKeyPair.keyFingerprint }}</p>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="mb-8" *ngIf="getTagCount(selectedKeyPair) > 0">
+          <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Tags ({{ getTagCount(selectedKeyPair) }})</h4>
+          <div class="space-y-0">
+            <div *ngFor="let tag of getTagEntries(selectedKeyPair.tags)" class="detail-row">
+              <span class="detail-label font-mono">{{ tag.key }}</span>
+              <span class="detail-value">{{ tag.value }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timestamps -->
+        <div class="mb-8">
+          <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Timestamps</h4>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">AWS Created At</span>
+              <span class="detail-value">{{ formatDateTime(selectedKeyPair.awsCreatedAt) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Synced At</span>
+              <span class="detail-value">{{ formatDateTime(selectedKeyPair.createdAt) }}</span>
+            </div>
+            <div class="detail-row" *ngIf="selectedKeyPair.updatedAt">
+              <span class="detail-label">Last Updated</span>
+              <span class="detail-value">{{ formatDateTime(selectedKeyPair.updatedAt) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resource Identifiers -->
+        <div class="mb-4">
+          <h4 class="text-xs uppercase tracking-widest text-gray-400 mb-4">Resource Identifiers</h4>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">Internal ID</span>
+              <span class="detail-value font-mono text-xs">{{ selectedKeyPair.id }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Account ID</span>
+              <span class="detail-value font-mono text-xs">{{ selectedKeyPair.cloudAccountId }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Panel Footer -->
+      <div class="px-6 sm:px-8 py-4 border-t border-gray-200 flex-shrink-0 flex items-center justify-between bg-gray-50">
+        <span class="text-xs text-gray-400">{{ selectedKeyPair.provider }}</span>
+        <div class="flex items-center gap-2">
+          <button *ngIf="selectedKeyPair.hasPrivateKey" (click)="downloadPrivateKey(selectedKeyPair)" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-green-600 text-green-600 hover:bg-green-600 hover:text-white transition">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+            Private Key
+          </button>
+          <a [routerLink]="['/dashboard/key-pairs', selectedKeyPair.id]" class="inline-flex items-center gap-1.5 px-4 py-2 text-sm border border-gray-200 hover:border-black hover:bg-black hover:text-white transition">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5"/></svg>
+            Overview
+          </a>
+          <button (click)="closeDetail()" class="px-5 py-2 text-sm bg-black text-white hover:bg-gray-800 transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE CONFIRM DIALOG -->
+  <div *ngIf="showDeleteConfirm && keyPairToDelete" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="absolute inset-0 bg-black/40" (click)="cancelDelete()" style="animation: fadeIn 0.2s ease"></div>
+    <div class="relative bg-white border border-gray-200 shadow-2xl max-w-md w-full mx-4 p-8" style="animation: slideUp 0.3s ease-out">
+      <div class="w-14 h-14 mx-auto mb-5 rounded-full bg-red-50 flex items-center justify-center">
+        <svg class="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      </div>
+      <h3 class="text-xl font-serif font-bold text-center mb-2">Delete Key Pair</h3>
+      <p class="text-sm text-gray-500 text-center mb-6">Are you sure you want to delete <strong>{{ keyPairToDelete.keyName }}</strong>? This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button (click)="cancelDelete()" class="flex-1 py-2.5 text-sm uppercase tracking-wider border border-gray-200 hover:border-black transition">Cancel</button>
+        <button (click)="deleteKeyPair()" class="flex-1 py-2.5 text-sm uppercase tracking-wider bg-red-600 text-white hover:bg-red-700 transition" [disabled]="deletingKeyPairId !== null">
+          {{ deletingKeyPairId !== null ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

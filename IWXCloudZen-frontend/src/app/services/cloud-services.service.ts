@@ -37,6 +37,12 @@ import {
   UpdateEc2InstanceRequest,
   Ec2SyncResponse,
   KeyPairsResponse,
+  KeyPair,
+  CreateKeyPairRequest,
+  UpdateKeyPairTagsRequest,
+  KeyPairDeleteResponse,
+  DownloadPrivateKeyResponse,
+  KeyPairSyncResponse,
   FullSyncResult,
   FileListResponse,
   BucketFileSyncResponse,
@@ -62,8 +68,24 @@ import {
   CheckPermissionRequest,
   PermissionCheckResponse,
   PermissionSummaryResponse,
-  PoliciesResponse,
+  InternetGateway,
+  InternetGatewaysResponse,
+  InternetGatewayVpcResponse,
+  CreateInternetGatewayRequest,
+  UpdateInternetGatewayRequest,
+  InternetGatewayDeleteResponse,
+  AttachInternetGatewayRequest,
+  DetachInternetGatewayRequest,
+  InternetGatewaySyncResponse,
+  FullGraphResponse,
+  VpcTreeResponse,
+  DependencyResponse,
+  DeletionBlockersResponse,
+  MappedAddressesResponse,
+  NetworkInterfacesResponse,
+  SyncGraphResponse,
   AvailablePoliciesResponse,
+  PoliciesResponse,
   AttachPolicyRequest,
   PolicyActionResponse,
   SyncPoliciesResponse,
@@ -397,6 +419,45 @@ export class CloudServicesService {
     );
   }
 
+  getKeyPairById(keyPairId: number, accountId: number): Observable<KeyPair> {
+    return this.http.get<KeyPair>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/get/${keyPairId}?accountId=${accountId}`
+    );
+  }
+
+  createKeyPair(accountId: number, request: CreateKeyPairRequest): Observable<KeyPair> {
+    return this.http.post<KeyPair>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/create?accountId=${accountId}`,
+      request
+    );
+  }
+
+  updateKeyPairTags(keyPairId: number, accountId: number, request: UpdateKeyPairTagsRequest): Observable<KeyPair> {
+    return this.http.put<KeyPair>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/update/${keyPairId}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deleteKeyPair(keyPairId: number, accountId: number): Observable<KeyPairDeleteResponse> {
+    return this.http.delete<KeyPairDeleteResponse>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/delete/${keyPairId}?accountId=${accountId}`
+    );
+  }
+
+  downloadPrivateKey(keyPairId: number, accountId: number): Observable<DownloadPrivateKeyResponse> {
+    return this.http.get<DownloadPrivateKeyResponse>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/download-private-key/${keyPairId}?accountId=${accountId}`
+    );
+  }
+
+  syncKeyPairs(accountId: number): Observable<KeyPairSyncResponse> {
+    return this.http.post<KeyPairSyncResponse>(
+      `${this.apiUrl}/api/cloud/services/keypair/aws/sync?accountId=${accountId}`,
+      null
+    );
+  }
+
   syncS3Buckets(accountId: number): Observable<FullSyncResult> {
     return this.http.post<FullSyncResult>(
       `${this.apiUrl}/api/cloud/services/storage/aws/s3/sync?accountId=${accountId}`,
@@ -582,6 +643,118 @@ export class CloudServicesService {
   listPermissionPolicies(accountId: number): Observable<ListPoliciesResponse> {
     return this.http.get<ListPoliciesResponse>(
       `${this.apiUrl}/api/permissions/aws/list?accountId=${accountId}`
+    );
+  }
+
+  // ── Internet Gateway ──
+
+  getInternetGateways(accountId: number): Observable<InternetGatewaysResponse> {
+    return this.http.get<InternetGatewaysResponse>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/list?accountId=${accountId}`
+    );
+  }
+
+  getInternetGatewayById(id: number, accountId: number): Observable<InternetGateway> {
+    return this.http.get<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/${id}?accountId=${accountId}`
+    );
+  }
+
+  getInternetGatewayForVpc(vpcId: string, accountId: number): Observable<InternetGatewayVpcResponse> {
+    return this.http.get<InternetGatewayVpcResponse>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/vpc/${encodeURIComponent(vpcId)}?accountId=${accountId}`
+    );
+  }
+
+  createInternetGateway(accountId: number, request: CreateInternetGatewayRequest): Observable<InternetGateway> {
+    return this.http.post<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/create?accountId=${accountId}`,
+      request
+    );
+  }
+
+  updateInternetGateway(id: number, accountId: number, request: UpdateInternetGatewayRequest): Observable<InternetGateway> {
+    return this.http.put<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/update/${id}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deleteInternetGateway(id: number, accountId: number): Observable<InternetGatewayDeleteResponse> {
+    return this.http.delete<InternetGatewayDeleteResponse>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/delete/${id}?accountId=${accountId}`
+    );
+  }
+
+  attachInternetGateway(id: number, accountId: number, request: AttachInternetGatewayRequest): Observable<InternetGateway> {
+    return this.http.post<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/attach/${id}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  detachInternetGateway(id: number, accountId: number, request: DetachInternetGatewayRequest): Observable<InternetGateway> {
+    return this.http.post<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/detach/${id}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  syncInternetGateways(accountId: number): Observable<InternetGatewaySyncResponse> {
+    return this.http.post<InternetGatewaySyncResponse>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/sync?accountId=${accountId}`,
+      null
+    );
+  }
+
+  // ── Resource Dependency Graph ──
+
+  getFullGraph(accountId: number): Observable<FullGraphResponse> {
+    return this.http.get<FullGraphResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/graph?accountId=${accountId}`
+    );
+  }
+
+  getVpcTree(vpcId: string, accountId: number): Observable<VpcTreeResponse> {
+    return this.http.get<VpcTreeResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/vpc/${vpcId}/tree?accountId=${accountId}`
+    );
+  }
+
+  getVpcTreeLive(vpcId: string, accountId: number): Observable<VpcTreeResponse> {
+    return this.http.get<VpcTreeResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/vpc/${vpcId}/tree/live?accountId=${accountId}`
+    );
+  }
+
+  getResourceDependencies(resourceType: string, resourceId: string, accountId: number): Observable<DependencyResponse> {
+    return this.http.get<DependencyResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/dependencies/${resourceType}/${resourceId}?accountId=${accountId}`
+    );
+  }
+
+  getDeletionBlockers(resourceType: string, resourceId: string, accountId: number): Observable<DeletionBlockersResponse> {
+    return this.http.get<DeletionBlockersResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/deletion-blockers/${resourceType}/${resourceId}?accountId=${accountId}`
+    );
+  }
+
+  getMappedPublicAddresses(vpcId: string, accountId: number): Observable<MappedAddressesResponse> {
+    return this.http.get<MappedAddressesResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/vpc/${vpcId}/mapped-public-addresses?accountId=${accountId}`
+    );
+  }
+
+  getVpcNetworkInterfaces(vpcId: string, accountId: number): Observable<NetworkInterfacesResponse> {
+    return this.http.get<NetworkInterfacesResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/vpc/${vpcId}/network-interfaces?accountId=${accountId}`
+    );
+  }
+
+  syncGraph(accountId: number): Observable<SyncGraphResponse> {
+    return this.http.post<SyncGraphResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/sync?accountId=${accountId}`,
+      null
     );
   }
 }

@@ -13,6 +13,7 @@ using IWX_CloudZen.CloudServices.CloudWatchLogs.Entities;
 using IWX_CloudZen.CloudServices.EC2.Entities;
 using IWX_CloudZen.CloudServices.KeyPair.Entities;
 using IWX_CloudZen.CloudServices.EC2InstanceConnect.Entities;
+using IWX_CloudZen.CloudServices.InternetGateway.Entities;
 
 namespace IWX_CloudZen.Data
 {
@@ -42,6 +43,7 @@ namespace IWX_CloudZen.Data
         public DbSet<KeyPairRecord> KeyPairRecords { get; set; }
         public DbSet<Ec2InstanceConnectEndpointRecord> Ec2InstanceConnectEndpointRecords { get; set; }
         public DbSet<Ec2InstanceConnectSessionRecord> Ec2InstanceConnectSessionRecords { get; set; }
+        public DbSet<InternetGatewayRecord> InternetGatewayRecords { get; set; }
 
         // 'DbSet<User> Users;' This is a table that stores User objects
 

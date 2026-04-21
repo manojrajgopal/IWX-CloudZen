@@ -1,0 +1,193 @@
+/* ── Metric Card ── */
+.metric-card {
+  border: 1px solid #e5e5e5;
+  padding: 1.25rem 1.5rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.metric-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #000;
+  transition: width 0.4s ease, left 0.4s ease;
+}
+
+.metric-card:hover::after {
+  width: 100%;
+  left: 0;
+}
+
+.metric-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
+}
+
+/* ── Table Row Hover ── */
+.kp-row {
+  transition: all 0.15s ease;
+}
+
+.kp-row:hover {
+  background-color: #fafafa;
+}
+
+.kp-row:last-child {
+  border-bottom: none;
+}
+
+/* ── Grid Card ── */
+.kp-grid-card {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.kp-grid-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: #000;
+  transition: width 0.4s ease, left 0.4s ease;
+}
+
+.kp-grid-card:hover::before {
+  width: 100%;
+  left: 0;
+}
+
+.kp-grid-card:hover {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* ── Detail Panel ── */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to { transform: translateX(100%); }
+}
+
+.detail-panel-enter {
+  animation: slideInRight 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.detail-panel-exit {
+  animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.detail-panel-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.detail-panel-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.detail-panel-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+}
+
+.detail-panel-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.24);
+}
+
+/* ── Detail Rows ── */
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.detail-value {
+  font-size: 0.875rem;
+  color: #111827;
+  text-align: right;
+  word-break: break-word;
+  min-width: 0;
+}
+
+/* ── Animations ── */
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Skeleton pulse ── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+
+/* ===== DARK MODE OVERRIDES ===== */
+:host-context(html.dark) :is(
+  .modal-container, .modal-body, .modal-header, .modal-footer,
+  .card, .panel, .section, .detail-panel, .overview-card,
+  .drawer, .sidebar, .dropdown
+) {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+:host-context(html.dark) :is(h1, h2, h3, h4, h5, h6) { color: var(--text-primary); }
+:host-context(html.dark) :is(th, .table-header, .section-title, .label) {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+:host-context(html.dark) :is(td, .table-cell, tr) {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+:host-context(html.dark) :is(.info-row, .info-label, .detail-row, .meta) {
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+:host-context(html.dark) :is(input, textarea, select) {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+:host-context(html.dark) :is(.divider, .separator, hr) {
+  border-color: var(--border-color);
+  background: var(--border-color);
+}

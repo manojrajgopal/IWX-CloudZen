@@ -1,0 +1,29 @@
+
+/* Newsletter intentionally keeps its original black style in both themes */
+
+/* Counteract any global dark mode overrides */
+:host-context(html.dark) section {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+:host-context(html.dark) section h1,
+:host-context(html.dark) section h2,
+:host-context(html.dark) section h3 {
+  color: #ffffff !important;
+}
+
+:host-context(html.dark) section p,
+:host-context(html.dark) section .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+:host-context(html.dark) section input {
+  background: transparent !important;
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,0.3) !important;
+}
+
+:host-context(html.dark) section input::placeholder {
+  color: #9ca3af !important;
+}

@@ -29,7 +29,21 @@ import { CreateSubnetComponent } from './pages/CloudServices/subnets/create-subn
 import { SubnetOverviewComponent } from './pages/CloudServices/subnets/subnet-overview/subnet-overview.component';
 import { SecurityGroupOverviewComponent } from './pages/CloudServices/security-groups/security-group-overview/security-group-overview.component';
 import { Ec2OverviewComponent } from './pages/CloudServices/ec2-instances/ec2-overview/ec2-overview.component';
+import { Ec2ConnectComponent } from './pages/CloudServices/ec2-instances/ec2-connect/ec2-connect.component';
+import { Ec2QuickConnectComponent } from './pages/CloudServices/ec2-instances/ec2-quick-connect/ec2-quick-connect.component';
 import { PermissionsComponent } from './pages/CloudServices/permissions/permissions.component';
+import { KeyPairsComponent } from './pages/key-pairs/key-pairs.component';
+import { KeyPairOverviewComponent } from './pages/key-pairs/key-pair-overview/key-pair-overview.component';
+import { CreateKeyPairComponent } from './pages/key-pairs/create-key-pair/create-key-pair.component';
+import { SensitiveDataViewerComponent } from './pages/key-pairs/sensitive-data-viewer/sensitive-data-viewer.component';
+import { InternetGatewaysComponent } from './pages/CloudServices/internet-gateways/internet-gateways.component';
+import { CreateInternetGatewayComponent } from './pages/CloudServices/internet-gateways/create-internet-gateway/create-internet-gateway.component';
+import { InternetGatewayOverviewComponent } from './pages/CloudServices/internet-gateways/internet-gateway-overview/internet-gateway-overview.component';
+import { ResourceGraphDashboardComponent } from './pages/CloudServices/resource-graph/resource-graph-dashboard/resource-graph-dashboard.component';
+import { VpcTreeViewComponent } from './pages/CloudServices/resource-graph/vpc-tree-view/vpc-tree-view.component';
+import { DependenciesExplorerComponent } from './pages/CloudServices/resource-graph/dependencies-explorer/dependencies-explorer.component';
+import { DeletionBlockersComponent } from './pages/CloudServices/resource-graph/deletion-blockers/deletion-blockers.component';
+import { VpcNetworkInfoComponent } from './pages/CloudServices/resource-graph/vpc-network-info/vpc-network-info.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -59,9 +73,23 @@ export const routes: Routes = [
   { path: 'dashboard/security-groups', component: SecurityGroupsComponent },
   { path: 'dashboard/cloudwatch-logs', component: CloudWatchLogsComponent },
   { path: 'dashboard/ec2-instances/create', component: LaunchInstanceComponent },
+  { path: 'dashboard/ec2-instances/:id/connect', component: Ec2ConnectComponent },
+  { path: 'dashboard/quick-connect', component: Ec2QuickConnectComponent },
   { path: 'dashboard/ec2-instances/:id', component: Ec2OverviewComponent },
   { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },
   { path: 'dashboard/permissions', component: PermissionsComponent },
+  { path: 'dashboard/internet-gateways', component: InternetGatewaysComponent },
+  { path: 'dashboard/internet-gateways/create', component: CreateInternetGatewayComponent },
+  { path: 'dashboard/internet-gateways/:id', component: InternetGatewayOverviewComponent },
+  { path: 'dashboard/resource-graph', component: ResourceGraphDashboardComponent },
+  { path: 'dashboard/resource-graph/vpc/:vpcId', component: VpcTreeViewComponent },
+  { path: 'dashboard/resource-graph/dependencies', component: DependenciesExplorerComponent },
+  { path: 'dashboard/resource-graph/deletion-blockers', component: DeletionBlockersComponent },
+  { path: 'dashboard/resource-graph/vpc-network/:vpcId', component: VpcNetworkInfoComponent },
+  { path: 'dashboard/key-pairs/create', component: CreateKeyPairComponent },
+  { path: 'dashboard/key-pairs/:id/private-key', component: SensitiveDataViewerComponent },
+  { path: 'dashboard/key-pairs/:id', component: KeyPairOverviewComponent },
+  { path: 'dashboard/key-pairs', component: KeyPairsComponent },
   { path: 'profile', component: ProfileComponent },
   { path: '**', redirectTo: '' }
 ];

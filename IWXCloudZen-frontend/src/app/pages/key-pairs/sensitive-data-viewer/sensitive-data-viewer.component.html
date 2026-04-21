@@ -1,0 +1,151 @@
+<div class="container-lux py-10 md:py-16">
+
+  <!-- LOADING STATE -->
+  <div *ngIf="loading" class="text-center py-20">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-gray-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-gray-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">Retrieving Private Key</h2>
+    <p class="text-gray-500 text-sm">Securely loading sensitive data...</p>
+  </div>
+
+  <!-- ERROR STATE -->
+  <div *ngIf="!loading && error" class="text-center py-20">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-red-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">{{ error }}</h2>
+    <p class="text-gray-500 mb-6 text-sm">Unable to load the private key data.</p>
+    <button (click)="navigateBack()" class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      Go Back
+    </button>
+  </div>
+
+  <!-- TIMER EXPIRED -->
+  <div *ngIf="timerExpired" class="text-center py-20" style="animation: fadeIn 0.3s ease">
+    <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-yellow-50 flex items-center justify-center">
+      <svg class="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <h2 class="text-2xl font-serif font-bold mb-2">Session Expired</h2>
+    <p class="text-gray-500 text-sm mb-2">The viewing time has expired for security reasons.</p>
+    <p class="text-xs text-gray-400">Redirecting back...</p>
+  </div>
+
+  <!-- MAIN CONTENT: Sensitive Data View -->
+  <div *ngIf="!loading && !error && !timerExpired && privateKeyMaterial && keyPair" style="animation: fadeIn 0.4s ease">
+
+    <!-- Header with Timer -->
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8 gap-6">
+      <div>
+        <nav class="flex items-center gap-2 text-xs text-gray-400 uppercase tracking-widest mb-4">
+          <a routerLink="/dashboard" class="hover:text-black transition">Dashboard</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <a routerLink="/dashboard/key-pairs" class="hover:text-black transition">Key Pairs</a>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          <span class="text-black font-medium">Private Key</span>
+        </nav>
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-lg bg-red-600 text-white flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+          </div>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-serif font-bold tracking-tight">Sensitive Data</h1>
+            <p class="text-sm text-gray-500">Private key for <strong>{{ keyPair.keyName }}</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer Display -->
+      <div class="timer-container flex items-center gap-4 px-6 py-4 border rounded-sm flex-shrink-0"
+           [ngClass]="{'border-green-200 bg-green-50': remainingSeconds > 30, 'border-yellow-200 bg-yellow-50': remainingSeconds > 10 && remainingSeconds <= 30, 'border-red-200 bg-red-50': remainingSeconds <= 10}">
+        <!-- Circular Timer -->
+        <div class="timer-circle relative">
+          <svg class="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="24" fill="none" stroke="#e5e5e5" stroke-width="3"/>
+            <circle cx="28" cy="28" r="24" fill="none" [attr.stroke]="timerColor" stroke-width="3"
+                    stroke-linecap="round"
+                    [attr.stroke-dasharray]="150.8"
+                    [attr.stroke-dashoffset]="150.8 - (150.8 * timerPercent / 100)"
+                    class="timer-progress"/>
+          </svg>
+          <span class="absolute inset-0 flex items-center justify-center text-sm font-bold font-mono" [style.color]="timerColor">{{ formattedTime }}</span>
+        </div>
+        <div>
+          <p class="text-xs uppercase tracking-wider font-bold"
+             [ngClass]="{'text-green-700': remainingSeconds > 30, 'text-yellow-700': remainingSeconds > 10 && remainingSeconds <= 30, 'text-red-700': remainingSeconds <= 10}">
+            {{ remainingSeconds > 30 ? 'Time Remaining' : remainingSeconds > 10 ? 'Expiring Soon' : 'Almost Expired' }}
+          </p>
+          <p class="text-xs text-gray-500 mt-0.5">Auto-redirects when timer ends</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security Warning -->
+    <div class="mb-8 p-4 bg-red-50 border border-red-200 flex items-start gap-3">
+      <svg class="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+      <div>
+        <p class="text-sm font-medium text-red-800">Sensitive Data — Handle with Care</p>
+        <p class="text-xs text-red-600 mt-1">This private key provides access to your cloud resources. Download and store it securely. Never share it publicly or commit it to version control.</p>
+      </div>
+    </div>
+
+    <!-- Key Info Summary -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="p-4 border border-gray-200">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Key Name</p>
+        <p class="text-sm font-medium truncate">{{ keyPair.keyName }}</p>
+      </div>
+      <div class="p-4 border border-gray-200">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Key Type</p>
+        <p class="text-sm font-medium uppercase">{{ keyPair.keyType }}</p>
+      </div>
+      <div class="p-4 border border-gray-200">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Provider</p>
+        <p class="text-sm font-medium">{{ keyPair.provider }}</p>
+      </div>
+      <div class="p-4 border border-gray-200">
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-1">Key Pair ID</p>
+        <p class="text-sm font-mono text-xs truncate">{{ keyPair.keyPairId }}</p>
+      </div>
+    </div>
+
+    <!-- Private Key Content -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-bold uppercase tracking-wider">Private Key Material</h3>
+        <div class="flex items-center gap-2">
+          <button (click)="copyToClipboard()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-wider border border-gray-200 hover:border-black hover:bg-black hover:text-white transition">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9.75a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"/></svg>
+            {{ copiedKey ? 'Copied!' : 'Copy' }}
+          </button>
+        </div>
+      </div>
+      <div class="private-key-container relative bg-gray-900 text-green-400 p-6 font-mono text-xs leading-relaxed overflow-x-auto border border-gray-800 rounded-sm">
+        <pre class="whitespace-pre-wrap break-all">{{ privateKeyMaterial }}</pre>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center gap-4 flex-wrap">
+      <button (click)="downloadPem()" class="inline-flex items-center gap-2 px-6 py-3 text-sm uppercase tracking-wider transition"
+              [ngClass]="downloaded ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-black text-white hover:bg-gray-800'">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+        {{ downloaded ? 'Downloaded — Download Again' : 'Download ' + keyPair.keyName + '.pem' }}
+      </button>
+      <button (click)="navigateBack()" class="inline-flex items-center gap-2 px-6 py-3 border border-gray-200 text-sm uppercase tracking-wider hover:border-black transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Go Back
+      </button>
+    </div>
+
+    <!-- Timer Bar at Bottom -->
+    <div class="mt-10">
+      <div class="h-1 bg-gray-200 rounded-full overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-1000 ease-linear" [style.width.%]="timerPercent" [style.background-color]="timerColor"></div>
+      </div>
+      <p class="text-xs text-gray-400 mt-2 text-center">This page will automatically close in {{ formattedTime }}</p>
+    </div>
+  </div>
+
+</div>

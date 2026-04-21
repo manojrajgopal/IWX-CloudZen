@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/auth.service';
+import { ThemeService } from '../../../services/theme.service';
 import { Subscription } from 'rxjs';
 
 export interface MenuItem {
@@ -53,7 +54,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
           children: [
             { label: 'VPCs', route: '/dashboard/vpcs' },
             { label: 'Subnets', route: '/dashboard/subnets' },
-            { label: 'Security Groups', route: '/dashboard/security-groups' }
+            { label: 'Security Groups', route: '/dashboard/security-groups' },
+            { label: 'Internet Gateways', route: '/dashboard/internet-gateways' }
           ]
         },
         {
@@ -74,12 +76,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
           children: [
             { label: 'CloudWatch Logs', route: '/dashboard/cloudwatch-logs' }
           ]
+        },
+        {
+          label: 'Analytics',
+          children: [
+            { label: 'Resource Graph', route: '/dashboard/resource-graph' }
+          ]
         }
       ]
     }
   ];
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    public themeService: ThemeService
+  ) {}
 
   ngOnInit(): void {
     this.userSub = this.authService.currentUser$.subscribe(user => {

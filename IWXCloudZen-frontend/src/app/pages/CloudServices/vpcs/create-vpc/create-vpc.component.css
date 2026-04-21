@@ -60,3 +60,38 @@
 .account-card:hover::after {
   width: 100%;
 }
+
+
+/* ===== DARK MODE OVERRIDES ===== */
+:host-context(html.dark) :is(
+  .modal-container, .modal-body, .modal-header, .modal-footer,
+  .card, .panel, .section, .detail-panel, .overview-card,
+  .drawer, .sidebar, .dropdown
+) {
+  background: var(--bg-card);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+:host-context(html.dark) :is(h1, h2, h3, h4, h5, h6) { color: var(--text-primary); }
+:host-context(html.dark) :is(th, .table-header, .section-title, .label) {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+:host-context(html.dark) :is(td, .table-cell, tr) {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+:host-context(html.dark) :is(.info-row, .info-label, .detail-row, .meta) {
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+:host-context(html.dark) :is(input, textarea, select) {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+:host-context(html.dark) :is(.divider, .separator, hr) {
+  border-color: var(--border-color);
+  background: var(--border-color);
+}
