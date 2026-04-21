@@ -39,6 +39,11 @@ import { SensitiveDataViewerComponent } from './pages/key-pairs/sensitive-data-v
 import { InternetGatewaysComponent } from './pages/CloudServices/internet-gateways/internet-gateways.component';
 import { CreateInternetGatewayComponent } from './pages/CloudServices/internet-gateways/create-internet-gateway/create-internet-gateway.component';
 import { InternetGatewayOverviewComponent } from './pages/CloudServices/internet-gateways/internet-gateway-overview/internet-gateway-overview.component';
+import { ResourceGraphDashboardComponent } from './pages/CloudServices/resource-graph/resource-graph-dashboard/resource-graph-dashboard.component';
+import { VpcTreeViewComponent } from './pages/CloudServices/resource-graph/vpc-tree-view/vpc-tree-view.component';
+import { DependenciesExplorerComponent } from './pages/CloudServices/resource-graph/dependencies-explorer/dependencies-explorer.component';
+import { DeletionBlockersComponent } from './pages/CloudServices/resource-graph/deletion-blockers/deletion-blockers.component';
+import { VpcNetworkInfoComponent } from './pages/CloudServices/resource-graph/vpc-network-info/vpc-network-info.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -76,6 +81,11 @@ export const routes: Routes = [
   { path: 'dashboard/internet-gateways', component: InternetGatewaysComponent },
   { path: 'dashboard/internet-gateways/create', component: CreateInternetGatewayComponent },
   { path: 'dashboard/internet-gateways/:id', component: InternetGatewayOverviewComponent },
+  { path: 'dashboard/resource-graph', component: ResourceGraphDashboardComponent },
+  { path: 'dashboard/resource-graph/vpc/:vpcId', component: VpcTreeViewComponent },
+  { path: 'dashboard/resource-graph/dependencies', component: DependenciesExplorerComponent },
+  { path: 'dashboard/resource-graph/deletion-blockers', component: DeletionBlockersComponent },
+  { path: 'dashboard/resource-graph/vpc-network/:vpcId', component: VpcNetworkInfoComponent },
   { path: 'dashboard/key-pairs/create', component: CreateKeyPairComponent },
   { path: 'dashboard/key-pairs/:id/private-key', component: SensitiveDataViewerComponent },
   { path: 'dashboard/key-pairs/:id', component: KeyPairOverviewComponent },

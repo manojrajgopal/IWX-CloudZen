@@ -77,8 +77,15 @@ import {
   AttachInternetGatewayRequest,
   DetachInternetGatewayRequest,
   InternetGatewaySyncResponse,
-  PoliciesResponse,
+  FullGraphResponse,
+  VpcTreeResponse,
+  DependencyResponse,
+  DeletionBlockersResponse,
+  MappedAddressesResponse,
+  NetworkInterfacesResponse,
+  SyncGraphResponse,
   AvailablePoliciesResponse,
+  PoliciesResponse,
   AttachPolicyRequest,
   PolicyActionResponse,
   SyncPoliciesResponse,
@@ -696,6 +703,57 @@ export class CloudServicesService {
   syncInternetGateways(accountId: number): Observable<InternetGatewaySyncResponse> {
     return this.http.post<InternetGatewaySyncResponse>(
       `${this.apiUrl}/api/cloud/services/internet-gateway/aws/sync?accountId=${accountId}`,
+      null
+    );
+  }
+
+  // ── Resource Dependency Graph ──
+
+  getFullGraph(accountId: number): Observable<FullGraphResponse> {
+    return this.http.get<FullGraphResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/graph?accountId=${accountId}`
+    );
+  }
+
+  getVpcTree(vpcId: string, accountId: number): Observable<VpcTreeResponse> {
+    return this.http.get<VpcTreeResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/vpc/${vpcId}/tree?accountId=${accountId}`
+    );
+  }
+
+  getVpcTreeLive(vpcId: string, accountId: number): Observable<VpcTreeResponse> {
+    return this.http.get<VpcTreeResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/vpc/${vpcId}/tree/live?accountId=${accountId}`
+    );
+  }
+
+  getResourceDependencies(resourceType: string, resourceId: string, accountId: number): Observable<DependencyResponse> {
+    return this.http.get<DependencyResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/dependencies/${resourceType}/${resourceId}?accountId=${accountId}`
+    );
+  }
+
+  getDeletionBlockers(resourceType: string, resourceId: string, accountId: number): Observable<DeletionBlockersResponse> {
+    return this.http.get<DeletionBlockersResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/deletion-blockers/${resourceType}/${resourceId}?accountId=${accountId}`
+    );
+  }
+
+  getMappedPublicAddresses(vpcId: string, accountId: number): Observable<MappedAddressesResponse> {
+    return this.http.get<MappedAddressesResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/vpc/${vpcId}/mapped-public-addresses?accountId=${accountId}`
+    );
+  }
+
+  getVpcNetworkInterfaces(vpcId: string, accountId: number): Observable<NetworkInterfacesResponse> {
+    return this.http.get<NetworkInterfacesResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/vpc/${vpcId}/network-interfaces?accountId=${accountId}`
+    );
+  }
+
+  syncGraph(accountId: number): Observable<SyncGraphResponse> {
+    return this.http.post<SyncGraphResponse>(
+      `${this.apiUrl}/api/cloud/services/mapped/aws/sync?accountId=${accountId}`,
       null
     );
   }

@@ -1,0 +1,45 @@
+<div class="tree-level" [style.--depth]="depth">
+  <div *ngFor="let node of filteredNodes; trackBy: trackByResourceId"
+       class="tree-branch" [class.has-children]="node.children.length">
+
+    <!-- Connector lines -->
+    <div class="tree-connector" *ngIf="depth > 0">
+      <div class="connector-vertical"></div>
+      <div class="connector-horizontal"></div>
+    </div>
+
+    <!-- Node -->
+    <div class="tree-node-container">
+      <app-graph-node
+        [node]="node"
+        [expanded]="isSelected(node)"
+        [childrenExpanded]="isExpanded(node)"
+        [highlighted]="isHighlighted(node)"
+        [depth]="depth"
+        (nodeClick)="onNodeClick($event)"
+        (nodeExpand)="onNodeExpand($event)"
+        (navigateToResource)="onNavigateResource($event)"
+        (navigateToGraph)="onNavigateGraph($event)">
+      </app-graph-node>
+    </div>
+
+    <!-- Recursive children -->
+    <div class="tree-children" *ngIf="isExpanded(node) && node.children.length && depth < maxDepth"
+         [@.disabled]="false">
+      <app-graph-tree
+        [nodes]="node.children"
+        [depth]="depth + 1"
+        [maxDepth]="maxDepth"
+        [expandedNodes]="expandedNodes"
+        [selectedNodeId]="selectedNodeId"
+        [searchQuery]="searchQuery"
+        [collapsedTypes]="collapsedTypes"
+        [accountId]="accountId"
+        (nodeSelected)="onNodeClick($event)"
+        (nodeToggled)="nodeToggled.emit($event)"
+        (navigateResource)="onNavigateResource($event)"
+        (navigateGraph)="onNavigateGraph($event)">
+      </app-graph-tree>
+    </div>
+  </div>
+</div>

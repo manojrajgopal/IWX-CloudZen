@@ -722,3 +722,94 @@ export interface InternetGatewaySyncResponse {
   internetGateways: InternetGateway[];
 }
 
+// ── Resource Dependency Graph ──
+
+export interface GraphNode {
+  resourceType: string;
+  resourceId: string;
+  name: string;
+  state: string;
+  dbId: number;
+  provider: string;
+  metadata: Record<string, any>;
+  children: GraphNode[];
+  totalDescendants: number;
+}
+
+export interface GraphEdge {
+  sourceType: string;
+  sourceId: string;
+  sourceName: string;
+  targetType: string;
+  targetId: string;
+  targetName: string;
+  relationship: string;
+}
+
+export interface GraphSummary {
+  [resourceType: string]: number;
+}
+
+export interface FullGraphResponse {
+  graph: GraphNode[];
+  edges: GraphEdge[];
+  summary: GraphSummary;
+  totalResources: number;
+}
+
+export interface VpcTreeResponse {
+  vpcTree: GraphNode;
+  allResources: FlatResource[];
+  edges: GraphEdge[];
+  summary: GraphSummary;
+  hasInternetGateway: boolean;
+  totalResources: number;
+}
+
+export interface FlatResource {
+  resourceType: string;
+  resourceId: string;
+  name: string;
+  state: string;
+  dbId: number;
+  provider: string;
+  parentResourceId: string | null;
+  parentResourceType: string | null;
+}
+
+export interface DependencyResponse {
+  resource: FlatResource;
+  dependsOn: FlatResource[];
+  dependedBy: FlatResource[];
+  edges: GraphEdge[];
+}
+
+export interface DeletionBlockersResponse {
+  resource: FlatResource;
+  canDelete: boolean;
+  blockers: FlatResource[];
+  deletionOrder: FlatResource[];
+  messages: string[];
+}
+
+export interface MappedAddressesResponse {
+  vpcId: string;
+  hasMappedAddresses: boolean;
+  count: number;
+  mappedAddresses: any[];
+  message: string;
+}
+
+export interface NetworkInterfacesResponse {
+  vpcId: string;
+  count: number;
+  networkInterfaces: FlatResource[];
+}
+
+export interface SyncGraphResponse {
+  totalResources: number;
+  resourceCounts: GraphSummary;
+  totalEdges: number;
+  graph: FullGraphResponse;
+}
+

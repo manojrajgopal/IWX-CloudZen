@@ -76,6 +76,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
           children: [
             { label: 'CloudWatch Logs', route: '/dashboard/cloudwatch-logs' }
           ]
+        },
+        {
+          label: 'Analytics',
+          children: [
+            { label: 'Resource Graph', route: '/dashboard/resource-graph' }
+          ]
         }
       ]
     }

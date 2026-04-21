@@ -1,0 +1,284 @@
+/* ═══════════════════════════════════════════════════════
+   Graph Node Component — Styles
+   ═══════════════════════════════════════════════════════ */
+
+.graph-node-wrapper {
+  position: relative;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  animation: nodeAppear 0.3s ease both;
+}
+
+.graph-node-wrapper.highlighted {
+  z-index: 10;
+}
+
+.graph-node {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  min-width: 200px;
+  max-width: 340px;
+  position: relative;
+}
+
+.graph-node:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+}
+
+.graph-node-wrapper.expanded .graph-node {
+  border-radius: 0.25rem 0.25rem 0 0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.graph-node-wrapper.expanded {
+  transform: scale(1.02);
+  z-index: 20;
+}
+
+/* ── Expand Toggle ── */
+.expand-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 0.25rem;
+  border: none;
+  background: rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.expand-toggle:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+/* ── Icon ── */
+.node-icon {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Info ── */
+.node-info {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.2;
+}
+
+.node-type-label {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.node-name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #111827;
+}
+
+.node-id {
+  font-size: 0.625rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── State ── */
+.node-state {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.state-label {
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+}
+
+/* ── Badge ── */
+.node-badge {
+  position: absolute;
+  top: -0.375rem;
+  right: -0.375rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: #000;
+  color: #fff;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+/* ── Expanded Detail ── */
+.node-detail {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-top: none;
+  border-radius: 0 0 0.25rem 0.25rem;
+  padding: 0.75rem;
+  animation: detailSlideDown 0.25s ease both;
+  max-width: 340px;
+  min-width: 200px;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.detail-field {
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.125rem;
+  border: 1px solid transparent;
+}
+
+.detail-field:hover {
+  border-color: #e5e7eb;
+  background: #f9fafb;
+}
+
+.detail-label {
+  display: block;
+  font-size: 0.5625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+  margin-bottom: 0.125rem;
+}
+
+.detail-value {
+  display: block;
+  font-size: 0.75rem;
+  color: #111827;
+  word-break: break-all;
+}
+
+/* ── Action Buttons ── */
+.detail-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-nav-resource {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 0.125rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.btn-nav-resource:hover {
+  background: #1d4ed8;
+}
+
+.btn-nav-graph {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 0.125rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-nav-graph:hover {
+  background: #6d28d9;
+}
+
+/* ── Animations ── */
+@keyframes nodeAppear {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes detailSlideDown {
+  from { opacity: 0; max-height: 0; padding: 0 0.75rem; }
+  to { opacity: 1; max-height: 400px; padding: 0.75rem; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════════════ */
+
+:host-context(html.dark) .node-name { color: var(--text-primary, #e2e8f0); }
+:host-context(html.dark) .node-id { color: var(--text-secondary, #94a3b8); }
+:host-context(html.dark) .node-badge { border-color: var(--bg-card, #1e293b); }
+
+:host-context(html.dark) .node-detail {
+  background: var(--bg-card, #1e293b);
+  border-color: var(--border-color, #334155);
+}
+
+:host-context(html.dark) .detail-value { color: var(--text-primary, #e2e8f0); }
+:host-context(html.dark) .detail-label { color: var(--text-secondary, #94a3b8); }
+
+:host-context(html.dark) .detail-field:hover {
+  border-color: var(--border-color, #334155);
+  background: var(--bg-surface-2, #334155);
+}
+
+:host-context(html.dark) .expand-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary, #e2e8f0);
+}
+
+:host-context(html.dark) .expand-toggle:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+:host-context(html.dark) .graph-node {
+  border-color: var(--border-color, #334155);
+}
+
+:host-context(html.dark) .graph-node:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
