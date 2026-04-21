@@ -7,7 +7,7 @@ import { catchError } from 'rxjs/operators';
 import { CloudAccountService } from '../../../../services/cloud-account.service';
 import { CloudServicesService } from '../../../../services/cloud-services.service';
 import { CloudAccount } from '../../../../models/cloud-account.model';
-import { Vpc, UpdateVpcRequest } from '../../../../models/cloud-services.model';
+import { Vpc, UpdateVpcRequest, InternetGateway } from '../../../../models/cloud-services.model';
 
 @Component({
   selector: 'app-vpc-overview',
@@ -23,6 +23,8 @@ export class VpcOverviewComponent implements OnInit, OnDestroy {
   vpc: Vpc | null = null;
   account: CloudAccount | null = null;
   accounts: CloudAccount[] = [];
+  attachedIgw: InternetGateway | null = null;
+  igwLoading = false;
 
   // Section collapse states
   collapsedSections: Record<string, boolean> = {};
@@ -104,6 +106,7 @@ export class VpcOverviewComponent implements OnInit, OnDestroy {
 
         if (this.vpc) {
           this.account = accounts.find(a => a.id === this.vpc!.cloudAccountId) || null;
+          this.loadIgwForVpc();
         } else {
           this.error = 'VPC not found';
         }
@@ -120,6 +123,23 @@ export class VpcOverviewComponent implements OnInit, OnDestroy {
     if (this.vpc) {
       this.loadData(this.vpc.id);
     }
+  }
+
+  private loadIgwForVpc(): void {
+    if (!this.vpc) return;
+    this.igwLoading = true;
+    this.cloudServicesService.getInternetGatewayForVpc(this.vpc.vpcId, this.vpc.cloudAccountId)
+      .pipe(catchError(() => of(null)))
+      .subscribe({
+        next: (res: any) => {
+          this.attachedIgw = res?.internetGateway || res || null;
+          this.igwLoading = false;
+        },
+        error: () => {
+          this.attachedIgw = null;
+          this.igwLoading = false;
+        }
+      });
   }
 
   toggleSection(section: string): void {

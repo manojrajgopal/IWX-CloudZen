@@ -1,0 +1,273 @@
+/* ═══════════════════════════════════════════════════════════════
+   Internet Gateway Overview — Styles
+   ═══════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+.container-lux {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* ── Metric Cards ── */
+.overview-metric-card {
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  animation: sectionFadeIn 0.4s ease both;
+}
+
+.overview-metric-card:hover {
+  border-color: #000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Sections ── */
+.overview-section {
+  border: 1px solid var(--border-color, #e5e7eb);
+  animation: sectionFadeIn 0.5s ease both;
+}
+
+.overview-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-align: left;
+}
+
+.overview-section-header:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+.overview-section-body {
+  padding: 1.25rem;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+  animation: sectionFadeIn 0.3s ease both;
+}
+
+/* ── Overview Grid ── */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.overview-field {
+  padding: 0.75rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.overview-field:hover {
+  border-color: var(--border-color, #e5e7eb);
+  background-color: rgba(0, 0, 0, 0.01);
+}
+
+.overview-field-label {
+  display: block;
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #9ca3af;
+  margin-bottom: 0.25rem;
+}
+
+.overview-field-value {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-primary, #111827);
+}
+
+/* ── Action buttons ── */
+.btn-overview-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-overview-icon:hover {
+  border-color: #000;
+  background-color: #000;
+  color: #fff;
+}
+
+/* ── Animations ── */
+@keyframes sectionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease both;
+}
+
+/* ── Arrow shapes for topology graph ── */
+.border-l-6 {
+  border-left-width: 6px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE
+   ═══════════════════════════════════════════════════════════════ */
+
+:host-context(html.dark) .container-lux {
+  color: var(--text-primary);
+}
+
+:host-context(html.dark) .overview-metric-card {
+  background: var(--bg-card, #1e293b);
+  border-color: var(--border-color, #334155);
+}
+
+:host-context(html.dark) .overview-metric-card:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+:host-context(html.dark) .overview-section {
+  border-color: var(--border-color, #334155);
+  background: var(--bg-card, #1e293b);
+}
+
+:host-context(html.dark) .overview-section-header:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+:host-context(html.dark) .overview-section-body {
+  border-top-color: var(--border-color, #334155);
+}
+
+:host-context(html.dark) .overview-field:hover {
+  border-color: var(--border-color, #334155);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+:host-context(html.dark) .overview-field-label {
+  color: var(--text-secondary, #94a3b8);
+}
+
+:host-context(html.dark) .overview-field-value {
+  color: var(--text-primary, #e2e8f0);
+}
+
+:host-context(html.dark) .btn-overview-icon {
+  background: var(--bg-card, #1e293b);
+  border-color: var(--border-color, #334155);
+  color: var(--text-primary, #e2e8f0);
+}
+
+:host-context(html.dark) .btn-overview-icon:hover {
+  border-color: #e2e8f0;
+  background-color: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Dark mode — loading skeletons */
+:host-context(html.dark) .animate-pulse div,
+:host-context(html.dark) .animate-pulse {
+  background-color: var(--bg-surface-2, #334155) !important;
+}
+
+/* Dark mode — breadcrumb links */
+:host-context(html.dark) nav a {
+  color: var(--text-secondary, #94a3b8);
+}
+
+:host-context(html.dark) nav a:hover {
+  color: var(--text-primary, #e2e8f0);
+}
+
+:host-context(html.dark) nav span.text-black {
+  color: var(--text-primary, #e2e8f0);
+}
+
+/* Dark mode — icon block */
+:host-context(html.dark) .w-14.h-14.bg-black {
+  background: var(--bg-surface-2, #334155);
+}
+
+/* Dark mode — right side card */
+:host-context(html.dark) .border.border-gray-200.p-6 {
+  border-color: var(--border-color, #334155);
+  background: var(--bg-card, #1e293b);
+}
+
+:host-context(html.dark) .border.border-gray-200.p-6 .border-b {
+  border-color: var(--border-color, #334155);
+}
+
+/* Dark mode — rename panel */
+:host-context(html.dark) .border.border-blue-200 {
+  border-color: #1e3a5f;
+  background: #0c1929;
+}
+
+:host-context(html.dark) .border.border-blue-200 input {
+  background: var(--bg-surface, #1e293b);
+  border-color: var(--border-color, #334155);
+  color: var(--text-primary, #e2e8f0);
+}
+
+/* Dark mode — attach panel */
+:host-context(html.dark) .border.border-green-200.bg-green-50\/30 {
+  border-color: #1a3a2a;
+  background: #0c1f14;
+}
+
+/* Dark mode — delete modal */
+:host-context(html.dark) .bg-white.border.border-gray-200.shadow-2xl {
+  background: var(--bg-card, #1e293b);
+  border-color: var(--border-color, #334155);
+}
+
+/* Dark mode — topology background */
+:host-context(html.dark) .bg-gray-50\/30 {
+  background: var(--bg-surface-2, #334155) !important;
+}
+
+:host-context(html.dark) .border-gray-100 {
+  border-color: var(--border-color, #334155);
+}
+
+/* Dark mode — error state link */
+:host-context(html.dark) a.bg-black {
+  background: var(--bg-surface-2, #334155);
+}
+
+:host-context(html.dark) a.bg-black:hover {
+  background: #475569;
+}

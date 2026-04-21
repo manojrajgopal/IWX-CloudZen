@@ -54,7 +54,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
           children: [
             { label: 'VPCs', route: '/dashboard/vpcs' },
             { label: 'Subnets', route: '/dashboard/subnets' },
-            { label: 'Security Groups', route: '/dashboard/security-groups' }
+            { label: 'Security Groups', route: '/dashboard/security-groups' },
+            { label: 'Internet Gateways', route: '/dashboard/internet-gateways' }
           ]
         },
         {

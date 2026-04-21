@@ -36,6 +36,9 @@ import { KeyPairsComponent } from './pages/key-pairs/key-pairs.component';
 import { KeyPairOverviewComponent } from './pages/key-pairs/key-pair-overview/key-pair-overview.component';
 import { CreateKeyPairComponent } from './pages/key-pairs/create-key-pair/create-key-pair.component';
 import { SensitiveDataViewerComponent } from './pages/key-pairs/sensitive-data-viewer/sensitive-data-viewer.component';
+import { InternetGatewaysComponent } from './pages/CloudServices/internet-gateways/internet-gateways.component';
+import { CreateInternetGatewayComponent } from './pages/CloudServices/internet-gateways/create-internet-gateway/create-internet-gateway.component';
+import { InternetGatewayOverviewComponent } from './pages/CloudServices/internet-gateways/internet-gateway-overview/internet-gateway-overview.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -70,6 +73,9 @@ export const routes: Routes = [
   { path: 'dashboard/ec2-instances/:id', component: Ec2OverviewComponent },
   { path: 'dashboard/ec2-instances', component: Ec2InstancesComponent },
   { path: 'dashboard/permissions', component: PermissionsComponent },
+  { path: 'dashboard/internet-gateways', component: InternetGatewaysComponent },
+  { path: 'dashboard/internet-gateways/create', component: CreateInternetGatewayComponent },
+  { path: 'dashboard/internet-gateways/:id', component: InternetGatewayOverviewComponent },
   { path: 'dashboard/key-pairs/create', component: CreateKeyPairComponent },
   { path: 'dashboard/key-pairs/:id/private-key', component: SensitiveDataViewerComponent },
   { path: 'dashboard/key-pairs/:id', component: KeyPairOverviewComponent },

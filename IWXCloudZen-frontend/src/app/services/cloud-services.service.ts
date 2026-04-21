@@ -68,6 +68,15 @@ import {
   CheckPermissionRequest,
   PermissionCheckResponse,
   PermissionSummaryResponse,
+  InternetGateway,
+  InternetGatewaysResponse,
+  InternetGatewayVpcResponse,
+  CreateInternetGatewayRequest,
+  UpdateInternetGatewayRequest,
+  InternetGatewayDeleteResponse,
+  AttachInternetGatewayRequest,
+  DetachInternetGatewayRequest,
+  InternetGatewaySyncResponse,
   PoliciesResponse,
   AvailablePoliciesResponse,
   AttachPolicyRequest,
@@ -627,6 +636,67 @@ export class CloudServicesService {
   listPermissionPolicies(accountId: number): Observable<ListPoliciesResponse> {
     return this.http.get<ListPoliciesResponse>(
       `${this.apiUrl}/api/permissions/aws/list?accountId=${accountId}`
+    );
+  }
+
+  // ── Internet Gateway ──
+
+  getInternetGateways(accountId: number): Observable<InternetGatewaysResponse> {
+    return this.http.get<InternetGatewaysResponse>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/list?accountId=${accountId}`
+    );
+  }
+
+  getInternetGatewayById(id: number, accountId: number): Observable<InternetGateway> {
+    return this.http.get<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/${id}?accountId=${accountId}`
+    );
+  }
+
+  getInternetGatewayForVpc(vpcId: string, accountId: number): Observable<InternetGatewayVpcResponse> {
+    return this.http.get<InternetGatewayVpcResponse>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/vpc/${encodeURIComponent(vpcId)}?accountId=${accountId}`
+    );
+  }
+
+  createInternetGateway(accountId: number, request: CreateInternetGatewayRequest): Observable<InternetGateway> {
+    return this.http.post<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/create?accountId=${accountId}`,
+      request
+    );
+  }
+
+  updateInternetGateway(id: number, accountId: number, request: UpdateInternetGatewayRequest): Observable<InternetGateway> {
+    return this.http.put<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/update/${id}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  deleteInternetGateway(id: number, accountId: number): Observable<InternetGatewayDeleteResponse> {
+    return this.http.delete<InternetGatewayDeleteResponse>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/delete/${id}?accountId=${accountId}`
+    );
+  }
+
+  attachInternetGateway(id: number, accountId: number, request: AttachInternetGatewayRequest): Observable<InternetGateway> {
+    return this.http.post<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/attach/${id}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  detachInternetGateway(id: number, accountId: number, request: DetachInternetGatewayRequest): Observable<InternetGateway> {
+    return this.http.post<InternetGateway>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/detach/${id}?accountId=${accountId}`,
+      request
+    );
+  }
+
+  syncInternetGateways(accountId: number): Observable<InternetGatewaySyncResponse> {
+    return this.http.post<InternetGatewaySyncResponse>(
+      `${this.apiUrl}/api/cloud/services/internet-gateway/aws/sync?accountId=${accountId}`,
+      null
     );
   }
 }

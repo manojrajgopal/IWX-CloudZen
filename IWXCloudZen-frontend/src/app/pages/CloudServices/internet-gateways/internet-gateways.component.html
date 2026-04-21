@@ -1,0 +1,539 @@
+<div class="container-lux py-12 md:py-20">
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- HEADER -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-12 gap-4">
+    <div>
+      <div class="flex items-center gap-3 mb-2">
+        <a routerLink="/dashboard" class="text-gray-400 hover:text-black transition">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </a>
+        <div class="w-12 h-12 rounded-lg bg-black text-white flex items-center justify-center">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m0 0H8.25m4.606 0H11.75"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-3xl md:text-5xl font-serif font-bold tracking-tight">Internet Gateways</h1>
+          <p class="text-sm text-gray-400 uppercase tracking-widest mt-1">AWS &middot; Internet Gateway</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="syncData()" class="btn-icon" title="Sync Internet Gateways" [disabled]="syncing">
+        <svg class="w-4 h-4" [class.animate-spin]="syncing" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+      </button>
+      <a routerLink="/dashboard/internet-gateways/create"
+         class="inline-flex items-center gap-2 px-5 py-2.5 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Create
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SYNC MESSAGE TOAST -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="syncMessage" class="mb-6 px-5 py-3 flex items-center gap-3 text-sm border animate-fadeIn"
+       [ngClass]="syncMessageType === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800'">
+    <svg *ngIf="syncMessageType === 'success'" class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+    </svg>
+    <svg *ngIf="syncMessageType === 'error'" class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+    </svg>
+    <span>{{ syncMessage }}</span>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SYNC REPORT -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="showSyncReport && lastSyncResults.length > 0" class="mb-8 border border-green-200 bg-green-50/50 p-6 animate-fadeIn">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-gray-900">Sync Report</h3>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">Last sync results</p>
+        </div>
+      </div>
+      <button (click)="closeSyncReport()" class="text-gray-400 hover:text-gray-600 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="text-center p-3 bg-white border border-green-100 rounded">
+        <p class="text-xl font-bold text-green-600">{{ getTotalSyncAdded() }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Added</p>
+      </div>
+      <div class="text-center p-3 bg-white border border-blue-100 rounded">
+        <p class="text-xl font-bold text-blue-600">{{ getTotalSyncUpdated() }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Updated</p>
+      </div>
+      <div class="text-center p-3 bg-white border border-red-100 rounded">
+        <p class="text-xl font-bold text-red-500">{{ getTotalSyncRemoved() }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Removed</p>
+      </div>
+      <div class="text-center p-3 bg-white border border-gray-200 rounded">
+        <p class="text-xl font-bold text-gray-800">{{ getTotalSyncIgws() }}</p>
+        <p class="text-[10px] text-gray-400 uppercase tracking-wider">Total</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- METRICS -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+    <div *ngFor="let m of metrics" class="metric-card border border-gray-200 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-default">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center">
+          <svg class="w-5 h-5" [ngClass]="m.color" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="m.icon"/>
+          </svg>
+        </div>
+        <span class="text-[10px] uppercase tracking-widest text-gray-400">{{ m.label }}</span>
+      </div>
+      <p class="text-3xl md:text-4xl font-serif font-bold tracking-tight">{{ m.value }}</p>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- TOOLBAR -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8 pb-6 border-b border-gray-200">
+    <!-- Search -->
+    <div class="relative flex-1 max-w-md">
+      <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text" [(ngModel)]="searchQuery" placeholder="Search gateways..."
+             class="w-full pl-10 pr-4 py-2 border border-gray-200 text-sm focus:outline-none focus:border-black transition">
+    </div>
+    <div class="flex items-center gap-3 flex-wrap">
+      <!-- Provider -->
+      <select [(ngModel)]="selectedProvider" class="filter-select">
+        <option *ngFor="let p of providers" [value]="p.value">{{ p.label }}</option>
+      </select>
+      <!-- State -->
+      <select [(ngModel)]="selectedState" class="filter-select">
+        <option value="all">All States</option>
+        <option *ngFor="let s of uniqueStates" [value]="s">{{ s | titlecase }}</option>
+      </select>
+      <!-- Account -->
+      <select [(ngModel)]="selectedAccount" class="filter-select">
+        <option value="all">All Accounts</option>
+        <option *ngFor="let a of accounts" [value]="a.id">{{ a.accountName }}</option>
+      </select>
+      <!-- Attachment -->
+      <select [(ngModel)]="selectedAttachment" class="filter-select">
+        <option value="all">All Attachments</option>
+        <option value="attached">Attached</option>
+        <option value="detached">Detached</option>
+      </select>
+      <!-- Clear -->
+      <button *ngIf="hasActiveFilters" (click)="clearFilters()"
+              class="text-xs uppercase tracking-wider text-gray-400 hover:text-black transition flex items-center gap-1">
+        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Clear
+      </button>
+      <!-- View Toggles -->
+      <div class="flex items-center border border-gray-200 ml-2">
+        <button (click)="setViewMode('list')"
+                class="p-2 transition"
+                [ngClass]="viewMode === 'list' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+        <button (click)="setViewMode('grid')"
+                class="p-2 transition"
+                [ngClass]="viewMode === 'grid' ? 'bg-black text-white' : 'text-gray-400 hover:text-black'">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LOADING STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="loading" class="space-y-4">
+    <div *ngFor="let i of [1,2,3,4,5]" class="flex items-center gap-4 p-5 border border-gray-100 animate-pulse">
+      <div class="w-10 h-10 rounded-lg bg-gray-100"></div>
+      <div class="flex-1 space-y-2">
+        <div class="h-4 w-48 bg-gray-100 rounded"></div>
+        <div class="h-3 w-32 bg-gray-100 rounded"></div>
+      </div>
+      <div class="h-6 w-20 bg-gray-100 rounded"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- EMPTY STATE -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && filteredGateways.length === 0" class="text-center py-20">
+    <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-gray-50 flex items-center justify-center">
+      <svg class="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/>
+      </svg>
+    </div>
+    <h3 class="text-xl font-serif font-bold mb-2" *ngIf="!hasActiveFilters">No Internet Gateways</h3>
+    <h3 class="text-xl font-serif font-bold mb-2" *ngIf="hasActiveFilters">No Matching Gateways</h3>
+    <p class="text-sm text-gray-400 mb-6" *ngIf="!hasActiveFilters">Create your first internet gateway to enable internet access for your VPCs.</p>
+    <p class="text-sm text-gray-400 mb-6" *ngIf="hasActiveFilters">Try adjusting your search or filters.</p>
+    <div class="flex items-center justify-center gap-3">
+      <a *ngIf="!hasActiveFilters" routerLink="/dashboard/internet-gateways/create"
+         class="inline-flex items-center gap-2 px-6 py-3 bg-black text-white text-sm uppercase tracking-wider hover:bg-gray-800 transition">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+        </svg>
+        Create Internet Gateway
+      </a>
+      <button *ngIf="hasActiveFilters" (click)="clearFilters()"
+              class="px-6 py-3 border border-gray-300 text-sm uppercase tracking-wider hover:border-black hover:text-black transition">
+        Clear Filters
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- LIST VIEW -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && filteredGateways.length > 0 && viewMode === 'list'" class="space-y-0">
+    <!-- Table Header -->
+    <div class="hidden md:grid grid-cols-12 gap-4 px-5 py-3 text-[10px] uppercase tracking-widest text-gray-400 border-b border-gray-200">
+      <div class="col-span-3 flex items-center gap-1 cursor-pointer hover:text-black transition" (click)="toggleSort('name')">
+        Name
+        <svg *ngIf="sortField === 'name'" class="w-3 h-3" [class.rotate-180]="sortDir === 'desc'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+      </div>
+      <div class="col-span-2 flex items-center gap-1 cursor-pointer hover:text-black transition" (click)="toggleSort('internetGatewayId')">
+        Gateway ID
+        <svg *ngIf="sortField === 'internetGatewayId'" class="w-3 h-3" [class.rotate-180]="sortDir === 'desc'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+      </div>
+      <div class="col-span-2 flex items-center gap-1 cursor-pointer hover:text-black transition" (click)="toggleSort('state')">
+        State
+        <svg *ngIf="sortField === 'state'" class="w-3 h-3" [class.rotate-180]="sortDir === 'desc'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+      </div>
+      <div class="col-span-3 flex items-center gap-1 cursor-pointer hover:text-black transition" (click)="toggleSort('attachedVpcId')">
+        Attached VPC
+        <svg *ngIf="sortField === 'attachedVpcId'" class="w-3 h-3" [class.rotate-180]="sortDir === 'desc'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/></svg>
+      </div>
+      <div class="col-span-2 text-right">Actions</div>
+    </div>
+
+    <!-- Rows -->
+    <div *ngFor="let igw of filteredGateways"
+         class="igw-row grid grid-cols-1 md:grid-cols-12 gap-4 items-center px-5 py-4 border-b border-gray-100 hover:bg-gray-50/50 cursor-pointer transition-all duration-200"
+         (click)="openDetail(igw)">
+      <!-- Name -->
+      <div class="col-span-3 flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-semibold text-gray-900 truncate">{{ getDisplayName(igw) }}</p>
+          <p class="text-[10px] text-gray-400 uppercase tracking-wider">{{ igw.provider }} &middot; {{ getAccountName(igw.cloudAccountId) }}</p>
+        </div>
+      </div>
+      <!-- ID -->
+      <div class="col-span-2">
+        <span class="text-xs font-mono text-gray-500">{{ igw.internetGatewayId }}</span>
+      </div>
+      <!-- State -->
+      <div class="col-span-2">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-medium uppercase tracking-wider rounded-sm"
+              [ngClass]="getStatusClass(igw.state)">
+          <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStatusDotClass(igw.state)"></span>
+          {{ igw.state }}
+        </span>
+      </div>
+      <!-- Attached VPC -->
+      <div class="col-span-3">
+        <span *ngIf="igw.attachedVpcId && igw.state.toLowerCase() !== 'detached'" class="text-xs font-mono text-gray-600">
+          {{ getVpcName(igw.attachedVpcId) }}
+        </span>
+        <span *ngIf="!igw.attachedVpcId || igw.state.toLowerCase() === 'detached'" class="text-xs text-gray-400 italic">
+          Not attached
+        </span>
+      </div>
+      <!-- Actions -->
+      <div class="col-span-2 flex items-center justify-end gap-2">
+        <a [routerLink]="['/dashboard/internet-gateways', igw.id]"
+           class="p-1.5 text-gray-400 hover:text-black transition" title="View details"
+           (click)="$event.stopPropagation()">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- GRID VIEW -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && filteredGateways.length > 0 && viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div *ngFor="let igw of filteredGateways"
+         class="igw-card border border-gray-200 p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+         (click)="openDetail(igw)">
+      <div class="flex items-start justify-between gap-3 mb-4">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate">{{ getDisplayName(igw) }}</p>
+            <p class="text-[10px] font-mono text-gray-400 truncate">{{ igw.internetGatewayId }}</p>
+          </div>
+        </div>
+        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-sm flex-shrink-0"
+              [ngClass]="getStatusClass(igw.state)">
+          <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStatusDotClass(igw.state)"></span>
+          {{ igw.state }}
+        </span>
+      </div>
+      <div class="space-y-2 mb-4">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-400">VPC</span>
+          <span *ngIf="igw.attachedVpcId && igw.state.toLowerCase() !== 'detached'" class="text-gray-700 font-mono truncate ml-2">{{ getVpcName(igw.attachedVpcId) }}</span>
+          <span *ngIf="!igw.attachedVpcId || igw.state.toLowerCase() === 'detached'" class="text-gray-400 italic">Not attached</span>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-400">Owner</span>
+          <span class="text-gray-700 font-mono">{{ igw.ownerId }}</span>
+        </div>
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-gray-400">Created</span>
+          <span class="text-gray-700">{{ formatDate(igw.createdAt) }}</span>
+        </div>
+      </div>
+      <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+        <span class="text-[10px] text-gray-400 uppercase tracking-wider">{{ igw.provider }} &middot; {{ getAccountName(igw.cloudAccountId) }}</span>
+        <a [routerLink]="['/dashboard/internet-gateways', igw.id]"
+           class="text-[10px] text-gray-400 hover:text-black transition uppercase tracking-wider"
+           (click)="$event.stopPropagation()">
+          View →
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- SUMMARY SECTION -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="!loading && internetGateways.length > 0" class="mt-12 pt-8 border-t border-gray-200">
+    <h3 class="text-xs uppercase tracking-widest text-gray-400 mb-5">Summary</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- By Provider -->
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">By Provider</p>
+        <div class="space-y-2">
+          <div *ngFor="let p of providers.slice(1)" class="flex items-center justify-between text-xs">
+            <span class="text-gray-600">{{ p.label }}</span>
+            <span class="font-semibold text-gray-900">{{ (internetGateways | igwFilterByProvider:p.value).length }}</span>
+          </div>
+        </div>
+      </div>
+      <!-- By State -->
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">By State</p>
+        <div class="space-y-2">
+          <div *ngFor="let s of uniqueStates" class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full" [ngClass]="getStatusDotClass(s)"></span>
+              <span class="text-gray-600 capitalize">{{ s }}</span>
+            </div>
+            <span class="font-semibold text-gray-900">{{ (internetGateways | igwFilterByState:s).length }}</span>
+          </div>
+        </div>
+      </div>
+      <!-- By Attachment -->
+      <div>
+        <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">By Attachment</p>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-500"></span>
+              <span class="text-gray-600">Attached</span>
+            </div>
+            <span class="font-semibold text-gray-900">{{ internetGateways.filter(i => !!i.attachedVpcId && i.state.toLowerCase() !== 'detached').length }}</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+              <span class="text-gray-600">Detached</span>
+            </div>
+            <span class="font-semibold text-gray-900">{{ internetGateways.filter(i => !i.attachedVpcId || i.state.toLowerCase() === 'detached').length }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- DETAIL PANEL (Slide-over) -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <div *ngIf="selectedIgw" class="fixed inset-0 z-50">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"
+         [class]="showDetailPanel ? 'modal-backdrop-enter' : 'modal-backdrop-exit'"
+         (click)="closeDetail()"></div>
+    <!-- Panel -->
+    <div class="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col"
+         [class]="showDetailPanel ? 'panel-enter' : 'panel-exit'">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-lg bg-black text-white flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <h2 class="text-lg font-serif font-bold truncate">{{ getDisplayName(selectedIgw) }}</h2>
+            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-mono">{{ selectedIgw.internetGatewayId }}</p>
+          </div>
+        </div>
+        <button (click)="closeDetail()" class="p-2 text-gray-400 hover:text-black transition">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+        <!-- Status Banner -->
+        <div class="p-4 border rounded-sm flex items-center gap-3"
+             [ngClass]="getStatusClass(selectedIgw.state) === 'status-active' ? 'bg-green-50 border-green-200' :
+                        getStatusClass(selectedIgw.state) === 'status-pending' ? 'bg-yellow-50 border-yellow-200' :
+                        getStatusClass(selectedIgw.state) === 'status-error' ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-gray-200'">
+          <span class="w-3 h-3 rounded-full" [ngClass]="getStatusDotClass(selectedIgw.state)"></span>
+          <span class="text-sm font-medium capitalize">{{ selectedIgw.state }}</span>
+        </div>
+
+        <!-- General Information -->
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">General Information</p>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">Name</span>
+              <span class="detail-value">{{ selectedIgw.name || '(unnamed)' }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Gateway ID</span>
+              <span class="detail-value font-mono text-xs">{{ selectedIgw.internetGatewayId }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">State</span>
+              <span class="detail-value">
+                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider rounded-sm"
+                      [ngClass]="getStatusClass(selectedIgw.state)">
+                  <span class="w-1.5 h-1.5 rounded-full" [ngClass]="getStatusDotClass(selectedIgw.state)"></span>
+                  {{ selectedIgw.state }}
+                </span>
+              </span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Owner ID</span>
+              <span class="detail-value font-mono text-xs">{{ selectedIgw.ownerId }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Provider</span>
+              <span class="detail-value">{{ getProviderLabel(selectedIgw.provider) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Account</span>
+              <span class="detail-value">{{ getAccountName(selectedIgw.cloudAccountId) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- VPC Attachment -->
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">VPC Attachment</p>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">Attached VPC</span>
+              <span class="detail-value">
+                <span *ngIf="selectedIgw.attachedVpcId && selectedIgw.state.toLowerCase() !== 'detached'" class="font-mono text-xs">{{ getVpcName(selectedIgw.attachedVpcId) }}</span>
+                <span *ngIf="!selectedIgw.attachedVpcId || selectedIgw.state.toLowerCase() === 'detached'" class="text-gray-400 italic text-xs">Not attached</span>
+              </span>
+            </div>
+            <div *ngIf="selectedIgw.attachedVpcId && selectedIgw.state.toLowerCase() !== 'detached'" class="detail-row">
+              <span class="detail-label">VPC ID</span>
+              <span class="detail-value font-mono text-xs">{{ selectedIgw.attachedVpcId }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timestamps -->
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Timestamps</p>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">Created At</span>
+              <span class="detail-value text-xs">{{ formatDateTime(selectedIgw.createdAt) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Updated At</span>
+              <span class="detail-value text-xs">{{ formatDateTime(selectedIgw.updatedAt || '') }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resource IDs -->
+        <div>
+          <p class="text-[10px] uppercase tracking-widest text-gray-400 mb-3">Resource Identifiers</p>
+          <div class="space-y-0">
+            <div class="detail-row">
+              <span class="detail-label">Internal ID</span>
+              <span class="detail-value font-mono text-xs">{{ selectedIgw.id }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Cloud Account ID</span>
+              <span class="detail-value font-mono text-xs">{{ selectedIgw.cloudAccountId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+        <span class="text-[10px] uppercase tracking-widest text-gray-400">{{ getProviderLabel(selectedIgw.provider) }}</span>
+        <div class="flex items-center gap-3">
+          <a [routerLink]="['/dashboard/internet-gateways', selectedIgw.id]"
+             class="px-4 py-2 text-xs uppercase tracking-wider bg-black text-white hover:bg-gray-800 transition">
+            View Details
+          </a>
+          <button (click)="closeDetail()" class="px-4 py-2 text-xs uppercase tracking-wider border border-gray-300 text-gray-600 hover:border-black hover:text-black transition">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

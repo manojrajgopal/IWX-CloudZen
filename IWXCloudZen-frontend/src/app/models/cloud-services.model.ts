@@ -670,3 +670,55 @@ export interface ListPoliciesResponse {
   policies: SyncedPolicy[];
 }
 
+// ── Internet Gateway ──
+
+export interface InternetGateway {
+  id: number;
+  internetGatewayId: string;
+  name: string;
+  attachedVpcId: string | null;
+  state: string;
+  ownerId: string;
+  provider: string;
+  cloudAccountId: number;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface InternetGatewaysResponse {
+  internetGateways: InternetGateway[];
+}
+
+export interface InternetGatewayVpcResponse {
+  hasInternetGateway: boolean;
+  internetGateway: InternetGateway | null;
+}
+
+export interface CreateInternetGatewayRequest {
+  name: string;
+  vpcId: string;
+}
+
+export interface UpdateInternetGatewayRequest {
+  name: string;
+}
+
+export interface InternetGatewayDeleteResponse {
+  message: string;
+}
+
+export interface AttachInternetGatewayRequest {
+  vpcId: string;
+}
+
+export interface DetachInternetGatewayRequest {
+  vpcId: string;
+}
+
+export interface InternetGatewaySyncResponse {
+  added: number;
+  updated: number;
+  removed: number;
+  internetGateways: InternetGateway[];
+}
+
